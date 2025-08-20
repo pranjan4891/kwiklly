@@ -1,0 +1,352 @@
+.extracartmargin {
+    margin-top: 120px;
+  }
+
+  .qty-container {
+    display: flex;
+    align-items: center;
+    gap: 0px;
+    transition: 0.3s ease-in-out;
+    width: 90px;
+  }
+
+  .add-btn {
+    background: #E94412;
+    color: white;
+    border: none;
+    padding: 4px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+  }
+
+  .main-content-box {
+    background: #fff;
+    padding: 0px;
+    border-radius: 10px;
+
+  }
+
+  .step-box2 {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .step-box2 .step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+
+  .step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-block;
+    line-height: 32px;
+    text-align: center;
+    color: white;
+    margin-bottom: 0.25rem;
+  }
+
+  .step.active .step-circle {
+    background-color: #28a745;
+  }
+
+  .step.inactive .step-circle {
+    background-color: #ccc;
+  }
+
+  .delivery-box,
+  .order-summary {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .delivery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+  }
+
+  .product {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding: 0.75rem 0;
+  }
+
+  .highlight-box,
+  .wallet-box,
+  .coupon-box {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .confirm-btn,
+  .choose-btn {
+    width: 100%;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 6px;
+  }
+
+  .choose-btn {
+    background-color: #f4511e;
+  }
+
+  .bill-summary td {
+    padding: 0.25rem 0;
+  }
+
+  .alert-success small {
+    font-size: 0.85rem;
+  }
+
+  .step-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    text-align: center;
+    line-height: 24px;
+    font-size: 14px;
+    color: #999;
+    font-weight: 500;
+  }
+
+  .active-step .step-circle {
+    border-color: #28a745;
+    color: #28a745;
+  }
+
+  .wallet-box {
+    background-color: #3B6939;
+    font-weight: 500;
+  }
+
+  .change-link {
+    padding: 15px;
+    font-weight: bold;
+    color: #ff4d4d;
+    cursor: pointer;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    max-width: 520px;
+    height: 100%;
+    background: #fff;
+    box-shadow: -3px 0 8px rgba(0, 0, 0, 0.15);
+    z-index: 999999;
+    transition: right 0.3s ease-in-out;
+    border-left: 1px solid #ccc;
+  }
+
+  .sidebar.open {
+    right: 0;
+  }
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .sidebar-header i {
+    margin-right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  .add-new-address {
+    text-align: center;
+    color: red;
+    font-weight: 600;
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .add-new-address:hover {
+    text-align: center;
+    color: red;
+    font-weight: 600;
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+  }
+
+  .address-section {
+    padding: 16px;
+    padding-bottom: 45px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 12px;
+  }
+
+  .address-card {
+    display: flex;
+    align-items: flex-start;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .address-card.active {
+    background: #f3fff3;
+    border-color: #c1eac5;
+  }
+
+  .icon {
+    margin-right: 10px;
+    font-size: 20px;
+    margin-top: 3px;
+  }
+
+  .address-content {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+  }
+
+  .address-content b {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .tick-icon {
+    font-size: 16px;
+    color: green;
+    margin-left: 8px;
+    margin-top: 2px;
+  }
+
+  .menu-icon {
+    position: absolute;
+    right: 12px;
+    top: 16px;
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+  }
+
+  .ordersummary-box {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+  }
+
+  .ordersummary-title {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  .ordersummary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .grandtotal-row {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .text-green {
+    color: #28a745;
+  }
+
+  .final-price {
+    color: #000;
+    margin-left: 5px;
+  }
+
+  .save-box {
+    display: inline-block;
+    background-color: #d4edda;
+    color: #28a745;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 5px;
+  }
+
+  .congrats-box {
+    background-color: #eaf6f3;
+    border-left: 5px solid #28a745;
+    border-radius: 6px;
+    padding: 10px 15px;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  .congrats-box p {
+    margin: 0;
+    color: #155724;
+  }
+
+  .congrats-box small {
+    color: #6c757d;
+  }
+
+  .delivery-btn {
+    background-color: #f04716;
+    color: #fff;
+    font-size: 14px;
+    width: 100%;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 0;
+    margin-top: 15px;
+  }
+
+  .cart-items-wrapper {
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.4s ease;
+    opacity: 1;
+  }
+
+  .cart-items-wrapper.hidden {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  @media (max-width: 768px) {
+    .extracartmargin {
+    margin-top: 90px;
+}
+.gap-4 {
+    gap: 0rem !important;
+}
+
+}

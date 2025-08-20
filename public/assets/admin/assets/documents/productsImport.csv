@@ -1,0 +1,5 @@
+Productname,Category ID,Subcategory ID,SellingPrice,MRP,WeightQty,WeightLabel,ProductDescription,ProductSpecifications,ProductInfo.,Image,Disclaimer,CGST,SGST,TasteType,ProdCode,Inventory
+Amul Butter,55,194,215,220,500,gm,Amul <b>Butter </b>(Made of pure milk FAT),AmulButter,AmulButter,a.png,This is the disclaimer,5,5,veg,BUTTER001,10
+Amul Butter,55,194,215,220,500,gm,Amul <b>Butter </b>(Made of pure milk FAT),Butter,AmulButter,b.png,This is the disclaimer,5,5,veg,BUTTER001,10
+Amul Milk,55,195,52,52,1,kg,Amul Diamond Full Cream,Diamond,Milk ,a.jpg,This is the disclaimer,9,9,nonveg,AMULMILK001,10
+Amul Milk,55,195,51,51,1,kg,Full Cream,Diamond,Milk High Protein,b.jpg,This is the disclaimer,9,9,nonveg,AMULMILK001,10

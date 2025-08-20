@@ -1,0 +1,14 @@
+.form_error{
+	color: red;
+}
+.vendor_dash{
+	font-size: 18px;
+    font-weight: 900;
+    color: red;
+    border: 1px solid;
+    padding: 5px;
+    
+}
+.vendor_dash > a:hover {
+    color: #8bc53f;
+}

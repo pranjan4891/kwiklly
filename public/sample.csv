@@ -1,0 +1,4 @@
+sku,title,sub_title,category_id,sub_category_id,is_physical,description,disclaimer,information,cgst,sgst,feature_image_id,best_offers,top_selling,is_active,variant_name,variant_actual_price,variant_selling_price,stock,attributes
+ABC123,Red T-Shirt,Comfort Fit,1,3,1,"Soft cotton tee","No disclaimer","Wash in cold water",5,5,1,1,1,1,Small / Red,500,400,100,"{""color"":""Red"",""size"":""S""}"
+DEF456,Blue Hoodie,Winter Wear,2,5,1,"Warm fleece hoodie","Keep away from fire","Dry clean only",12,12,2,1,0,1,Large / Blue,1500,1200,50,"{""color"":""Blue"",""size"":""L""}"
+GHI789,Black Jeans,Slim Fit,3,6,1,"Stylish black jeans","No chemicals","Machine wash",8,8,3,0,1,1,32 Waist,1000,850,30,"{""size"":""32""}"
