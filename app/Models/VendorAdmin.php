@@ -123,9 +123,4 @@ class VendorAdmin extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(DeliveryLocation::class, 'vendor_id');
     }
 
-    public function deliverySlots()
-    {
-        return $this->hasMany(DeliverySlot::class);
-    }
-
 }

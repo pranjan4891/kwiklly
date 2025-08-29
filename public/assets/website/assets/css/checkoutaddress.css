@@ -1,0 +1,166 @@
+.extracartmargin {
+    margin-top: 120px;
+  }
+
+  .main-content-box {
+    background: #fff;
+    padding: 0px;
+    border-radius: 10px;
+    border: 1px solid #FFDBD1;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .step-box2 {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .step-box2 .step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+
+  .step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-block;
+    line-height: 32px;
+    text-align: center;
+    color: white;
+    margin-bottom: 0.25rem;
+  }
+
+  .step.active .step-circle {
+    background-color: #28a745;
+  }
+
+  .step.inactive .step-circle {
+    background-color: #ccc;
+  }
+
+
+  .highlight-box,
+  .wallet-box,
+  .coupon-box {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .confirm-btn,
+  .choose-btn {
+    width: 100%;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 6px;
+  }
+
+  .choose-btn {
+    background-color: #f4511e;
+  }
+
+  .bill-summary td {
+    padding: 0.25rem 0;
+  }
+
+  .alert-success small {
+    font-size: 0.85rem;
+  }
+
+  .step-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    text-align: center;
+    line-height: 24px;
+    font-size: 14px;
+    color: #999;
+    font-weight: 500;
+  }
+
+  .active-step .step-circle {
+    border-color: #28a745;
+    color: #28a745;
+  }
+
+  .wallet-box {
+    background-color: #3B6939;
+    font-weight: 500;
+  }
+
+  .address-card {
+    border-radius: 8px;
+    padding: 10px;
+    margin: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: #fff;
+    position: relative;
+  }
+
+  .fancy-checkbox {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .fancy-checkbox input {
+    display: none;
+    /* Hide native checkbox */
+  }
+
+  .custom-checkmark {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+    line-height: 18px;
+    font-size: 16px;
+    color: white;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+  /* When checked, change background and show tick */
+  .fancy-checkbox input:checked+.custom-checkmark {
+    background-color: #28a745;
+    /* green */
+    color: white;
+    /* tick becomes white */
+    border-color: #28a745;
+  }
+  .proceed-btn2 {
+    background-color: #E94412;
+    color: white;
+    width: fit-content;
+    margin: 10px 0px;
+    padding: 12px 70px;
+    text-align: center;
+    border-radius: 999px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+}
+.proceed-btn2:hover {
+    background-color: #E94412;
+    color: white;
+}
+@media (max-width: 768px) {
+    .extracartmargin {
+        margin-top: 90px;
+    }
+}

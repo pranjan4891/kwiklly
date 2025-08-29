@@ -62,6 +62,11 @@ class Coupon extends Model
     {
         return $this->hasMany(CouponUsage::class);
     }
+     public function vendor()
+    {
+        return $this->belongsTo(VendorAdmin::class);
+    }
+
 
     public function isValidForUser($user): bool
     {

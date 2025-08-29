@@ -22,17 +22,17 @@
     </div>
 
     <div class="col-md-4 position-relative">
-      <div class="profile-card">
-        <div class="d-flex align-items-center">
-          <div class="profile-user-info">
-            <h6 class="mb-3">Kwiklly Wallet Balance</h6>
-            <span class="pricepopupaccount">
-                <span class="rupee-symbolaccount">₹</span> 145.00
-            </span>
-          </div>
+        <div class="profile-card">
+            <div class="d-flex align-items-center">
+            <div class="profile-user-info">
+                <h6 class="mb-3">Kwikily Wallet Balance</h6>
+                <span class="pricepopupaccount">
+                <span class="rupee-symbolaccount">₹</span> {{ number_format($walletBalance, 2) }}
+                </span>
+            </div>
+            </div>
         </div>
-      </div>
-    </div>
+        </div>
   </div>
 
   <div class="row mt-4">
@@ -60,219 +60,127 @@
       <div class="profile-order-box">
         <!-- Orders -->
         <div class="profile-tab-content active" id="orders">
-          <h5 class="mb-3">Orders</h5>
+            <h5 class="mb-3">Orders</h5>
 
-          @foreach ($groupedOrders as $order)
-    @foreach ($order['vendors'] as $vendorName => $products)
-        <div class="profile-order-card">
-            <img src="{{ $products[0]['image'] }}" class="profile-order-img" alt="{{ $vendorName }}">
-            <div class="profile-order-details">
-                <h6 class="mb-1"><b>{{ $vendorName }}</b></h6>
-                <small>{{ ucfirst($order['status']) }} on: {{ $order['date'] ?? 'N/A' }}</small><br>
+            @forelse ($groupedOrders as $order)
+                @foreach ($order['vendors'] as $vendorName => $vendorData)
+                <div class="profile-order-card">
+                    <img src="{{ $vendorData['image'] }}" class="profile-order-img" alt="{{ $vendorName }}">
+                    <div class="profile-order-details">
+                    <h6 class="mb-1"><b>{{ $vendorName }}</b></h6>
+                    <small>{{ ucfirst($order['status']) }} on: {{ $order['date'] }}</small><br>
+                    <small>Order ID: #{{ $order['order_id'] }}</small>
 
-                <small>Order ID: #{{ $order['order_id'] }}</small>
-                {{-- <ul class="mt-2 mb-1 ps-3 small text-muted">
-                    @foreach ($products as $product)
-                        <li>{{ $product['product_title'] }} (x{{ $product['quantity'] }}) – ₹{{ $product['price'] }}</li>
-                    @endforeach
-                </ul> --}}
-                <div class="profile-action-links mt-2">
-                    <a href="{{ route('customer.orderDetails', $order['order_id']) }}">Show Details</a>
-                    <a href="{{route('order.cancel', $order['order_id'])}}">Go to Store</a>
+                    <!-- Show items for this vendor -->
+                    <ul class="mt-2 mb-1 ps-3 small text-muted">
+                        @foreach ($vendorData['items'] as $item)
+                        <li>{{ $item['product_title'] }}
+                            @if($item['variant'])
+                            ({{ $item['variant'] }})
+                            @endif
+                            - {{ $item['quantity'] }} x ₹{{ number_format($item['price'], 2) }}
+                        </li>
+                        @endforeach
+                    </ul>
+
+                    <div class="profile-action-links mt-2">
+                        <a href="{{ route('customer.orderDetails', $order['order_id']) }}">Show Details</a>
+                        @if($order['status'] !== 'cancelled' && $order['status'] !== 'delivered')
+                        <a href="{{ route('order.cancel', $order['order_id']) }}">Cancel Order</a>
+                        @endif
+                    </div>
+                    </div>
+                    <div class="profile-total-badge">Total ₹{{ number_format($vendorData['vendor_total'], 2) }}</div>
                 </div>
-            </div>
-            <div class="profile-total-badge">Total ₹{{ $order['total'] }}</div>
+                @endforeach
+            @empty
+                <div class="text-center py-4">
+                <p>No orders found.</p>
+                </div>
+            @endforelse
         </div>
-    @endforeach
-@endforeach
-        </div>
-
-
-          {{-- <div class="profile-order-card">
-            <img src="{{ asset('public/assets/website/images/storepimg1.png')}}" class="profile-order-img" alt="KFC">
-            <div class="profile-order-details">
-              <h6 class="mb-1">KFC</h6>
-              <small>Delivered on: Sat 4 May 2024, 10:10 PM</small><br>
-              <small>Order ID: #34JS8793J282FF4</small>
-              <div class="profile-action-links mt-2">
-                <a href="#">Show Details</a>
-                <a href="#">Go to Store</a>
-              </div>
-            </div>
-            <div class="profile-total-badge">Total ₹55</div>
-          </div>
-
-          <div class="profile-order-card">
-            <img src="{{ asset('public/assets/website/images/storepimg3.png')}}" class="profile-order-img" alt="KFC">
-            <div class="profile-order-details">
-              <h6 class="mb-1">KFC</h6>
-              <small>Delivered on: Sat 4 May 2024, 10:10 PM</small><br>
-              <small>Order ID: #34JS8793J282FF4</small>
-              <div class="profile-action-links mt-2">
-                <a href="#">Show Details</a>
-                <a href="#">Order Again</a>
-              </div>
-            </div>
-            <div class="profile-total-badge">Total ₹55</div>
-          </div>
-
-          <div class="profile-order-card">
-            <img src="{{ asset('public/assets/website/images/storepimg2.png')}}" class="profile-order-img" alt="Dominos">
-            <div class="profile-order-details">
-              <h6 class="mb-1">Dominos</h6>
-              <small>Delivered on: Sat 4 May 2024, 10:10 PM</small><br>
-              <small>Order ID: #34JS8793J282FF4</small>
-              <div class="profile-action-links mt-2">
-                <a href="#">Show Details</a>
-                <a href="#">Cancel Order </a>
-              </div>
-            </div>
-            <div class="profile-total-badge">Total ₹342</div>
-          </div>
-        </div> --}}
 
         <!-- Address -->
         <div class="profile-tab-content" id="address">
-          <div class="address-wrapper">
-            <h3><strong>Address</strong></h3>
+            <div class="address-wrapper">
+                <h3><strong>Address</strong></h3>
 
-            <div class="add-address-box">
-              <strong>Add new address</strong>
-            </div>
+                <div class="add-address-box">
+                <strong>Add new address</strong>
+                </div>
 
-            <!-- Address Card 1 -->
-            <div class="address-card selected">
-              <div class="address-left">
-                <img src="https://cdn-icons-png.flaticon.com/128/69/69524.png" alt="Home" class="icon">
-                <div>
-                  <strong>Home</strong>
-                  <p>ARYAN KUMAR, x 221, Okhla Phase 3 Road Okhla Phase III, Okhla Industrial Estate, New Delhi, Delhi, India</p>
+                @forelse ($addresses as $address)
+                <div class="address-card {{ $loop->first ? 'selected' : '' }}">
+                    <div class="address-left">
+                    <img src="https://cdn-icons-png.flaticon.com/128/69/69524.png" alt="Home" class="icon">
+                    <div>
+                        <strong>{{ $address->type }}</strong>
+                        <p>{{ $address->name }}, {{ $address->flat }}, {{ $address->area }}, {{ $address->landmark }}, {{ $address->pincode }}</p>
+                        <p>Phone: {{ $address->phone }} @if($address->alt_phone) / {{ $address->alt_phone }} @endif</p>
+                    </div>
+                    </div>
+                    <div class="address-right">
+                    <span class="check">&#x2714;</span>
+                    <div class="dropdown-wrapper">
+                        <span class="options" onclick="toggleDropdown(this)">&#8942;</span>
+                        <div class="dropdown-menu">
+                        <div onclick="editAddress({{ $address->id }})">Edit</div>
+                        <div onclick="deleteAddress({{ $address->id }})">Delete</div>
+                        </div>
+                    </div>
+                    </div>
                 </div>
-              </div>
-              <div class="address-right">
-                <span class="check">&#x2714;</span>
-                <div class="dropdown-wrapper">
-                  <span class="options" onclick="toggleDropdown(this)">&#8942;</span>
-                  <div class="dropdown-menu">
-                    <div onclick="editAddress()">Edit</div>
-                    <div onclick="deleteAddress(this)">Delete</div>
-                  </div>
+                @empty
+                <div class="text-center py-4">
+                    <p>No addresses found.</p>
                 </div>
-              </div>
+                @endforelse
             </div>
-
-            <!-- Address Card 2 -->
-            <div class="address-card">
-              <div class="address-left">
-                <img src="https://cdn-icons-png.flaticon.com/128/609/609803.png" alt="Work" class="icon">
-                <div>
-                  <strong>Work</strong>
-                  <p>Rakesh, x 221, Okhla Phase 3 Road Okhla Phase III, Okhla Industrial Estate, New Delhi, Delhi, India</p>
-                </div>
-              </div>
-              <div class="address-right">
-                <span class="check">&#x2714;</span>
-                <div class="dropdown-wrapper">
-                  <span class="options" onclick="toggleDropdown(this)">&#8942;</span>
-                  <div class="dropdown-menu">
-                    <div onclick="editAddress()">Edit</div>
-                    <div onclick="deleteAddress(this)">Delete</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Coupons -->
         <div class="profile-tab-content" id="couponsd">
-          <h4 class="fw-bold">Coupons</h4>
+            <h4 class="fw-bold">Coupons</h4>
 
-          <h6 class="fw-bold mt-4">Grocery</h6>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <div class="profile-coupon-card">
-                <div class="d-flex justify-content-between align-items-start">
-                  <div>
-                    <h5 class="fw-bold mb-1">20% OFF</h5>
-                    <p class="text-success mb-1">MAX ₹200</p>
-                    <p class="fw-semibold mb-1">Holi Week Discount</p>
-                    <p class="text-muted small mb-0">by Store Name <i class="bi bi-chevron-right"></i></p>
-                  </div>
-                  <div class="text-end">
-                    <img src="{{ asset('public/assets/website/images/klogo.png')}}" alt="logo" class="profile-logo-img mb-2">
-                    <p class="text-muted small">COUPON EXPIRES 23/05</p>
-                  </div>
+            @forelse ($coupons->groupBy('applies_to') as $type => $typeCoupons)
+                <h6 class="fw-bold mt-4">{{ ucfirst($type) }}</h6>
+                <div class="row">
+                @foreach ($typeCoupons as $coupon)
+                    <div class="col-md-6 mb-3">
+                    <div class="profile-coupon-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="fw-bold mb-1">{{ $coupon->discount_value }}{{ $coupon->discount_type == 'percentage' ? '%' : '₹' }} OFF</h5>
+                            @if($coupon->discount_type == 'percentage' && $coupon->max_discount)
+                            <p class="text-success mb-1">MAX ₹{{ $coupon->max_discount }}</p>
+                            @endif
+                            <p class="fw-semibold mb-1">{{ $coupon->code }}</p>
+                            <p class="text-muted small mb-0">
+                            @if($coupon->vendor)by {{ $coupon->vendor->business_name }}@endif
+                            <i class="bi bi-chevron-right"></i>
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            @if($coupon->vendor && $coupon->vendor->business_logo)
+                            <img src="{{ url('public/' . $coupon->vendor->business_logo) }}" alt="logo" class="profile-logo-img mb-2">
+                            @endif
+                            <p class="text-muted small">EXPIRES {{ $coupon->expires_at->format('d/m/Y') }}</p>
+                        </div>
+                        </div>
+                        <div class="profile-coupon-footer text-end">
+                        <span class="text-muted small">
+                            Min. order: ₹{{ $coupon->min_order_amount }}
+                        </span>
+                        </div>
+                    </div>
+                    </div>
+                @endforeach
                 </div>
-                <div class="profile-coupon-footer text-end">
-                  <span class="text-muted small">1/3</span>
+            @empty
+                <div class="text-center py-4">
+                <p>No coupons available.</p>
                 </div>
-              </div>
-            </div>
-            <div class="col-md-6 mb-3">
-              <div class="profile-coupon-card">
-                <div class="d-flex justify-content-between align-items-start">
-                  <div>
-                    <h5 class="fw-bold mb-1">20% OFF</h5>
-                    <p class="text-success mb-1">MAX ₹200</p>
-                    <p class="fw-semibold mb-1">Holi Week Discount</p>
-                    <p class="text-muted small mb-0">by Store Name <i class="bi bi-chevron-right"></i></p>
-                  </div>
-                  <div class="text-end">
-                    <img src="{{ asset('public/assets/website/images/klogo.png')}}" alt="logo" class="profile-logo-img mb-2">
-                    <p class="text-muted small">COUPON EXPIRES 23/05</p>
-                  </div>
-                </div>
-                <div class="profile-coupon-footer text-end">
-                  <span class="text-muted small">1/3</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Copy & change discount, values for more cards -->
-          </div>
-
-          <h6 class="fw-bold mt-4">Restaurant</h6>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <div class="profile-coupon-card">
-                <div class="d-flex justify-content-between align-items-start">
-                  <div>
-                    <h5 class="fw-bold mb-1">75% OFF</h5>
-                    <p class="text-success mb-1">MAX ₹200</p>   
-                    <p class="fw-semibold mb-1">Holi Week Discount</p>
-                    <p class="text-muted small mb-0">by Store Name <i class="bi bi-chevron-right"></i></p>
-                  </div>
-                  <div class="text-end">
-                    <img src="{{ asset('public/assets/website/images/klogo.png')}}" alt="logo" class="profile-logo-img mb-2">
-                    <p class="text-muted small">COUPON EXPIRES 23/05</p>
-                  </div>
-                </div>
-                <div class="profile-coupon-footer text-end">
-                  <span class="text-muted small">1/3</span>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 mb-3">
-              <div class="profile-coupon-card">
-                <div class="d-flex justify-content-between align-items-start">
-                  <div>
-                    <h5 class="fw-bold mb-1">20% OFF</h5>
-                    <p class="text-success mb-1">MAX ₹200</p>
-                    <p class="fw-semibold mb-1">Holi Week Discount</p>
-                    <p class="text-muted small mb-0">by Store Name <i class="bi bi-chevron-right"></i></p>
-                  </div>
-                  <div class="text-end">
-                    <img src="{{ asset('public/assets/website/images/klogo.png')}}" alt="logo" class="profile-logo-img mb-2">
-                    <p class="text-muted small">COUPON EXPIRES 23/05</p>
-                  </div>
-                </div>
-                <div class="profile-coupon-footer text-end">
-                  <span class="text-muted small">1/3</span>
-                </div>
-              </div>
-            </div>
-          </div>
+            @endforelse
         </div>
 
         <!-- Referrals -->
@@ -319,7 +227,7 @@
         <!-- Logout -->
         <div class="profile-tab-content" id="logout">
           <h5 class="mb-3 text-danger">Logout</h5>
-          <p>You have been logged out successfully.</p> 
+          <p>You have been logged out successfully.</p>
         </div>
       </div>
     </div>
@@ -386,27 +294,44 @@
     dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
   }
 
-  function editAddress() {
-    Swal.fire('Edit Clicked', 'You can add your edit logic here.', 'info');
-  }
+  function editAddress(addressId) {
+        // Implement edit address functionality
+        Swal.fire('Edit Address', 'Editing address ID: ' + addressId, 'info');
+    }
 
-  function deleteAddress(el) {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to delete this address?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ff4d00',
-      cancelButtonColor: '#aaa',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire('Deleted!', 'Your address has been deleted.', 'success');
-        el.closest('.address-card').remove();
-      }
-    });
-  }
+    function deleteAddress(addressId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to delete this address?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ff4d00',
+            cancelButtonColor: '#aaa',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+            // AJAX call to delete address
+            fetch(`/address/${addressId}`, {
+                method: 'DELETE',
+                headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                Swal.fire('Deleted!', 'Your address has been deleted.', 'success');
+                // Remove the address card from DOM
+                document.querySelector(`.address-card[data-id="${addressId}"]`).remove();
+                } else {
+                Swal.fire('Error!', 'There was a problem deleting the address.', 'error');
+                }
+            });
+            }
+        });
+    }
 
   // Close dropdown on outside click
   document.addEventListener('click', function(e) {
