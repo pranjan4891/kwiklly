@@ -8,7 +8,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Banner;
+use App\Models\Subcategory;
 use App\Models\Category;
+use App\Models\Product;
+use App\Models\User;
+use App\Models\Order;
+use App\Models\CartItem;
+use App\Models\VendorAdmin;
+
 
 
 class DashboardController extends Controller
@@ -21,7 +28,21 @@ class DashboardController extends Controller
             return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
         }
         $title = 'Admin | Dashboard';
-        return view('admin.dashboard',compact('admin','title'));
+        $vendor = VendorAdmin::where('user_type', 'vendor')->count();
+        $customer = User::where('is_deleted', 0)->count();
+        $totalproduct = Product::where('is_deleted', 0)->count();
+        $orderComplete = Order::where('status', 'confirmed')->count();
+        $orderPending = Order::where('status', 'pending')->count();
+        $orderShipped = Order::where('status', 'shipped')->count();
+        $orderCancelled = Order::where('status', 'cancelled')->count();
+        $orderDeliered = Order::where('status', 'completed')->count();
+        $cartItem = CartItem::count();
+        $totalCategory = Category::where('is_deleted', 0)->count();
+        $totalSubCategory = Subcategory::where('is_deleted', 0)->count();
+
+        $products = Product::with(['category', 'subcategory', 'vendor', 'featureImage'])->where('is_deleted', 0)->orderBy('id', 'desc')->take(5)->get();
+
+        return view('admin.dashboard',compact('admin','title','vendor','customer','orderComplete','orderPending','orderCancelled','orderDeliered','cartItem','totalCategory','totalSubCategory','orderShipped','totalproduct','products'));
     }
 
     //Banner

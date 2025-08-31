@@ -122,7 +122,7 @@
                         <li><a href="{{route('admin.product.images.deleted')}}">Display Product Image</a></li>
                     </ul>
                 </li>
-                
+
                 <li class="has-submenu">
                     <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Master Location</span></a>
                     <ul class="list-unstyled">
@@ -167,7 +167,7 @@
                 <li class="has-submenu">
                     <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Popular Deals</span></a>
                 </li> --}}
-                <li class="has-submenu">
+                {{-- <li class="has-submenu">
                     <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Customer Service</span></a>
                 </li>
                 <li class="has-submenu">
@@ -184,7 +184,7 @@
                         <li><a href="#">Normal Delivery</a></li>
                         <li><a href="#">Charge By Vendor</a></li>
                     </ul>
-                </li>
+                </li> --}}
                 <li class="has-submenu">
                     <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Setting</span></a>
                     <ul class="list-unstyled">

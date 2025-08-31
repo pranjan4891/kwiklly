@@ -10,6 +10,7 @@ use App\Http\Controllers\Website\AddressController;
 use App\Http\Controllers\Website\OrderController;
 use App\Models\Order;
 use App\Models\VendorAdmin;
+use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -24,39 +25,43 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
-Route::get('/clear', function () {
-    Artisan::call('cache:clear');
-    Artisan::call('route:clear');
-    Artisan::call('view:clear');
-    Artisan::call('config:clear');
-    Artisan::call('clear-compiled');
-    echo '<center> Cache cleared!!</center>';
-    // return view('admin/dashboard.clear_cache');
-})->name('clear.all.cache');
+    Route::get('/clear', function () {
+        Artisan::call('cache:clear');
+        Artisan::call('route:clear');
+        Artisan::call('view:clear');
+        Artisan::call('config:clear');
+        Artisan::call('clear-compiled');
+        echo '<center> Cache cleared!!</center>';
+        // return view('admin/dashboard.clear_cache');
+    })->name('clear.all.cache');
 
-require __DIR__ . '/admin.php';
-require __DIR__ . '/branch.php';
-require __DIR__ . '/vendor.php';
-require __DIR__ . '/customer.php';
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+    require __DIR__ . '/admin.php';
+    require __DIR__ . '/branch.php';
+    require __DIR__ . '/vendor.php';
+    require __DIR__ . '/customer.php';
+    // Route::get('/', function () {
+    //     return view('welcome');
+    // });
 
-// Route::get('delivery-address/', function () {
-//     return view('web.checkoutaddress');
-// });
-// Route::get('checkout-delivery-page/', function () {
-//     return view('web.checkoutdelivery');
-// });
+    // Route::get('delivery-address/', function () {
+    //     return view('web.checkoutaddress');
+    // });
+    // Route::get('checkout-delivery-page/', function () {
+    //     return view('web.checkoutdelivery');
+    // });
 
     /*Website-------------------------------*/
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('/department', [HomeController::class, 'department'])->name('department');
+    Route::get('/department/products', [HomeController::class, 'getProducts'])->name('department.products');
     Route::get('/stores/{slug?}', [HomeController::class, 'stores'])->name('stores');
     Route::get('/productdetails', [HomeController::class, 'productdetails'])->name('productdetails');
     Route::get('/explorestore/{vendor_id}/{category_id}', [HomeController::class, 'explorestore'])->name('explorestore');
     Route::get('/explorestore/{vendor_id}/{category_id}/{subcategory_id}', [HomeController::class, 'subcategoryProducts'])->name('subcategory.products');
-
+    Route::get('/product/{id}/variants', function ($id) {
+        $product = Product::with('variants')->findOrFail($id);
+        return response()->json($product->variants);
+    });
 
     Route::get('/searchresults', [HomeController::class, 'searchresults'])->name('searchresults');
     Route::get('/get-product-variants/{id}', [HomeController::class, 'getProductVariants'])->name('get.product.variants');
@@ -136,9 +141,7 @@ require __DIR__ . '/customer.php';
 
     });
 
-
-
-  /*End Website-------------------------------*/
+    /*End Website-------------------------------*/
 
     // Route::get('/pay', function (PhonePeService $phonePe) {
     //     $orderId = 'ORDER_' . uniqid();

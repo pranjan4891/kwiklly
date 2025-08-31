@@ -1,33 +1,33 @@
-<?php //include("include/header2.php")?>
+
 @extends('web.include.main')
 @section('content')
 <!-- first section start  -->
 <section>
 <div class="container py-3 px-4">
 <h4 class=" headingclass">What you want to shop today ?</h4>
-    <div class="row extraborder">     
+    <div class="row extraborder">
      <!-- Sidebar -->
      <div class="col-md-2 col-3 p-0">
             <div class="sidebared">
                 <ul class="list-unstyled mb-0 text-center">
-                @if($categories)            
+                @if($categories)
                     @foreach($categories as $cat)
                     <a href="{{ route('stores', [$cat->slug]) }}" style="text-decoration:none">
-                        
+
                         <li class="py-3 sidebar-itemde {{($slug==$cat->slug)?'active':''}}">
                             <img src="{{ asset('public/'.$cat->image) }}" alt="{{ $cat['name'] }}" class="side-img mb-2" />
                             <div class="side-text">{{ $cat['name'] }}</div>
                         </li>
                     </a>
                     @endforeach
-                    @endif            
-                    
-              
+                    @endif
+
+
                 </ul>
             </div>
         </div>
        <!-- Content -->
-            <div class="col-md-10 col-9">                
+            <div class="col-md-10 col-9">
                  <p class="store16">{{ count($stores)}} stores near you</p>
                 <div class="row g-3 fixedheight2">
                     <div class="row d-none d-md-flex text-center">
@@ -37,7 +37,7 @@
                         <div class="col-md-6 bannerimg ">
                             <img src="{{ asset('public/assets/website/images/storebanner2.jpeg')}}" alt="" class="img-fluid">
                         </div>
-                    </div>   
+                    </div>
                     <!-- Mobile Slider -->
                     <div id="mobileSlider" class="carousel slide d-md-none" data-bs-ride="carousel" data-bs-interval="2000">
                         <div class="carousel-inner">
