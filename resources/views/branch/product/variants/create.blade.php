@@ -28,7 +28,7 @@
                     </div>
                 @endif
                 <div class="panel-body">
-                    <form class="form-horizontal" method="POST" action="{{ route('product.variant.store') }}">
+                    <form class="form-horizontal" method="POST" action="{{ route('branch.product.variant.store') }}">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
 
@@ -132,8 +132,8 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <a href="{{ route('product.variant.edit', $variant->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                        <form action="{{ route('product.variant.destroy', $variant->id) }}" method="POST" style="display:inline;">
+                                        <a href="{{ route('branch.product.variant.edit', $variant->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                        <form action="{{ route('branch.product.variant.destroy', $variant->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this variant?')">Delete</button>

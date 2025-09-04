@@ -42,7 +42,7 @@
             <div class="sidebar-itemde active" data-subcategory="all" onclick="filterBySubcategory('all')">All</div>
             @foreach($subcategories as $subcategory)
             <div class="sidebar-itemde" data-subcategory="{{ $subcategory->id }}" onclick="filterBySubcategory({{ $subcategory->id }})">
-                <img src="{{ asset('public/assets/website/images/small1.png') }}" alt="" style="width: 50px; height: 50px;">
+                <img src="{{ asset('public/uploads/subcategories/'.$subcategory->image) }}" alt="" style="width: 50px; height: 50px;">
                 <div style="font-size: 12px;">{{ $subcategory->sub_cat_name }}</div>
             </div>
             @endforeach

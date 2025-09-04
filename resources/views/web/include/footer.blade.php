@@ -1,4 +1,4 @@
-<footer class="footer-section extramarginfooter" >
+    <footer class="footer-section extramarginfooter" >
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
@@ -9,10 +9,10 @@
                                 <img src="{{ asset('public/assets/website/images/logo.png')}}" alt="Kwikly Logo">
                             </div>
                             <div class="footer-social">
-                                <a href="#"><i class="fab fa-linkedin"></i></a>
-                                <a href="#"><i class="fab fa-facebook"></i></a>
-                                <a href="#"><i class="fab fa-instagram"></i></a>
-                                <a href="#"><img src="{{ asset('public/assets/website/images/logotwiter.png')}}" alt="" style="height: 22px;
+                                <a href="javascript:void(0)"><i class="fab fa-linkedin"></i></a>
+                                <a href="javascript:void(0)"><i class="fab fa-facebook"></i></a>
+                                <a href="javascript:void(0)"><i class="fab fa-instagram"></i></a>
+                                <a href="javascript:void(0)"><img src="{{ asset('public/assets/website/images/logotwiter.png')}}" alt="" style="height: 22px;
                                 margin-bottom: 5px;"></a>
                             </div>
                         </div>
@@ -23,18 +23,18 @@
                     <div class="col-md-4 col-6 footer-links">
                         <h5>Resources</h5>
                         <ul>
-                            <li><a href="{{route('myaccount')}}">My Account</a></li>
+                            <li><a href="{{route('vendor.login')}}">Vendor Login</a></li>
                             <li><a href="{{route('vendor.signup')}}">Vendor Registration</a></li>
                         </ul>
-                    </div>                
+                    </div>
 
                     <!-- Company -->
                     <div class="col-md-4 col-6 footer-links">
                         <h5>Company</h5>
                         <ul>
-                            <li><a href="#">Privacy Policy</a></li>
-                            <li><a href="#">Terms & Condition</a></li>
-                            <li><a href="#">Return Policy</a></li>
+                            <li><a href="javascript:void(0)">Privacy Policy</a></li>
+                            <li><a href="javascript:void(0)">Terms & Condition</a></li>
+                            <li><a href="javascript:void(0)">Return Policy</a></li>
                         </ul>
                     </div>
 
@@ -42,8 +42,8 @@
                     <div class="col-md-4 col-12 footer-links">
                         <h5>About</h5>
                         <ul>
-                            <li><a href="#">About Us</a></li>
-                            <li><a href="#">Contact Us</a></li>
+                            <li><a href="javascript:void(0)">About Us</a></li>
+                            <li><a href="javascript:void(0)">Contact Us</a></li>
                         </ul>
                     </div>
                     </div>
@@ -52,32 +52,32 @@
                       <h5>Category</h5>
                         <div class="col-md-4 col-6  footer-links">
                             <ul>
-                                <li><a href="#">Dry Fruit</a></li>
-                                <li><a href="#">Bakery</a></li>
-                                <li><a href="#">Masala</a></li>
-                            </ul>
-                        </div>                
-
-                        <!-- Company -->
-                        <div class="col-md-4 col-6 footer-links">        
-                            <ul>
-                                <li><a href="#">Meat & Sea Food</a></li>
-                                <li><a href="#">Biscuit & Cake</a></li>
-                                <li><a href="#">Atta Rice & Dal</a></li>
+                                <li><a href="javascript:void(0)">Dry Fruit</a></li>
+                                <li><a href="javascript:void(0)">Bakery</a></li>
+                                <li><a href="javascript:void(0)">Masala</a></li>
                             </ul>
                         </div>
-                  
+
+                        <!-- Company -->
+                        <div class="col-md-4 col-6 footer-links">
+                            <ul>
+                                <li><a href="javascript:void(0)">Meat & Sea Food</a></li>
+                                <li><a href="javascript:void(0)">Biscuit & Cake</a></li>
+                                <li><a href="javascript:void(0)">Atta Rice & Dal</a></li>
+                            </ul>
+                        </div>
+
                     <!-- About -->
                     <div class="col-md-4 col-12 footer-links">
                         <ul>
-                            <li><a href="#">Oil & Ghee</a></li>
-                            <li><a href="#">Creals & Breakfast </a></li>
+                            <li><a href="javascript:void(0)">Oil & Ghee</a></li>
+                            <li><a href="javascript:void(0)">Creals & Breakfast </a></li>
                             <select class="shopmore" style="background-color: transparent;padding: 5px 10px; border:1px solid #D8C2BC;">
                                 <option>Show More</option>
                                 <option>Cake </option>
                                 <option>Masala</option>
                             </select>
-                            
+
                         </ul>
                             <!-- mobile shop more  -->
                     <div class="text-center py-3 shopmore2">
@@ -88,9 +88,9 @@
                         </select>
                     </div>
                         <hr class="breakdown">
-                    </div>                
+                    </div>
                 </div>
-              </div>                              
+              </div>
         </div>
         <section>
             <div class="container p-0">
@@ -126,20 +126,19 @@
                 <hr>
             <div class="footer-bottom ">
                 Copyright &copy; 2000 - 2025 Kwikly. All rights reserved.
-            </div>    
+            </div>
             </div>
         </section>
     </footer>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-<!--------------- CUSTOM JAVASCRIPT START ----------------->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <!--------------- CUSTOM JAVASCRIPT START ----------------->
     <script src="{{ asset('public/assets/website/JS/custom.js')}}"></script>
     <!--------------- CUSTOM JAVASCRIPT END ----------------->
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 </body>

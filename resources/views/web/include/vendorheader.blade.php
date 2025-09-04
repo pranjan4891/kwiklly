@@ -36,26 +36,26 @@
 
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg fixed-top">
-    <div class="container-fluid">        
+    <div class="container-fluid">
         <!-- Desktop: Logo + Location & Search -->
         <div class="d-flex align-items-center w-100 d-none d-md-flex">
             <a class="navbar-brand" href="index.php">
                 <img src="{{ asset('public/assets/website/images/logo.png')}}" alt="Logo">
-            </a>           
-        </div>        
+            </a>
+        </div>
         <!-- Desktop Menu (Hidden in Mobile) -->
-        <div class="d-flex align-items-center desktop-menu">           
+        <div class="d-flex align-items-center desktop-menu">
             <div class="cart-btn">
-              <a href="login.php">Join&nbsp;Us</a> 
-            </div>    
-        </div>        
+              <a href="{{route('vendor.login')}}">Vendor Login</a>
+            </div>
+        </div>
     </div>
     <div class="mobile-top d-md-none">
             <a class="navbar-brand" href="index.php">
                 <img src="{{ asset('public/assets/website/images/logo.png')}}" alt="Logo">
-            </a> 
+            </a>
             <div class="cart-btn">
-              <a href="login.php">Join&nbsp;Us</a> 
-            </div>  
+              <a href="{{route('vendor.login')}}">Vendor Login</a>
+            </div>
         </div>
 </nav>

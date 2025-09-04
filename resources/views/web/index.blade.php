@@ -1,7 +1,16 @@
 @extends('web.include.main')
 @section('content')
 <meta name="csrf-token" content="{{ csrf_token() }}">
-
+<style>
+    .top-banner {
+    padding: 15px;
+}
+.bannerimg .img-fluid {
+    border-radius: 10px;
+    width: 100% !important;
+    height: auto;
+}
+</style>
     <!-- first section start  -->
     <section class="extrapadding2">
         <div class="container">
@@ -58,368 +67,7 @@
     <!-- second section end  -->
     <!-- third section start  -->
     <section>
-        {{-- <div class="container mt-4">
-        <h4 class="pb-3 pt-4 headingclass">Trending Products</h4>
-        <div class="owl-carousel owl-theme mb-4">
-            <div class="item">
-                <div class="product-card p-0">
-                    <span class="discount-label">20% Off</span>
-                    <a href="{{ route('productdetails')}}"><img src="{{ asset('public/assets/website/images/product4.png')}}" class="product-image" alt="Milk"></a>
-                    <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                    <div class="product-info cardpadding">500 ml</div>
-                    <div class="price-container cardpadding">
-                        <span class="price">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn d-flex flex-column align-items-center position-relative" onclick="openPopup()">
-                            <div class="d-flex align-items-center">
-                                Add
-                                <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-2">
-                            </div>
-                            <div class="cart-options text-black">5 Options</div>
-                        </button>
-                    </div>
-                    <div class="store-info ">
-                        <span>Ad </span>
-                        <span>Chandrash Grocery</span>
-                        <span>5 min </span>
-                    </div>
-                </div>
-            </div>
-            <div class="item">
-                <div class="product-card p-0">
-                    <span class="discount-label">20% Off</span>
-                    <a href="{{ route('productdetails')}}"><img src="{{ asset('public/assets/website/images/product3.png')}}" class="product-image" alt="Milk"></a>
-                    <div class="product-title cardpadding">Amul Butter</div>
-                    <div class="product-info cardpadding">100 gm</div>
-                    <div class="price-container cardpadding">
-                    <span class="price">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn" onclick="convertToQty(this)">Add <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-2"></button>
-                    </div>
-                    <div class="store-info ">
-                        <span>Ad </span>
-                        <span>Chandrash Grocery</span>
-                        <span>5 min </span>
-                    </div>
-                </div>
-            </div>
-            <div class="item">
-            <div class="product-card p-0">
-                    <span class="discount-label">20% Off</span>
-                    <a href="{{ route('productdetails')}}"><img src="{{ asset('public/assets/website/images/product4.png')}}" class="product-image" alt="Milk"></a>
-                    <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                    <div class="product-info cardpadding">500 ml</div>
-                    <div class="price-container cardpadding">
-                    <span class="price">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn d-flex flex-column align-items-center position-relative" onclick="openPopup()">
-                            <div class="d-flex align-items-center">
-                                Add
-                                <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-2">
-                            </div>
-                            <div class="cart-options text-black">5 Options</div>
-                        </button>
-                    </div>
-                    <div class="store-info ">
-                        <span>Ad </span>
-                        <span>Chandrash Grocery</span>
-                        <span>5 min </span>
-                    </div>
-                </div>
-            </div>
-            <div class="item">
-                <div class="product-card p-0">
-                    <span class="discount-label">20% Off</span>
-                    <a href="{{ route('productdetails')}}"><img src="{{ asset('public/assets/website/images/product3.png')}}" class="product-image" alt="Milk"></a>
-                    <div class="product-title cardpadding">Amul Butter</div>
-                    <div class="product-info cardpadding">100 gm</div>
-                    <div class="price-container cardpadding">
-                    <span class="price">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn" onclick="convertToQty(this)">Add <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-2"></button>
-                    </div>
-                    <div class="store-info ">
-                        <span>Ad </span>
-                        <span>Chandrash Grocery</span>
-                        <span>5 min </span>
-                    </div>
-                </div>
-            </div>
-            <div class="item">
-            <div class="product-card p-0">
-                    <span class="discount-label">20% Off</span>
-                    <a href="{{ route('productdetails')}}"><img src="{{ asset('public/assets/website/images/product4.png')}}" class="product-image" alt="Milk"></a>
-                    <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                    <div class="product-info cardpadding">500 ml</div>
-                    <div class="price-container cardpadding">
-                    <span class="price">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn d-flex flex-column align-items-center position-relative" onclick="openPopup()">
-                            <div class="d-flex align-items-center">
-                                Add
-                                <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-2">
-                            </div>
-                            <div class="cart-options text-black">5 Options</div>
-                        </button>
-                    </div>
-                    <div class="store-info ">
-                        <span>Ad </span>
-                        <span>Chandrash Grocery</span>
-                        <span>5 min </span>
-                    </div>
-                </div>
-            </div>
-            <div class="item">
-                <div class="product-card p-0">
-                    <span class="discount-label">20% Off</span>
-                    <a href="{{ route('productdetails')}}"><img src="{{ asset('public/assets/website/images/product3.png')}}" class="product-image" alt="Milk"></a>
-                    <div class="product-title cardpadding">Amul Butter</div>
-                    <div class="product-info cardpadding">100 gm</div>
-                    <div class="price-container cardpadding">
-                    <span class="price">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn" onclick="convertToQty(this)">Add <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-2"></button>
-                    </div>
-                    <div class="store-info ">
-                        <span>Ad </span>
-                        <span>Chandrash Grocery</span>
-                        <span>5 min </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="owl-carousel owl-theme">
-            <div class="item">
-                <div class="product-card p-0">
-                    <span class="discount-label">20% Off</span>
-                    <a href="{{ route('productdetails')}}"><img src="{{ asset('public/assets/website/images/product4.png')}}" class="product-image" alt="Milk"></a>
-                    <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                    <div class="product-info cardpadding">500 ml</div>
-                    <div class="price-container cardpadding">
-                        <span class="price">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn d-flex flex-column align-items-center position-relative" onclick="openPopup()">
-                            <div class="d-flex align-items-center">
-                                Add
-                                <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-2">
-                            </div>
-                            <div class="cart-options text-black">5 Options</div>
-                        </button>
-                    </div>
-                    <div class="store-info ">
-                        <span>Ad </span>
-                        <span>Chandrash Grocery</span>
-                        <span>5 min </span>
-                    </div>
-                </div>
-            </div>
-            <div class="item">
-                <div class="product-card p-0">
-                    <span class="discount-label">20% Off</span>
-                    <a href="{{ route('productdetails')}}"><img src="{{ asset('public/assets/website/images/product3.png')}}" class="product-image" alt="Milk"></a>
-                    <div class="product-title cardpadding">Amul Butter</div>
-                    <div class="product-info cardpadding">100 gm</div>
-                    <div class="price-container cardpadding">
-                    <span class="price">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn" onclick="convertToQty(this)">Add <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-2"></button>
-                    </div>
-                    <div class="store-info ">
-                        <span>Ad </span>
-                        <span>Chandrash Grocery</span>
-                        <span>5 min </span>
-                    </div>
-                </div>
-            </div>
-            <div class="item">
-            <div class="product-card p-0">
-                    <span class="discount-label">20% Off</span>
-                    <a href="{{ route('productdetails')}}"><img src="{{ asset('public/assets/website/images/product4.png')}}" class="product-image" alt="Milk"></a>
-                    <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                    <div class="product-info cardpadding">500 ml</div>
-                    <div class="price-container cardpadding">
-                    <span class="price">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn d-flex flex-column align-items-center position-relative" onclick="openPopup()">
-                            <div class="d-flex align-items-center">
-                                Add
-                                <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-2">
-                            </div>
-                            <div class="cart-options text-black">5 Options</div>
-                        </button>
-                    </div>
-                    <div class="store-info ">
-                        <span>Ad </span>
-                        <span>Chandrash Grocery</span>
-                        <span>5 min </span>
-                    </div>
-                </div>
-            </div>
-            <div class="item">
-                <div class="product-card p-0">
-                    <span class="discount-label">20% Off</span>
-                    <a href="{{ route('productdetails')}}"><img src="{{ asset('public/assets/website/images/product3.png')}}" class="product-image" alt="Milk"></a>
-                    <div class="product-title cardpadding">Amul Butter</div>
-                    <div class="product-info cardpadding">100 gm</div>
-                    <div class="price-container cardpadding">
-                    <span class="price">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn" onclick="convertToQty(this)">Add <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-2"></button>
-                    </div>
-                    <div class="store-info ">
-                        <span>Ad </span>
-                        <span>Chandrash Grocery</span>
-                        <span>5 min </span>
-                    </div>
-                </div>
-            </div>
-            <div class="item">
-            <div class="product-card p-0">
-                    <span class="discount-label">20% Off</span>
-                    <a href="{{ route('productdetails')}}"><img src="{{ asset('public/assets/website/images/product4.png')}}" class="product-image" alt="Milk"></a>
-                    <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                    <div class="product-info cardpadding">500 ml</div>
-                    <div class="price-container cardpadding">
-                    <span class="price">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn d-flex flex-column align-items-center position-relative" onclick="openPopup()">
-                            <div class="d-flex align-items-center">
-                                Add
-                                <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-2">
-                            </div>
-                            <div class="cart-options text-black">5 Options</div>
-                        </button>
-                    </div>
-                    <div class="store-info ">
-                        <span>Ad </span>
-                        <span>Chandrash Grocery</span>
-                        <span>5 min </span>
-                    </div>
-                </div>
-            </div>
-            <div class="item">
-                <div class="product-card p-0">
-                    <span class="discount-label">20% Off</span>
-                    <a href="{{ route('productdetails')}}"><img src="{{ asset('public/assets/website/images/product3.png')}}" class="product-image" alt="Milk"></a>
-                    <div class="product-title cardpadding">Amul Butter</div>
-                    <div class="product-info cardpadding">100 gm</div>
-                    <div class="price-container cardpadding">
-                    <span class="price">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn" onclick="convertToQty(this)">Add <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-2"></button>
-                    </div>
-                    <div class="store-info ">
-                        <span>Ad </span>
-                        <span>Chandrash Grocery</span>
-                        <span>5 min </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="text-center">
-            <button class="view-all-btn mt-3">
-                View All <i class="fa fa-angles-down ms-2"></i>
-            </button>
-        </div>
-    </div>
-    <!-- pop up of add button  -->
-    <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="productModalLabel">Mother Dairy Milk</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Select Unit</h6>
-                <div class="unit-list">
-                    <div class="unit-item">
-                        <img src="{{ asset('public/assets/website/images/category1.png')}}" class="unit-image" alt="Milk">
-                        <span>100 ml</span>
-                        <span class="pricepopup">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
 
-                        <button class="add-btn" onclick="convertToQty(this)">Add <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-1"></button>
-                    </div>
-                    <div class="unit-item">
-                        <img src="{{ asset('public/assets/website/images/category1.png')}}" class="unit-image" alt="Milk">
-                        <span>500 ml</span>
-                         <span class="pricepopup">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn" onclick="convertToQty(this)">Add <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-1"></button>
-                    </div>
-                    <div class="unit-item">
-                        <img src="{{ asset('public/assets/website/images/category1.png')}}" class="unit-image" alt="Milk">
-                        <span>500 ml</span>
-                         <span class="pricepopup">
-                            <span class="rupee-symbol">₹</span> 30
-                        </span>
-                        <span class="original-price">
-                            <span class="rupee-symbol2">₹</span> 38
-                        </span>
-                        <button class="add-btn" onclick="convertToQty(this)">Add <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-1"></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> --}}
         <div class="container mt-4">
             <h4 class="pb-3 pt-4 headingclass">Trending Products</h4>
             <div class="owl-carousel owl-theme mb-4">
@@ -435,21 +83,24 @@
                                     <span class="discount-label">{{ $defaultVariant->variant_save_price_in_percent }}%
                                         Off</span>
                                 @endif
-
-                                <a href="{{ route('productdetails', $product->slug) }}">
+                                        @if ($product->is_physical)
+                                              <a href="{{ route('productdetails', $product->slug) }}">
                                     <img src="{{ asset('public/' . $product->featureImage->feature_image) }}"
                                         class="product-image" alt="{{ $product->title }}">
                                 </a>
+                                        @else
+                                        <a href="javascript:void(0);">
+                                    <img src="{{ asset('public/' . $product->featureImage->feature_image) }}"
+                                        class="product-image" alt="{{ $product->title }}">
+                                </a>
+                                        @endif
+
 
                                 <div class="product-title cardpadding">{{ $product->title }}</div>
                                 @php
                                     $attributes = json_decode($defaultVariant->attributes, true);
                                 @endphp
-                                {{-- @dd($attributes) --}}
 
-                                {{-- <div class="product-info cardpadding">
-                                    {{ $attributes['Volume'] ?? $attributes['Weight'] ?? '' }}
-                                </div> --}}
                                 @if (!empty($attributes))
                                     @php
                                         $firstAttr = collect($attributes)->first();
@@ -470,25 +121,7 @@
                                         </span>
                                     @endif
 
-                                    {{-- @php
-                                        $hasMultipleVariants = $product->variants->count() > 1;
-                                    @endphp
 
-                                    <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                        onclick="{{ $hasMultipleVariants ? "openPopup($product->id)" : 'convertToQty(this)' }}">
-                                        <div class="d-flex align-items-center">
-                                            Add
-                                            <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                                class="ms-2">
-                                        </div>
-                                        <div class="cart-options text-black">
-
-                                            @if ($hasMultipleVariants)
-                                            {{ $product->variants->count() }} Options
-
-                                            @endif
-                                        </div>
-                                    </button> --}}
 @php
     $hasMultipleVariants = $product->variants->count() > 1;
     $firstVariant = $product->variants->first();
@@ -519,7 +152,9 @@
      data-key="{{ $key }}">
 
     @if ($hasMultipleVariants)
-        <button class="add-btn" onclick="openPopup({{ $product->id }})">
+                     <button class="add-btn d-flex position-relative" onclick="openPopup({{ $product->id }})">
+
+        {{-- <button class="add-btn  position-relative" onclick="{{ $hasMultipleVariants ? "openPopup($product->id)" : 'convertToQty(this)' }}"> --}}
             Add
             <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
             <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
@@ -598,10 +233,13 @@
                         @foreach ($categories->chunk(2) as $chunk)
                             <div class="new-cate-item p-0">
                                 @foreach ($chunk as $cat)
-                                    <div class="product-carded">
-                                        <img src="{{ asset('public/' . $cat->image) }}" alt="{{ $cat['name'] }}">
-                                    </div>
-                                    <div class="py-2 text-center catename"><b>{{ $cat['name'] }}</b></div>
+                                    <a href="{{route('stores', ['slug' => $cat->slug])}}" class="text-decoration-none text-dark">
+
+                                        <div class="product-carded">
+                                            <img src="{{ asset('public/' . $cat->image) }}" alt="{{ $cat['name'] }}">
+                                        </div>
+                                        <div class="py-2 text-center catename"><b>{{ $cat['name'] }}</b></div>
+                                    </a>
                                 @endforeach
                             </div>
                         @endforeach
@@ -624,7 +262,9 @@
                         <h2>Grocery at your doorstep</h2>
                         <p>Your favorite vegetables, fruits & more</p>
                         <button class="btn btn-light">Order Now</button>
-                        <img src="{{ asset('public/assets/website/images/bannerproduct.png') }}" alt="Vegetables">
+                       @if ($categoryBanner)
+                            <img src="{{ asset('public/' . $categoryBanner['desktop_image']) }}" alt="Vegetables">
+                        @endif
                     </div>
                 </div>
 
@@ -633,110 +273,25 @@
                     <h4 class="pb-3 new-cate-category-title headingclass">Categories</h4>
                     <div class="row" id="category-container">
                         <!-- Repeat this block for all your categories (add as many as you want, for demo 18) -->
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category1.png') }}" alt="Category">
+                        @if ($categories->count() > 0)
+                            @foreach ($categories as $cat)
+                                <div class="col-md-4 col-4 new-cate-item-wrap">
+                                    <div class="new-cate-item">
+                                        <a href="{{route('stores', ['slug' => $cat->slug])}}" class="text-decoration-none text-dark">
+                                        <div class="product-carded">
+                                            <img src="{{ asset('public/' . $cat->image) }}" alt="{{ $cat['name'] }}">
+                                        </div>
+                                        <div class="py-2 text-center catename"><b>{{ $cat['name'] }}</b></div>
+                                        </a>
+                                    </div>
                                 </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category2.png') }}" alt="Category">
-                                </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category3.png') }}" alt="Category">
-                                </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category4.png') }}" alt="Category">
-                                </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category5.png') }}" alt="Category">
-                                </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category6.png') }}" alt="Category">
-                                </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category7.png') }}" alt="Category">
-                                </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category8.png') }}" alt="Category">
-                                </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category1.png') }}" alt="Category">
-                                </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category2.png') }}" alt="Category">
-                                </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category3.png') }}" alt="Category">
-                                </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category4.png') }}" alt="Category">
-                                </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-4 new-cate-item-wrap">
-                            <div class="new-cate-item">
-                                <div class="product-carded">
-                                    <img src="{{ asset('public/assets/website/images/category5.png') }}" alt="Category">
-                                </div>
-                                <div class="py-2 text-center catename"><b>Bakery</b></div>
-                            </div>
-                        </div>
+                            @endforeach
+                        @else
+                            <p>No categories found.</p>
+                        @endif
+
+
+
                     </div>
                 </div>
                 <div class="text-center">
@@ -766,61 +321,24 @@
 
                                 <img src="{{ $imageUrl }}" alt="Store">
                             </div>
+
                             <div class="store-name">{{ $store->business_name }}</div>
-                            <a href="#">Grocery</a>
+
+                            @foreach($store->categories as $cat)
+                                <a href="{{ route('stores', ['slug' => $cat->slug])}}">{{ $cat->name }}
+                               </a>
+                            @endforeach
+
                             <div class="store-discount">Upto 28% Off</div>
                         </div>
                     @endforeach
                 @endif
-                <!-- <div class="col-md-2 col-4 store-item">
-                        <div class="store-image">
-                            <img src="{{ asset('public/assets/website/images/store2.jpg') }}" alt="Store">
-                        </div>
-                        <div class="store-name">Tushar Grocery</div>
-                        <a href="#">Restaurant</a>
-                        <div class="store-discount">Upto 32% Off</div>
-                    </div>
 
-                    <div class="col-md-2 col-4 store-item">
-                        <div class="store-image">
-                            <img src="{{ asset('public/assets/website/images/store3.jpg') }}" alt="Store">
-                        </div>
-                        <div class="store-name">Rakesh Grocery</div>
-                        <a href="#">Fruits</a>
-                        <div class="store-discount">Upto 48% Off</div>
-                    </div>
-
-                    <div class="col-md-2 col-4 store-item">
-                        <div class="store-image">
-                            <img src="{{ asset('public/assets/website/images/store2.jpg') }}" alt="Store">
-                        </div>
-                        <div class="store-name">Chandresh Grocery</div>
-                        <a href="#">Fruits</a>
-                        <div class="store-discount">Upto 10% Off</div>
-                    </div>
-
-                    <div class="col-md-2 col-4 store-item">
-                        <div class="store-image">
-                            <img src="{{ asset('public/assets/website/images/store3.jpg') }}" alt="Store">
-                        </div>
-                        <div class="store-name">Irfan Grocery</div>
-                        <a href="#">Vegetable</a>
-                        <div class="store-discount">Upto 70% Off</div>
-                    </div>
-
-                    <div class="col-md-2 col-4 store-item">
-                        <div class="store-image">
-                            <img src="{{ asset('public/assets/website/images/store2.jpg') }}" alt="Store">
-                        </div>
-                        <div class="store-name">Ritik Grocery</div>
-                        <a href="#">Grocery</a>
-                        <div class="store-discount">Upto 20% Off</div>
-                    </div> -->
             </div>
 
             <!-- View All Button -->
             <div class="text-center">
-                <button class="view-all-btn mt-3">
+                <button class="view-all-btn mt-3" onclick="window.location='{{ route('stores') }}'">
                     View All <i class="fa fa-angles-down ms-2"></i>
                 </button>
             </div>
@@ -830,405 +348,172 @@
     <!-- fifth section end   -->
     <!-- sixth section start  -->
     <section>
-        <div class="container mt-4">
-            <h4 class="pb-3 pt-4 headingclass">Snacks</h4>
-            <div class="owl-carousel owl-theme mb-4">
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product4.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                        <div class="product-info cardpadding">500 ml</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                onclick="openPopup()">
-                                <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                        class="ms-2">
-                                </div>
-                                <div class="cart-options text-black">5 Options</div>
-                            </button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product3.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Amul Butter</div>
-                        <div class="product-info cardpadding">100 gm</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn" onclick="convertToQty(this)">Add <img
-                                    src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                    class="ms-2"></button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product6.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                        <div class="product-info cardpadding">500 ml</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                onclick="openPopup()">
-                                <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                        class="ms-2">
-                                </div>
-                                <div class="cart-options text-black">5 Options</div>
-                            </button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product5.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Amul Butter</div>
-                        <div class="product-info cardpadding">100 gm</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn" onclick="convertToQty(this)">Add <img
-                                    src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                    class="ms-2"></button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product6.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                        <div class="product-info cardpadding">500 ml</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                onclick="openPopup()">
-                                <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                        class="ms-2">
-                                </div>
-                                <div class="cart-options text-black">5 Options</div>
-                            </button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product5.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Amul Butter</div>
-                        <div class="product-info cardpadding">100 gm</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn" onclick="convertToQty(this)">Add <img
-                                    src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                    class="ms-2"></button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="owl-carousel owl-theme">
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product4.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                        <div class="product-info cardpadding">500 ml</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                onclick="openPopup()">
-                                <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                        class="ms-2">
-                                </div>
-                                <div class="cart-options text-black">5 Options</div>
-                            </button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product3.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Amul Butter</div>
-                        <div class="product-info cardpadding">100 gm</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn" onclick="convertToQty(this)">Add <img
-                                    src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                    class="ms-2"></button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product4.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                        <div class="product-info cardpadding">500 ml</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                onclick="openPopup()">
-                                <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                        class="ms-2">
-                                </div>
-                                <div class="cart-options text-black">5 Options</div>
-                            </button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product3.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Amul Butter</div>
-                        <div class="product-info cardpadding">100 gm</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn" onclick="convertToQty(this)">Add <img
-                                    src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                    class="ms-2"></button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product4.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                        <div class="product-info cardpadding">500 ml</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                onclick="openPopup()">
-                                <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                        class="ms-2">
-                                </div>
-                                <div class="cart-options text-black">5 Options</div>
-                            </button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product3.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Amul Butter</div>
-                        <div class="product-info cardpadding">100 gm</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn" onclick="convertToQty(this)">Add <img
-                                    src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                    class="ms-2"></button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="text-center">
-                <button class="view-all-btn mt-3">
-                    View All <i class="fa fa-angles-down ms-2"></i>
-                </button>
-            </div>
-        </div>
-        <!-- pop up of add button  -->
-        {{-- <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="productModalLabel">Mother Dairy Milk</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Select Unit</h6>
-                <div class="unit-list">
-                    <div class="unit-item">
-                        <img src="{{ asset('public/assets/website/images/category1.png')}}" class="unit-image" alt="Milk">
-                        <span>100 ml</span>
-                        <span class="original-price">₹ 12</span>
-                        <span class="price text-success">₹ 10</span>
-                        <button class="add-btn" onclick="convertToQty(this)">Add <i class="fas fa-shopping-cart"></i></button>
-                    </div>
-                    <div class="unit-item">
-                        <img src="{{ asset('public/assets/website/images/category1.png')}}" class="unit-image" alt="Milk">
-                        <span>500 ml</span>
-                        <span class="original-price">₹ 32</span>
-                        <span class="price text-success">₹ 30</span>
-                        <button class="add-btn" onclick="convertToQty(this)">Add <i class="fas fa-shopping-cart"></i></button>
-                    </div>
-                    <div class="unit-item">
-                        <img src="{{ asset('public/assets/website/images/category1.png')}}" class="unit-image" alt="Milk">
-                        <span>1 Lt</span>
-                        <span class="original-price">₹ 58</span>
-                        <span class="price text-success">₹ 55</span>
-                        <button class="add-btn" onclick="convertToQty(this)">Add <i class="fas fa-shopping-cart"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> --}}
+    @if ($categorywiseproducts)
+        @foreach ($categorywiseproducts as $categoryData)
+            <div class="container mt-4">
+                <h4 class="pb-3 pt-4 headingclass">{{ $categoryData['name'] }}</h4>
 
-        <!-- popup of add button -->
+                {{-- First Carousel - First 8 products --}}
+                <div class="owl-carousel owl-theme mb-4">
+                    @foreach ($categoryData['products']->take(8) as $product)
+                        @php
+                            $defaultVariant = $product->variants->first(); // pick first variant
+                        @endphp
+                        @if ($defaultVariant)
+                            <div class="item">
+                                <div class="product-card p-0">
+                                    @if ($defaultVariant->variant_save_price_in_percent > 0)
+                                        <span class="discount-label">{{ $defaultVariant->variant_save_price_in_percent }}% Off</span>
+                                    @endif
+                                    @if ($product->is_physical)
+                                        <a href="{{ route('productdetails', $product->slug) }}">
+                                            <img src="{{ asset('public/' . $product->featureImage->feature_image) }}"
+                                                class="product-image" alt="{{ $product->title }}">
+                                        </a>
+                                    @else
+                                        <a href="javascript:void(0);">
+                                            <img src="{{ asset('public/' . $product->featureImage->feature_image) }}"
+                                                class="product-image" alt="{{ $product->title }}">
+                                        </a>
+                                    @endif
+
+
+                                    <div class="product-title cardpadding">{{ $product->title }}</div>
+
+                                    @php
+                                        $attributes = json_decode($defaultVariant->attributes, true);
+                                        $firstAttr = !empty($attributes) ? collect($attributes)->first() : '';
+                                    @endphp
+                                    @if ($firstAttr)
+                                        <div class="product-info cardpadding">{{ $firstAttr }}</div>
+                                    @endif
+
+                                    <div class="price-container cardpadding">
+                                        <span class="price">
+                                            <span class="rupee-symbol">₹</span> {{ $defaultVariant->variant_selling_price }}
+                                        </span>
+                                        @if ($defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
+                                            <span class="original-price">
+                                                <span class="rupee-symbol2">₹</span> {{ $defaultVariant->variant_actual_price }}
+                                            </span>
+                                        @endif
+
+                                        @php $hasMultipleVariants = $product->variants->count() > 1; @endphp
+                                        <button class="add-btn d-flex flex-column align-items-center position-relative"
+                                            onclick="{{ $hasMultipleVariants ? "openPopup($product->id)" : 'convertToQty(this)' }}">
+                                            <div class="d-flex align-items-center">
+                                                Add
+                                                <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt="" class="ms-2">
+                                            </div>
+                                            <div class="cart-options text-black">
+                                                @if ($hasMultipleVariants)
+                                                    {{ $product->variants->count() }} Options
+                                                @endif
+                                            </div>
+                                        </button>
+                                    </div>
+                                    <div class="store-info ">
+                                        <span>Ad </span>
+                                        <span>{{ $product->vendor->business_name ?? 'Chandrash Grocery' }}</span>
+                                        <span>5 min </span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+
+                {{-- Second Carousel - Remaining products (after first 8) --}}
+                @if ($categoryData['products']->count() > 8)
+                    <div class="owl-carousel owl-theme">
+                        @foreach ($categoryData['products']->skip(8)->take(8) as $product)
+                            @php
+                                $defaultVariant = $product->variants->first();
+                            @endphp
+                            @if ($defaultVariant)
+                                <div class="item">
+                                    <div class="product-card p-0">
+                                        @if ($defaultVariant->variant_save_price_in_percent > 0)
+                                            <span class="discount-label">{{ $defaultVariant->variant_save_price_in_percent }}% Off</span>
+                                        @endif
+                                        @if ($product->is_physical)
+                                            <a href="{{ route('productdetails', $product->slug) }}">
+                                                <img src="{{ asset('public/' . $product->featureImage->feature_image) }}"
+                                                    class="product-image" alt="{{ $product->title }}">
+                                            </a>
+                                        @else
+                                            <a href="javascript:void(0);">
+                                                <img src="{{ asset('public/' . $product->featureImage->feature_image) }}"
+                                                    class="product-image" alt="{{ $product->title }}">
+                                            </a>
+                                        @endif
+
+
+                                        <div class="product-title cardpadding">{{ $product->title }}</div>
+
+                                        @php
+                                            $attributes = json_decode($defaultVariant->attributes, true);
+                                            $firstAttr = !empty($attributes) ? collect($attributes)->first() : '';
+                                        @endphp
+                                        @if ($firstAttr)
+                                            <div class="product-info cardpadding">{{ $firstAttr }}</div>
+                                        @endif
+
+                                        <div class="price-container cardpadding">
+                                            <span class="price">
+                                                <span class="rupee-symbol">₹</span> {{ $defaultVariant->variant_selling_price }}
+                                            </span>
+                                            @if ($defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
+                                                <span class="original-price">
+                                                    <span class="rupee-symbol2">₹</span> {{ $defaultVariant->variant_actual_price }}
+                                                </span>
+                                            @endif
+
+                                            @php $hasMultipleVariants = $product->variants->count() > 1; @endphp
+                                            <button class="add-btn d-flex flex-column align-items-center position-relative"
+                                                onclick="{{ $hasMultipleVariants ? "openPopup($product->id)" : 'convertToQty(this)' }}">
+                                                <div class="d-flex align-items-center">
+                                                    Add
+                                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt="" class="ms-2">
+                                                </div>
+                                                <div class="cart-options text-black">
+                                                    @if ($hasMultipleVariants)
+                                                        {{ $product->variants->count() }} Options
+                                                    @endif
+                                                </div>
+                                            </button>
+                                        </div>
+                                        <div class="store-info ">
+                                            <span>Ad </span>
+                                            <span>{{ $product->vendor->business_name ?? 'Chandrash Grocery' }}</span>
+                                            <span>5 min </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
+
+                {{-- View All Button --}}
+                @if($categoryData['products']->count() > 0)
+                    @php
+                        $firstProduct = $categoryData['products']->first();
+                    @endphp
+                    <div class="text-center mt-5">
+                        <a href="{{ route('categorywiseproduct', ['category_id' => $firstProduct->category_id, 'subcategory_id' => $firstProduct->sub_category_id]) }}"
+                        class="view-all-btn mt-3">
+                            View All <i class="fa fa-angles-down ms-2"></i>
+                        </a>
+                    </div>
+                @endif
+            </div>
+        @endforeach
+    @else
+        <p>No category-wise products found.</p>
+    @endif
+
+
         <!-- Popup Modal -->
         <!-- Dynamic Popup Modal for Variants -->
         <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel"
@@ -1252,414 +537,7 @@
 
     </section>
     <!-- sixth section end  -->
-    <!-- seventh section start  -->
-    <section>
-        <div class="container mt-4">
-            <h4 class="pb-3 pt-4 headingclass">Daily Needs</h4>
-            <div class="owl-carousel owl-theme mb-4">
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product9.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                        <div class="product-info cardpadding">500 ml</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                onclick="openPopup()">
-                                <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                        class="ms-2">
-                                </div>
-                                <div class="cart-options text-black">5 Options</div>
-                            </button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product10.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Amul Butter</div>
-                        <div class="product-info cardpadding">100 gm</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn" onclick="convertToQty(this)">Add <img
-                                    src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                    class="ms-2"></button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product11.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                        <div class="product-info cardpadding">500 ml</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                onclick="openPopup()">
-                                <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                        class="ms-2">
-                                </div>
-                                <div class="cart-options text-black">5 Options</div>
-                            </button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product12.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Amul Butter</div>
-                        <div class="product-info cardpadding">100 gm</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn" onclick="convertToQty(this)">Add <img
-                                    src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                    class="ms-2"></button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product8.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                        <div class="product-info cardpadding">500 ml</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                onclick="openPopup()">
-                                <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                        class="ms-2">
-                                </div>
-                                <div class="cart-options text-black">5 Options</div>
-                            </button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product9.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Amul Butter</div>
-                        <div class="product-info cardpadding">100 gm</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn" onclick="convertToQty(this)">Add <img
-                                    src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                    class="ms-2"></button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="owl-carousel owl-theme">
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product4.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                        <div class="product-info cardpadding">500 ml</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                onclick="openPopup()">
-                                <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                        class="ms-2">
-                                </div>
-                                <div class="cart-options text-black">5 Options</div>
-                            </button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product3.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Amul Butter</div>
-                        <div class="product-info cardpadding">100 gm</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn" onclick="convertToQty(this)">Add <img
-                                    src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                    class="ms-2"></button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product4.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                        <div class="product-info cardpadding">500 ml</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                onclick="openPopup()">
-                                <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                        class="ms-2">
-                                </div>
-                                <div class="cart-options text-black">5 Options</div>
-                            </button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product3.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Amul Butter</div>
-                        <div class="product-info cardpadding">100 gm</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn" onclick="convertToQty(this)">Add <img
-                                    src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                    class="ms-2"></button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product4.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
-                        <div class="product-info cardpadding">500 ml</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                onclick="openPopup()">
-                                <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                        class="ms-2">
-                                </div>
-                                <div class="cart-options text-black">5 Options</div>
-                            </button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="product-card p-0">
-                        <span class="discount-label">20% Off</span>
-                        <a href="{{ route('productdetails') }}"><img
-                                src="{{ asset('public/assets/website/images/product3.png') }}" class="product-image"
-                                alt="Milk"></a>
-                        <div class="product-title cardpadding">Amul Butter</div>
-                        <div class="product-info cardpadding">100 gm</div>
-                        <div class="price-container cardpadding">
-                            <span class="price">
-                                <span class="rupee-symbol">₹</span> 30
-                            </span>
-                            <span class="original-price">
-                                <span class="rupee-symbol2">₹</span> 38
-                            </span>
-                            <button class="add-btn" onclick="convertToQty(this)">Add <img
-                                    src="{{ asset('public/assets/website/images/cart.svg') }}" alt=""
-                                    class="ms-2"></button>
-                        </div>
-                        <div class="store-info ">
-                            <span>Ad </span>
-                            <span>Chandrash Grocery</span>
-                            <span>5 min </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="text-center">
-                <button class="view-all-btn mt-3">
-                    View All <i class="fa fa-angles-down ms-2"></i>
-                </button>
-            </div>
-        </div>
-        <!-- pop up of add button  -->
-        <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="productModalLabel">Mother Dairy Milk</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <h6>Select Unit</h6>
-                        <div class="unit-list">
-                            <div class="unit-item">
-                                <img src="{{ asset('public/assets/website/images/category1.png') }}" class="unit-image"
-                                    alt="Milk">
-                                <span>100 ml</span>
-                                <span class="original-price">₹ 12</span>
-                                <span class="price text-success">₹ 10</span>
-                                <button class="add-btn" onclick="convertToQty(this)">Add <i
-                                        class="fas fa-shopping-cart"></i></button>
-                            </div>
-                            <div class="unit-item">
-                                <img src="{{ asset('public/assets/website/images/category1.png') }}" class="unit-image"
-                                    alt="Milk">
-                                <span>500 ml</span>
-                                <span class="original-price">₹ 32</span>
-                                <span class="price text-success">₹ 30</span>
-                                <button class="add-btn" onclick="convertToQty(this)">Add <i
-                                        class="fas fa-shopping-cart"></i></button>
-                            </div>
-                            <div class="unit-item">
-                                <img src="{{ asset('public/assets/website/images/category1.png') }}" class="unit-image"
-                                    alt="Milk">
-                                <span>1 Lt</span>
-                                <span class="original-price">₹ 58</span>
-                                <span class="price text-success">₹ 55</span>
-                                <button class="add-btn" onclick="convertToQty(this)">Add <i
-                                        class="fas fa-shopping-cart"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- seventh section end  -->
+
 
     <script>
         const getVariantUrl = "{{ url('/get-product-variants') }}"; // No id here
@@ -1686,23 +564,23 @@
                         const selling = variant.variant_selling_price;
 
                         html += `
-    <div class="unit-item d-flex align-items-center justify-content-between border-bottom py-2">
-        <div class="d-flex align-items-start">
-            <img src="${data.image}" class="unit-image me-3" style="width:60px;height:60px;" alt="${data.product_name}">
-            <div>
-                <div class="fw-bold text-dark">${data.product_name}</div>
-                <div class="text-muted small">${volume}</div>
-                <div class="d-flex align-items-baseline gap-2">
-                    <span class="original-price text-decoration-line-through">₹ ${actual}</span>
-                    <span class="price fw-bold">₹ ${selling}</span>
-                </div>
-            </div>
-        </div>
-        <button class="add-btn btn btn-sm btn-outline-success" onclick="convertToQty(this)">
-            Add <i class="fas fa-shopping-cart ms-1"></i>
-        </button>
-    </div>
-`;
+                            <div class="unit-item d-flex align-items-center justify-content-between border-bottom py-2">
+                                <div class="d-flex align-items-start">
+                                    <img src="${data.image}" class="unit-image me-3" style="width:60px;height:60px;" alt="${data.product_name}">
+                                    <div>
+                                        <div class="fw-bold text-dark">${data.product_name}</div>
+                                        <div class="text-muted small">${volume}</div>
+                                        <div class="d-flex align-items-baseline gap-2">
+                                            <span class="original-price text-decoration-line-through">₹ ${actual}</span>
+                                            <span class="price fw-bold">₹ ${selling}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="add-btn btn btn-sm btn-outline-success" onclick="convertToQty(this)">
+                                    Add <i class="fas fa-shopping-cart ms-1"></i>
+                                </button>
+                            </div>
+                        `;
                     });
 
                     document.getElementById('variantList').innerHTML = html;

@@ -11,7 +11,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h3 class="panel-title">{{ $variant->variant_name }}</h3></div>
                 <div class="panel-body">
-                    <form class="form-horizontal" method="POST" action="{{ route('product.variant.update', $variant->id) }}">
+                    <form class="form-horizontal" method="POST" action="{{ route('branch.product.variant.update', $variant->id) }}">
                         @csrf
 
 

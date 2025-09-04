@@ -77,7 +77,7 @@
                                         <th>S No.</th>
                                         <th>Category Name</th>
                                         <th>Category Image</th>
-                                        <th>Date</th>
+                                        <th>Is Home</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -89,7 +89,12 @@
                                             <td>
                                                 <img src="{{ asset('public/'.$category->image) }}" style="width: 100px;">
                                             </td>
-                                            <td>{{ $category->created_at->format('Y-m-d') }}</td>
+                                            <td>
+                                                <form method="POST" action="{{ route('admin.category.toggleHome', $category->id) }}">
+                                                    @csrf
+                                                    <input type="checkbox" name="is_home" onchange="this.form.submit()" {{ $category->is_home ? 'checked' : '' }}>
+                                                </form>
+                                            </td>
                                             <td>
                                                 <button class="btn btn-success" data-toggle="modal" data-target="#editModal{{ $category->id }}">Edit</button>
                                                 <a href="{{ route('admin.category.delete', $category->id) }}" class="btn btn-danger" onclick="return confirm('Are you sure to delete permanently?')">Delete</a>

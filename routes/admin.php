@@ -78,11 +78,14 @@ Route::group(['prefix' => 'admin'], function () {
         Route::post('category/{id}/edit', [CategoryController::class, 'update'])->name('admin.category.update');
         Route::get('category/{id}/delete', [CategoryController::class, 'destroy'])->name('admin.category.delete');
 
+        // add checkbox update is_home
+        Route::post('category/{id}/toggle-home', [CategoryController::class, 'toggleHome'])->name('admin.category.toggleHome');
+
         // Subcategory Management
         Route::get('subcategories', [CategoryController::class, 'indexSubcategory'])->name('admin.subcategories');
         Route::post('subcategory-store', [CategoryController::class, 'storeSubcategory'])->name('admin.subcategory.store');
         Route::post('subcategory/update/{id}', [CategoryController::class, 'updateSubcategory'])->name('admin.subcategory.update');
-        Route::get('subcategory/delete/{id}', [CategoryController::class, 'softDeleteSubcategory'])->name('admin.subcategory.delete');
+        Route::post('subcategory/delete/{id}', [CategoryController::class, 'softDeleteSubcategory'])->name('admin.subcategory.delete');
         Route::get('subcategory/restore/{id}', [CategoryController::class, 'restoreSubcategory'])->name('admin.subcategory.restore');
         Route::get('subcategory/force-delete/{id}', [CategoryController::class, 'forceDeleteSubcategory'])->name('admin.subcategory.forceDelete');
 

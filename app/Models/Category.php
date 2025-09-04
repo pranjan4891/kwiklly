@@ -14,6 +14,7 @@ class Category extends Model
         'name',
         'slug',
         'image',
+        'is_home',
         'is_active',
         'is_deleted',
     ];
@@ -27,5 +28,6 @@ class Category extends Model
     {
         return $this->belongsToMany(Coupon::class, 'coupon_subcategory', 'subcategory_id', 'coupon_id');
     }
+
 
 }

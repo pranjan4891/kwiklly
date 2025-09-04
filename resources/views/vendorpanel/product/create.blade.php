@@ -112,7 +112,7 @@
                             <div class="col-md-12 mb-3">
                                 <label>Feature Image</label><br>
                                 <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#imageModal">Select Image</button>
-                                <a class="btn btn-warning btn-sm ml-2" href="{{ route('admin.product.images') }}" target="_blank">Upload New Image</a>
+                                <a class="btn btn-warning btn-sm ml-2" href="{{ route('vendor.product.images') }}" target="_blank">Upload New Image</a>
                                 <input type="hidden" name="feature_image_id" id="feature_image_id">
                                 <p class="mt-2">Selected Image: <strong id="selectedImageText" class="text-danger">None</strong></p>
                                 @error('feature_image_id')

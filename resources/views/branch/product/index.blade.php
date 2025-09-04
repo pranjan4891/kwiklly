@@ -50,7 +50,7 @@
 
                                         <td>{{ $product->subcategory->sub_cat_name ?? 'N/A' }}</td>
 
-                                        <td><a href="{{ route('product.variant.create', $product->id) }}" class="btn btn-primary btn-sm" title="Edit">
+                                        <td><a href="{{ route('branch.product.variant.create', $product->id) }}" class="btn btn-primary btn-sm" title="Edit">
                                                 <i class="fa fa-plus"></i> Add Inventory
                                             </a></td>
 

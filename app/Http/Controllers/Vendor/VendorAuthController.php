@@ -44,17 +44,16 @@ class VendorAuthController extends Controller
     {
         $vendor = Auth::guard('vendor')->user();
 
-         // Update store_time_status to 1 after login
         /** @var \App\Models\VendorAdmin $vendor */
         if ($vendor) {
             $vendor->store_time_status = 0;
             $vendor->save();
         }
 
-        Auth::guard('vendor')->logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        Auth::guard('vendor')->logout();
 
         return redirect(route('vendor.login')); // Redirect to your vendor login route
     }

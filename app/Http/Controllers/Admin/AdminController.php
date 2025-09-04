@@ -182,11 +182,11 @@ class AdminController extends Controller
             'state'                  => 'required|exists:states,id',
             'city'                   => 'required|exists:cities,id',
             'postal_code'            => 'required|string|max:6',
-            'place'                  => 'nullable|string|max:255',
+            'place'                  => 'nullable|string',
             'latitude'               => 'nullable|numeric',
             'longitude'              => 'nullable|numeric',
             'branch_address'         => 'required|string',
-            'landmark'               => 'nullable|string|max:255',
+            'landmark'               => 'nullable|string',
             'service_area'           => 'required|json',
         ]);
 

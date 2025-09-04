@@ -26,99 +26,90 @@ class VendorController extends Controller
         return view('web.vendor.vendorRegistration');
     }
 
-    // public function submit(Request $request)
-    // {
-    //     // $validator = Validator::make($request->all(), [
-    //     //     'email' => 'required|email|unique:vendor_admins,email',
-    //     //     'phone' => 'required|digits:10|unique:vendor_admins,phone',
-    //     // ]);
 
-    //     // if ($validator->fails()) {
-    //     //     return response()->json(['success' => false, 'message' => $validator->errors()->first()]);
-    //     // }
+    public function submit(Request $request)
+    {
+        try {
+            // ✅ Validate input
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email|unique:vendor_admins,email',
+                'phone' => 'required|digits_between:7,15|unique:vendor_admins,phone',
+                'password' => 'required|min:6|confirmed', // added confirmed for confirmation check
+                'company_name' => 'required|string|max:255',
+                'latitude' => 'nullable|numeric',
+                'longitude' => 'nullable|numeric',
+                'postal_code' => 'nullable|string|max:20',
+                'place_name' => 'nullable|string|max:255',
+            ]);
 
-    //     $uuid = (string) Str::uuid();
-    //     $vendor = new VendorAdmin;
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
 
-    //     if ($request->hasFile('cancelled_cheque')) {
-    //         $cheque = $request->file('cancelled_cheque');
-    //         $chequeName = time() . '_' . $cheque->getClientOriginalName();
-    //         $destinationPath = public_path('uploads/cheques');
+            $uuid = (string) Str::uuid();
+            $vendor = new VendorAdmin;
 
-    //         if (!file_exists($destinationPath)) {
-    //             mkdir($destinationPath, 0755, true);
-    //         }
+            // Upload cancelled cheque
+            if ($request->hasFile('cancelled_cheque')) {
+                $cheque = $request->file('cancelled_cheque');
+                $chequeName = time() . '_' . $cheque->getClientOriginalName();
+                $destinationPath = public_path('uploads/cheques');
 
-    //         $cheque->move($destinationPath, $chequeName);
-    //         $vendor->cancel_cheque_image = 'uploads/cheques/' . $chequeName;
-    //     }
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
 
-    //     $vendor->user_type = 'vendor';
-    //     $vendor->uuid = $uuid;
-    //     $vendor->landmark = $request->landmark;
-    //     $vendor->email = $request->email;
-    //     $vendor->phone = $request->phone;
-    //     $vendor->password = bcrypt($request->password);
-    //     $vendor->business_name = $request->company_name;
-    //     $vendor->gstin = $request->gst_number;
-    //     $vendor->business_address = $request->company_address;
-    //     $vendor->account_holder_name = $request->account_holder;
-    //     $vendor->account_number = $request->account_number;
-    //     $vendor->ifsc_code = $request->ifsc_code;
-    //     $vendor->save();
-    //     return response()->json(['success' => true, 'message' => 'Registration successful!']);
-    // }
+                $cheque->move($destinationPath, $chequeName);
+                $vendor->cancel_cheque_image = 'uploads/cheques/' . $chequeName;
+            }
 
-public function submit(Request $request)
-{
-    $uuid = (string) Str::uuid();
-    $vendor = new VendorAdmin;
+            // Fill vendor data
+            $vendor->user_type = 'vendor';
+            $vendor->uuid = $uuid;
+            $vendor->landmark = $request->landmark;
+            $vendor->email = $request->email;
+            $vendor->phone = $request->phone;
+            $vendor->password = Hash::make($request->password);
+            $vendor->business_name = $request->company_name;
+            $vendor->gstin = $request->gst_number;
+            $vendor->business_address = $request->company_address;
+            $vendor->account_holder_name = $request->account_holder;
+            $vendor->account_number = $request->account_number;
+            $vendor->ifsc_code = $request->ifsc_code;
+            $vendor->latitude = $request->latitude;
+            $vendor->longitude = $request->longitude;
+            $vendor->postal_code = $request->postal_code;
+            $vendor->area = $request->place_name;
+            $vendor->save();
 
-    // Upload cancelled cheque
-    if ($request->hasFile('cancelled_cheque')) {
-        $cheque = $request->file('cancelled_cheque');
-        $chequeName = time() . '_' . $cheque->getClientOriginalName();
-        $destinationPath = public_path('uploads/cheques');
+            // Login (only if guard exists)
+            if (Auth::guard('vendor')) {
+                Auth::guard('vendor')->login($vendor);
+            }
 
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
+            // Send verification mail only if model supports it
+            if (in_array(\Illuminate\Contracts\Auth\MustVerifyEmail::class, class_implements($vendor))) {
+                $vendor->sendEmailVerificationNotification();
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration successful! Please verify your email address.',
+                'redirect' => route('vendor.dashboard'),
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
         }
-
-        $cheque->move($destinationPath, $chequeName);
-        $vendor->cancel_cheque_image = 'uploads/cheques/' . $chequeName;
     }
 
-    // Fill vendor data
-    $vendor->user_type = 'vendor';
-    $vendor->uuid = $uuid;
-    $vendor->landmark = $request->landmark;
-    $vendor->email = $request->email;
-    $vendor->phone = $request->phone;
-    $vendor->password = Hash::make($request->password);
-    $vendor->business_name = $request->company_name;
-    $vendor->gstin = $request->gst_number;
-    $vendor->business_address = $request->company_address;
-    $vendor->account_holder_name = $request->account_holder;
-    $vendor->account_number = $request->account_number;
-    $vendor->ifsc_code = $request->ifsc_code;
-    $vendor->latitude = $request->latitude;
-    $vendor->longitude = $request->longitude;
-    $vendor->postal_code = $request->postal_code;
-    $vendor->area = $request->place_name;
-    $vendor->save();
-
-    // 🔐 Auto login after registration
-    Auth::guard('vendor')->login($vendor);
-
-    // ✉️ Send verification email
-    $vendor->sendEmailVerificationNotification();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Registration successful! Please verify your email address.',
-        'redirect' => route('vendor.dashboard'),
-    ]);
-}
 
     public function updateImage(Request $request)
     {
@@ -129,6 +120,7 @@ public function submit(Request $request)
             $filename = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('uploads/vendorsBannerLogo/'), $filename);
             $vendor->business_logo = 'uploads/vendorsBannerLogo/'.$filename;
+            /** @var \App\Models\VendorAdmin $vendor */
             $vendor->save();
             return response()->json(['status' => true, 'path' => asset('public/uploads/vendorsBannerLogo/' . $filename)]);
         }
@@ -138,6 +130,7 @@ public function submit(Request $request)
             $filename = 'banner_' . time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('uploads/vendorsBannerLogo/'), $filename);
             $vendor->business_banner = 'uploads/vendorsBannerLogo/'.$filename;
+            /** @var \App\Models\VendorAdmin $vendor */
             $vendor->save();
             return response()->json(['status' => true, 'path' => asset('public/uploads/vendorsBannerLogo/' . $filename)]);
         }

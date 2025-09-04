@@ -20,6 +20,17 @@
       </style>
    </head>
    <body>
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg fixed-top">
+            <div class="container-fluid">
+                <!-- Desktop: Logo + Location & Search -->
+                <div class="d-flex align-items-center w-100  d-md-flex">
+                <a class="navbar-brand" href="{{ route('home')}}">
+                <img src="{{ asset('public/assets/website/images/logo.png')}}" alt="Logo">
+                </a>
+                </div>
+            </div>
+        </nav>
       <section>
          <div class="container">
             <div class="row">
@@ -100,17 +111,7 @@
          <input type="hidden" name="address_id" id="selectedAddressId" value="">
       </form>
 
-      <!-- Navbar -->
-      <nav class="navbar navbar-expand-lg fixed-top">
-         <div class="container-fluid">
-            <!-- Desktop: Logo + Location & Search -->
-            <div class="d-flex align-items-center w-100  d-md-flex">
-               <a class="navbar-brand" href="{{ route('home')}}">
-               <img src="{{ asset('public/assets/website/images/logo.png')}}" alt="Logo">
-               </a>
-            </div>
-         </div>
-      </nav>
+
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
       <script type="text/javascript">
          let selectedAddressId = null;

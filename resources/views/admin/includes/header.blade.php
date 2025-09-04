@@ -119,7 +119,7 @@
                     <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Product Images</span></a>
                     <ul class="list-unstyled">
                         <li><a href="{{route('admin.product.images')}}">Active Product Image</a></li>
-                        <li><a href="{{route('admin.product.images.deleted')}}">Display Product Image</a></li>
+                        <li><a href="{{route('admin.product.images.deleted')}}">Inactive Product Image</a></li>
                     </ul>
                 </li>
 

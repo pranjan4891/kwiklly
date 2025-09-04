@@ -33,10 +33,10 @@ class CategoryController extends Controller
     }
 
      // Show form to create a new category
-     public function create()
-     {
-         return view('admin.category.create'); // You may separate this if needed
-     }
+    //  public function create()
+    //  {
+    //      return view('admin.category.create'); // You may separate this if needed
+    //  }
 
      // Store a new category
      public function store(Request $request)
@@ -66,6 +66,15 @@ class CategoryController extends Controller
          return redirect()->route('admin.categories')->with('success', 'Category added successfully.');
      }
 
+      // is home toggle
+    public function toggleHome(Request $request, $id)
+    {
+        $category = Category::findOrFail($id);
+        $category->is_home = $request->has('is_home') ? 1 : 0;
+        $category->save();
+
+        return redirect()->route('admin.categories')->with('success', 'Category updated successfully.');
+    }
      // Show edit form
      public function edit($id)
      {
@@ -210,6 +219,17 @@ class CategoryController extends Controller
         $subcategory->attributes()->sync($request->attribute);
 
         return redirect()->route('admin.subcategories')->with('success', 'Subcategory updated successfully.');
+    }
+
+
+
+    public function softDeleteSubcategory($id)
+    {
+        $subcategory = Subcategory::findOrFail($id);
+        $subcategory->is_deleted = 1;
+        $subcategory->save();
+
+        return redirect()->route('admin.subcategories')->with('success', 'Subcategory deleted successfully.');
     }
 
     public function exportCategories()

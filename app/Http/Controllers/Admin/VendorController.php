@@ -70,7 +70,9 @@ class VendorController extends Controller
 
         $vendor = VendorAdmin::where('uuid', $uuid)->firstOrFail();
         $vendor->status = $request->status;
+
         $vendor->admin_comments = $request->comment;
+
         $vendor->save();
 
         // Send email notification

@@ -165,12 +165,23 @@
    <!--------------------------------------------------------------------------------  -->
    <div class="row">
       <div class="col-md-12 col-sm-12 col-xs-12">
+        @if (session('success'))
+         <div class="alert alert-success">
+            {{ session('success') }}
+         </div>
+         @endif
+         @if (session('error'))
+         <div class="alert alert-danger">
+            {{ session('error') }}
+         </div>
+
+        @endif
          <div class="panel panel-default tabs">
             <ul class="nav nav-tabs">
                <li class="active"><a href="#tab1" data-toggle="tab">Vendor Detail</a></li>
-               <li><a href="#tab2" data-toggle="tab">Department</a></li>
-               <li><a href="#tab3" data-toggle="tab">Settings</a></li>
-               <li><a href="#tab4" data-toggle="tab">Store Timing</a></li>
+
+               <li><a href="#tab2" data-toggle="tab">Settings</a></li>
+               <li><a href="#tab3" data-toggle="tab">Store Timing</a></li>
             </ul>
             <div class="tab-content">
                <div class="tab-pane panel-body active" id="tab1">
@@ -265,35 +276,11 @@
                      </div>
                   </div>
                </div>
+
                <div class="tab-pane panel-body" id="tab2">
-                  <p>Feel free to contact us for any issues you might have with our products.</p>
-                  <div class="row">
-                     <h1>Department</h1>
-                     <?php if (!empty($category)) {
-                        foreach ($category as $value) { ?>
-                     <div class="col-md-4">
-                        <div class="panel panel-default p-0  m-t-20">
-                           <div class="panel-body p-0">
-                              <div class="list-group no-border mail-list">
-                                 <a href="#" class="list-group-item active"><i class="fa fa-star text-warning"></i><b><?php echo $value->v_cat_name ?></b></a>
-                                 <?php if (isset($value->children)) {
-                                    foreach ($value->children as $child) {
-                                    ?>
-                                 <a href="#" class="list-group-item"><?php echo $child->v_subcat_name ?></a>
-                                 <?php }
-                                    }  ?>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                     <?php }
-                        } ?>
-                  </div>
-               </div>
-               <div class="tab-pane panel-body" id="tab3">
                   <!--<p>Feel free to contact us for any issues you might have with our products.</p>-->
                   <!-----Start UpdateProfile Form-------------------->
-                  <form action="{{ route('vendor.updateProfile') }}" method="POST" enctype="multipart/form-data">
+                  <form action="{{ route('vendor.update.profile') }}" method="POST" enctype="multipart/form-data">
                      @csrf
                      <div class="row">
                         {{-- Display Name --}}
@@ -479,7 +466,7 @@
                            <input type="file" name="{{ $file['name'] }}" id="{{ $file['name'] }}" class="form-control">
                            @if (!empty($file['path']))
                            <div class="mt-2">
-                              <img src="{{ asset('storage/' . $file['path']) }}" alt="{{ $file['label'] }}" width="100">
+                              <img src="{{ asset('public/' . $file['path']) }}" alt="{{ $file['label'] }}" width="100">
                            </div>
                            @endif
                         </div>
@@ -495,9 +482,9 @@
                   </form>
                   <!-----End UpdateProfile FOrm---------------------->
                </div>
-                <div class="tab-pane panel-body" id="tab4">
-                    <form action="{{ route('vendor.updateStoreTime') }}" method="POST">
-                        @csrf
+                <div class="tab-pane panel-body" id="tab3">
+                    <form action="{{ route('vendor.update.store.time') }}" method="POST">
+@csrf
                         @php
                             $days = [];
                             for ($i = 0; $i < 7; $i++) {
@@ -558,13 +545,11 @@
 
                         <div class="form-group">
                             <div class="col-md-12 col-xs-5">
-                                <button class="btn btn-primary btn-rounded pull-center" type="submit">Save</button>
+                                <button type="submit" class="btn btn-warning">Update Time Schedule</button>
                             </div>
                         </div>
                     </form>
                 </div>
-
-
             </div>
          </div>
       </div>
@@ -597,40 +582,44 @@
    });
 </script>
 <script>
-   $(document).ready(function () {
-       function uploadImage(fieldName) {
-           let formData = new FormData();
-           let file = $('#' + fieldName)[0].files[0];
-           formData.append(fieldName, file);
-           formData.append('_token', '{{ csrf_token() }}');
+  $(document).ready(function () {
+    function uploadImage(fieldName) {
+        let formData = new FormData();
+        let file = $('#' + fieldName)[0].files[0];
+        formData.append(fieldName, file);
+        formData.append('_token', '{{ csrf_token() }}');
 
-           $.ajax({
-               url: '{{ route("vendor.updateImage") }}', // Define this route in your web.php
-               method: 'POST',
-               data: formData,
-               contentType: false,
-               processData: false,
-               success: function (response) {
-                   if (response.status === true) {
-                       if (fieldName === 'business_logo') {
-                           $('#preview_logo').attr('src', response.path);
-                       } else {
-                           $('#preview_banner').attr('src', response.path);
-                       }
-                   } else {
-                       alert('Upload failed');
-                   }
-               }
-           });
-       }
+        $.ajax({
+            url: '{{ route("vendor.updateImage") }}',
+            method: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                if (response.status === true) {
+                    if (fieldName === 'business_logo') {
+                        $('#preview_logo').attr('src', response.path);
+                    } else {
+                        $('#preview_banner').attr('src', response.path);
+                    }
+                    alert('Image updated successfully');
+                } else {
+                    alert('Upload failed: ' + response.message);
+                }
+            },
+            error: function (xhr) {
+                alert('Error: ' + xhr.responseText);
+            }
+        });
+    }
 
-       $('#business_logo').change(function () {
-           uploadImage('business_logo');
-       });
+    $('#business_logo').change(function () {
+        uploadImage('business_logo');
+    });
 
-       $('#business_banner').change(function () {
-           uploadImage('business_banner');
-       });
-   });
+    $('#business_banner').change(function () {
+        uploadImage('business_banner');
+    });
+});
 </script>
 @endsection

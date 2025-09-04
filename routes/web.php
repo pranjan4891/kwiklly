@@ -8,11 +8,12 @@ use App\Http\Controllers\Website\CartController;
 use App\Http\Controllers\Website\CheckoutController;
 use App\Http\Controllers\Website\AddressController;
 use App\Http\Controllers\Website\OrderController;
+use App\Http\Controllers\Website\SearchController;
 use App\Models\Order;
 use App\Models\VendorAdmin;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
-
+use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,11 +51,13 @@ use Illuminate\Support\Facades\Auth;
     //     return view('web.checkoutdelivery');
     // });
 
+
     /*Website-------------------------------*/
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('/department', [HomeController::class, 'department'])->name('department');
     Route::get('/department/products', [HomeController::class, 'getProducts'])->name('department.products');
     Route::get('/stores/{slug?}', [HomeController::class, 'stores'])->name('stores');
+    Route::get('/categorywiseproduct/{category_id}/{subcategory_id}', [HomeController::class, 'CategoryProducts'])->name('categorywiseproduct');
     Route::get('/productdetails', [HomeController::class, 'productdetails'])->name('productdetails');
     Route::get('/explorestore/{vendor_id}/{category_id}', [HomeController::class, 'explorestore'])->name('explorestore');
     Route::get('/explorestore/{vendor_id}/{category_id}/{subcategory_id}', [HomeController::class, 'subcategoryProducts'])->name('subcategory.products');
@@ -63,7 +66,7 @@ use Illuminate\Support\Facades\Auth;
         return response()->json($product->variants);
     });
 
-    Route::get('/searchresults', [HomeController::class, 'searchresults'])->name('searchresults');
+    Route::get('/s', [SearchController::class, 'index'])->name('searchresults');
     Route::get('/get-product-variants/{id}', [HomeController::class, 'getProductVariants'])->name('get.product.variants');
 
     // web.php

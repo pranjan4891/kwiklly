@@ -60,11 +60,11 @@ Route::group(['prefix' => 'branch'], function () {
 
         // Product Inventory Management
         Route::prefix('product')->group(function () {
-            Route::get('/variant/create/{productId}', [ProductController::class, 'createVariant'])->name('product.variant.create');
-            Route::post('/variant/store', [ProductController::class, 'storeVariant'])->name('product.variant.store');
-            Route::get('/variant/edit/{id}', [ProductController::class, 'editVariant'])->name('product.variant.edit');
-            Route::post('/variant/update/{id}', [ProductController::class, 'updateVariant'])->name('product.variant.update');
-            Route::delete('/variant/delete/{id}', [ProductController::class, 'deleteVariant'])->name('product.variant.destroy');
+            Route::get('/variant/create/{productId}', [ProductController::class, 'createVariant'])->name('branch.product.variant.create');
+            Route::post('/variant/store', [ProductController::class, 'storeVariant'])->name('branch.product.variant.store');
+            Route::get('/variant/edit/{id}', [ProductController::class, 'editVariant'])->name('branch.product.variant.edit');
+            Route::post('/variant/update/{id}', [ProductController::class, 'updateVariant'])->name('branch.product.variant.update');
+            Route::delete('/variant/delete/{id}', [ProductController::class, 'deleteVariant'])->name('branch.product.variant.destroy');
         });
 
         // Get Subcategories by Category

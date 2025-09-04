@@ -11,8 +11,7 @@ use App\Http\Controllers\Vendor\ProductController;
 use App\Http\Controllers\Vendor\CouponController;
 use App\Http\Controllers\Vendor\OrderController;
 use App\Http\Controllers\Vendor\VendorCartController;
-use App\Http\Controllers\Vendor\DeliverySlotController;
-
+use App\Http\Controllers\Vendor\ProductImagesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,7 +44,7 @@ Route::post('/vendor/email/verification-notification', function (Request $reques
 
 
 Route::get('/vendor-register', [VendorController::class, 'vendorRegistration'])->name('vendor.signup');
-Route::post('/register-submit', [VendorController::class, 'submit'])->name('registration.submit');
+Route::post('/vendor-register', [VendorController::class, 'submit'])->name('registration.submit');
 
 Route::get('/vendor-login', [VendorController::class, 'vendorSignIn'])->name('vendor.login');
 Route::post('/login-submit', [VendorAuthController::class, 'login'])->name('vendor.login.submit');
@@ -53,7 +52,7 @@ Route::post('/login-submit', [VendorAuthController::class, 'login'])->name('vend
 
 /*Vendor Logout - accessible to all authenticated vendors regardless of verified or approval status*/
 Route::prefix('vendor')->name('vendor.')->middleware(['auth:vendor'])->group(function () {
-    Route::get('logout', [VendorAuthController::class, 'logout'])->name('logout');
+    Route::match(['get', 'post'], '/logout', [VendorAuthController::class, 'logout'])->name('logout');
 });
 
 
@@ -64,13 +63,11 @@ Route::prefix('vendor')->name('vendor.')->middleware(['auth:vendor', 'verified',
     // Route::get('logout', [VendorAuthController::class, 'logout'])->name('logout');
     Route::get('dashboard', [VendorDashboardController::class, 'dashboard'])->name('dashboard');
     Route::get('profile', [VendorDashboardController::class, 'profile'])->name('profile');
-    Route::post('update-profile', [VendorDashboardController::class, 'updateProfile'])->name('updateProfile');
+    Route::post('update-profile', [VendorDashboardController::class, 'updateProfile'])->name('update.profile');
     Route::post('update-image', [VendorController::class, 'updateImage'])->name('updateImage');
 
-    //delivery-slots
-    Route::resource('delivery-slots', DeliverySlotController::class)->except(['show']);
 
-    Route::post('/storetime', [VendorDashboardController::class, 'storeTime'])->name('updateStoreTime');
+    Route::post('/store-time', [VendorDashboardController::class, 'storeTime'])->name('update.store.time');
 
 
     // Category
@@ -88,6 +85,17 @@ Route::prefix('vendor')->name('vendor.')->middleware(['auth:vendor', 'verified',
     Route::get('product/add', [ProductController::class, 'add'])->name('proadd');
     // Route::post('product/store', [ProductController::class, 'store'])->name('product.store');
     // Route::get('product/edit', [ProductController::class, 'edit'])->name('proedit');
+
+    // Product Images Management
+    Route::get('product-images', [ProductImagesController::class, 'index'])->name('product.images');
+    Route::post('product-images-store', [ProductImagesController::class, 'store'])->name('product.images.store');
+    Route::post('product-images/update/{id}', [ProductImagesController::class, 'update'])->name('product.images.update');
+    Route::get('product-images/delete/{id}', [ProductImagesController::class, 'softDelete'])->name('product.images.delete');
+    Route::post('product-image/delete-single', [ProductImagesController::class, 'deleteSingleImage'])->name('product.image.delete.single');
+
+    Route::get('product-images/deleted', [ProductImagesController::class, 'showDeletedImages'])->name('product.images.deleted');
+    Route::post('product-images/{id}/restore', [ProductImagesController::class, 'restore'])->name('product.images.restore');
+    Route::delete('product-images/{id}/erase', [ProductImagesController::class, 'erase'])->name('product.images.erase');
 
     // Product Management
     Route::get('products', [ProductController::class, 'index'])->name('products');

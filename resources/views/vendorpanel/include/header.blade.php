@@ -24,7 +24,7 @@
         <!-- EOF CSS INCLUDE -->
         <!--Select 2--->
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-         <script>
+         {{-- <script>
             (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
             (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
             m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -33,7 +33,7 @@
             ga('create', 'UA-62751496-1', 'auto');
             ga('send', 'pageview');
 
-        </script>
+        </script> --}}
     </head>
 
 <body>
@@ -54,9 +54,9 @@
                     </li>
                     <li class="xn-profile">
                         <a href="#" class="profile-mini">
-                                        <img src="{{ asset('web/images/logo.png')}}" alt="Kwiklly" />
+                                        <img src="{{ asset('public/assets/website/images/logo.png')}}" alt="Kwiklly" />
                                         <!--<img src="../../upload_img/vendor_reg/static_img/store.jpg" alt="" style="width:200px" class="br-radius">-->
-                                        <img src="../$detail[0]->v_business_logo" alt="Kwiklly" />
+                                        <img src="{{ asset('public/'.$vendor->business_logo)}}" alt="Kwiklly" />
                         </a>
                         <div class="profile">
                             <div class="profile-image">
@@ -69,18 +69,19 @@
                                 <div class="profile-data-name">Welcome ! Vendor -  {{$vendor->business_name}}</div>
                                 <div class="profile-data-title">Your Email  -  {{$vendor->email}}</div>
                             </div>
-                            <div class="profile-controls">
-                                <a href="{{ route('vendor.profile')}}" class="profile-control-left"><span class="fa fa-info"></span></a>
+                            {{-- <div class="profile-controls">
+                               <a href="{{ route('vendor.profile')}}" class="profile-control-left"><span class="fa fa-info"></span></a>
                                 <a href="#" class="profile-control-right"><span class="fa fa-envelope"></span></a>
-                            </div>
+                            </div> --}}
                         </div>
                     </li>
                     <li class="xn-title"><a href="{{ route('vendor.dashboard')}}"><span class="fa fa-dashboard"></span> <span class="xn-text">Dashboards</span></a></li>
+                    <li class="xn"><a href="{{ route('vendor.profile')}}"><span class="fa fa-user"></span> <span class="xn-text">Manage Profile</span></a></li>
                     <li class="xn-openable">
-                        <a href="#"><span class="fa fa-pencil"></span> <span class="xn-text">Manage Category</span></a>
+                        <a href="#"><span class="fa fa-pencil"></span> <span class="xn-text">Product Images</span></a>
                         <ul>
-                            <li><a href="{{ route('vendor.categories')}}"><span class="fa fa-list-ul"></span> Category</a></li>
-                            <!-- <li><a href="{{ route('vendor.subcategories.index')}}"><span class="fa fa-list-alt"></span> Subcategory</a></li>                             -->
+                            <li><a href="{{ route('vendor.product.images')}}"><span class="fa fa-list-ul"></span> Active Product Image</a></li>
+                            <li><a href="{{route('admin.product.images.deleted')}}">InActive Product Image</a></li>
                         </ul>
                     </li>
                     <li class="xn-openable">
@@ -120,14 +121,9 @@
 
                             <!--li><a href="Home/orderreport');pan class="fa fa-search"></span> Orders Search</a></li-->
                         </ul>
-                        <li class="xn-openable">
-                        <a href="#"><span class="fa fa-cogs"></span> <span class="xn-text">Delivery Slots</span></a>
-                        <ul>
-                            <li><a href="{{ route('vendor.delivery-slots.index')}}"><span class="fa fa-heart"></span>Listing Delivery Slots</a></li>
-                            <li><a href="{{ route('vendor.delivery-slots.create')}}"><span class="fa fa-heart"></span> Create Delivery Slots</a></li>
-                        </ul>
                     </li>
-                  </ul>
+
+                </ul>
                 <!-- END X-NAVIGATION -->
             </div>
             <!-- END PAGE SIDEBAR -->

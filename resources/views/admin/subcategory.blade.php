@@ -73,18 +73,6 @@
                             </div>
                         </div>
 
-
-
-                            {{-- Attribute Value --}}
-                            {{-- <div class="form-group">
-                                <label for="attribute_value" class="control-label col-lg-2">Attribute Value</label>
-                                <div class="col-lg-5">
-                                    <select class="form-control" name="attribute_value" id="attribute_value" required >
-                                        <option value="">Select Attribute Value</option>
-                                    </select>
-                                </div>
-                            </div> --}}
-
                             {{-- Subcategory Image --}}
                             <div class="form-group">
                                 <label for="cat_img" class="control-label col-lg-2">Sub-category Image *</label>
@@ -147,7 +135,7 @@
                                     @foreach ($subcategories as $key => $subcategory)
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
-                                            <td><img src="{{ asset('public/'.$subcategory->image) }}" alt="" width="50px" height="50px"></td>
+                                            <td><img src="{{ asset('public/uploads/subcategories/'.$subcategory->image) }}" alt="" width="50px" height="50px"></td>
                                             <td>{{ $subcategory->category->name }}</td>
                                             <td>{{ $subcategory->sub_cat_name }}</td>
                                             <td>
@@ -165,7 +153,11 @@
                                             </td>
                                             <td>
                                                 <button class="btn btn-success" data-toggle="modal" data-target="#editModal{{ $subcategory->id }}">Edit</button>
-                                                <a href="{{ url('admin/delete-subcategory/'.$subcategory->id) }}" class="btn btn-danger" onclick="return doconfirm();">Delete</a>
+                                                {{-- <a href="{{ url('admin/subcategory/delete//'.$subcategory->id) }}" class="btn btn-danger" onclick="return doconfirm();">Delete</a> --}}
+                                                <form action="{{ route('admin.subcategory.delete', ['id'=>$subcategory->id]) }}" method="POST" style="display:inline;" onsubmit="return doconfirm();">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
                                             </td>
                                         </tr>
                                         <!-- Edit Modal --><!-- Edit Modal -->
