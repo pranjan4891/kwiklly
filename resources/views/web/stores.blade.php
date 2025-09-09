@@ -12,7 +12,7 @@
                 <ul class="list-unstyled mb-0 text-center">
                 @if($categories)
                     @foreach($categories as $cat)
-                    <a href="{{ route('stores', [$cat->slug]) }}" style="text-decoration:none">
+                    <a href="{{ route('stores', [$cat->slug]) }}" style="text-decoration:none" onclick="return redirectWithLocation(this.href)">
 
                         <li class="py-3 sidebar-itemde {{($slug==$cat->slug)?'active':''}}">
                             <img src="{{ asset('public/'.$cat->image) }}" alt="{{ $cat['name'] }}" class="side-img mb-2" />
@@ -51,35 +51,48 @@
                     </div>
                     <!-- Card Template -->
 
-<!-- Replace this entire section of hardcoded KFC cards -->
-@forelse($stores as $store)
-    <div class="col-md-4 col-12 storedetailanchor">
-        <a href="{{ route('explorestore', [$store->id, $slug]) }}"> {{-- adjust route if needed --}}
-            <div class="food-card">
-                <div class="position-relative">
-                    <img src="{{ asset('public/' . $store->business_banner) }}" class="w-100 food-img" alt="{{ $store->store_name }}">
-                    <span class="badge bg-white text-dark position-absolute top-10 end-0 m-3">
-                        {{ $store->offer_text ?? 'Best Seller' }}
-                    </span>
-                </div>
-                <div class="p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fw-bold">{{ $store->business_name }}</h5>
-                        <span class="text-success fw-semibold">5.0 km</span>
-                    </div>
-                    <div class="mt-2 frequently-ordered text-black">
-                        <i class="fa fa-thumbs-up me-1 text-warning"></i> {{ $store->tagline ?? ' Frequently Ordered' }}
-                    </div>
-                    <p class="text-muted mt-2 small">{{ Str::limit($store->store_description, 50) }}</p>
-                </div>
-            </div>
-        </a>
-    </div>
-@empty
-    <div class="col-12 text-center">
-        <p>No stores found in this category.</p>
-    </div>
-@endforelse
+                    <!-- Replace this entire section of hardcoded KFC cards -->
+                   @forelse($stores as $store)
+                        @php
+                            $firstProduct = $store->products->first();
+                            $firstProductCategoryId = $firstProduct && $firstProduct->fcategory
+                                ? $firstProduct->fcategory->slug
+                                : 0; // fallback if no category found
+                        @endphp
+                        <div class="col-md-4 col-12 storedetailanchor">
+                            <a href="{{ route('explorestore', [$store->id, $firstProductCategoryId]) }}" onclick="return redirectWithLocation(this.href)">
+                                <div class="food-card">
+                                    <div class="position-relative">
+                                        <img src="{{ $store->business_banner
+                                                ? asset('public/' . $store->business_banner)
+                                                : asset('images/default-banner.jpg') }}"
+                                            class="w-100 food-img"
+                                            alt="{{ $store->store_name }}">
+
+                                        <span class="badge bg-white text-dark position-absolute top-10 end-0 m-3">
+                                            {{ $store->offer_text ?? 'Best Seller' }}
+                                        </span>
+                                    </div>
+                                    <div class="p-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0 fw-bold">{{ $store->business_name }}</h5>
+                                            <span class="text-success fw-semibold">5.0 km</span>
+                                        </div>
+                                        <div class="mt-2 frequently-ordered text-black">
+                                            <i class="fa fa-thumbs-up me-1 text-warning"></i> {{ $store->tagline ?? ' Frequently Ordered' }}
+                                        </div>
+                                        <p class="text-muted mt-2 small">{{ Str::limit($store->store_description, 50) }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    @empty
+                        <div class="col-12 text-center">
+                            <p>No stores found in this category.</p>
+                        </div>
+                    @endforelse
+
+
 
 
 

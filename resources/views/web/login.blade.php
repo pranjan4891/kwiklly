@@ -1,6 +1,10 @@
-<?php //include("include/header2.php")?>
+
 @extends('web.include.main')
 @section('content')
+<style>
+
+
+</style>
 <!-- first section start  -->
 <section>
 <div class="container log-in-container form-section">

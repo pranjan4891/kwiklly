@@ -22,20 +22,35 @@
     @csrf
 
     <div class="mb-3">
-        <input type="text" name="name" class="form-control log-in-form-control" placeholder="Full Name" required>
+        <input type="text" name="name" class="form-control log-in-form-control" placeholder="Full Name" required value="{{ old('name') }}">
+        @error('name')
+            <div class="text-danger mt-1">{{ $message }}</div>
+        @enderror
     </div>
 
     <div class="mb-3">
-        <input type="email" name="email" class="form-control log-in-form-control" placeholder="Email id" required>
+        <input type="email" name="email" class="form-control log-in-form-control" placeholder="Email id" required value="{{ old('email') }}">
+        @error('email')
+            <div class="text-danger mt-1">{{ $message }}</div>
+        @enderror
     </div>
     <div class="mb-2">
-        <input type="text" name="phone_number" class="form-control log-in-form-control" placeholder="Phone Number" required>
+        <input type="text" name="phone_number" class="form-control log-in-form-control" placeholder="Phone Number" required value="{{ old('phone_number') }}">
+        @error('phone_number')
+            <div class="text-danger mt-1">{{ $message }}</div>
+        @enderror
     </div>
     <div class="mb-2">
-        <input type="password" name="password" class="form-control log-in-form-control" placeholder="Password" required>
+        <input type="password" name="password" class="form-control log-in-form-control" placeholder="Password" required value="{{ old('password') }}">
+        @error('password')
+            <div class="text-danger mt-1">{{ $message }}</div>
+        @enderror
     </div>
     <div class="mb-2">
-        <input type="password" name="password_confirmation" class="form-control log-in-form-control" placeholder="Confirm Password" required>
+        <input type="password" name="password_confirmation" class="form-control log-in-form-control" placeholder="Confirm Password" required value="{{ old('password_confirmation') }}">
+        @error('password_confirmation')
+            <div class="text-danger mt-1">{{ $message }}</div>
+        @enderror
     </div>
     <div class="mb-2">
         <input type="text" name="referral_code" class="form-control log-in-form-control" placeholder="Referral Code">

@@ -3,121 +3,71 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class PhonePeService
 {
-    protected $merchantId;
-    protected $saltKey;
     protected $baseUrl;
     protected $clientId;
+    protected $clientSecret;
+    protected $version;
+    protected $merchantId;
 
     public function __construct()
     {
-        $this->merchantId = env('PHONEPE_MERCHANT_ID');
-        $this->saltKey = env('PHONEPE_SALT_KEY');
-        $this->clientId = env('PHONEPE_CLIENT_ID');
-        $this->baseUrl = rtrim(env('PHONEPE_BASE_URL'), '/'); // remove trailing slash if any
+        $this->baseUrl = config('services.phonepe.base_url');
+        $this->clientId = config('services.phonepe.client_id');
+        $this->clientSecret = config('services.phonepe.client_secret');
+        $this->version = config('services.phonepe.version');
+        $this->merchantId = config('services.phonepe.merchant_id');
     }
 
     /**
-     * Initiate a PhonePe transaction
+     * Initiate a transaction
      */
     public function initiatePayment($orderId, $amount, $callbackUrl)
     {
         $payload = [
-            "merchantId" => $this->merchantId,
-            "merchantTransactionId" => $orderId,
-            "merchantUserId" => "user123", // optional
-            "amount" => $amount * 100, // in paise
-            "redirectUrl" => $callbackUrl,
-            "redirectMode" => "POST",
-            "callbackUrl" => $callbackUrl,
-            "paymentInstrument" => [
-                "type" => "PAY_PAGE"
+            'merchantId' => $this->merchantId,
+            'merchantTransactionId' => $orderId,
+            'merchantUserId' => 'MUID-' . uniqid(),
+            'amount' => $amount * 100, // amount in paise
+            'redirectUrl' => $callbackUrl,
+            'redirectMode' => 'POST',
+            'callbackUrl' => $callbackUrl,
+            'mobileNumber' => '9999999999',
+            'paymentInstrument' => [
+                'type' => 'PAY_PAGE'
             ]
         ];
 
-        $jsonPayload = json_encode($payload, JSON_UNESCAPED_SLASHES);
-        $base64Payload = base64_encode($jsonPayload);
+        $checksum = base64_encode(hash('sha256', json_encode($payload) . '/pg/v1/pay' . $this->clientSecret, true));
 
-        $path = "/pg/v1/pay";
-        $xVerify = hash('sha256', $base64Payload . $path . $this->saltKey) . "###1";
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'X-VERIFY' => $checksum . "###" . $this->version,
+            'X-MERCHANT-ID' => $this->merchantId
+        ])->post($this->baseUrl . '/pay', [
+            'request' => base64_encode(json_encode($payload))
+        ]);
 
-        $url = $this->baseUrl . $path;
-
-        try {
-            $response = Http::withOptions([
-                'verify' => true // Set to false only in localhost without CA certs
-            ])->withHeaders([
-                "Content-Type" => "application/json",
-                "X-VERIFY" => $xVerify,
-                "X-CLIENT-ID" => $this->clientId,
-            ])->post($url, [
-                'request' => $base64Payload
-            ]);
-
-            if ($response->failed()) {
-                Log::error('PhonePe Payment Init Failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                    'payload' => $payload,
-                ]);
-            }
-
-            return $response->json();
-
-        } catch (\Exception $e) {
-            Log::error('PhonePe API Exception', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'Exception during PhonePe API call.'
-            ];
-        }
+        return $response->json();
     }
 
     /**
-     * Verify a PhonePe transaction status
+     * Check transaction status
      */
-    public function verifyPayment($orderId)
+    public function checkStatus($orderId)
     {
-        $path = "/pg/v1/status/{$this->merchantId}/{$orderId}";
-        $xVerify = hash('sha256', $path . $this->saltKey) . "###1";
+        $apiPath = "/pg/v1/status/{$this->merchantId}/{$orderId}";
 
-        $url = $this->baseUrl . $path;
+        $checksum = base64_encode(hash('sha256', $apiPath . $this->clientSecret, true));
 
-        try {
-            $response = Http::withOptions([
-                'verify' => true
-            ])->withHeaders([
-                "Content-Type" => "application/json",
-                "X-VERIFY" => $xVerify,
-                "X-CLIENT-ID" => $this->clientId,
-            ])->get($url);
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'X-VERIFY' => $checksum . "###" . $this->version,
+            'X-MERCHANT-ID' => $this->merchantId
+        ])->get($this->baseUrl . $apiPath);
 
-            if ($response->failed()) {
-                Log::error('PhonePe Payment Verification Failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
-            }
-
-            return $response->json();
-
-        } catch (\Exception $e) {
-            Log::error('PhonePe Verify Exception', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'Exception during payment verification.'
-            ];
-        }
+        return $response->json();
     }
 }

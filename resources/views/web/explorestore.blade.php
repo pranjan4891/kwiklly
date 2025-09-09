@@ -149,23 +149,19 @@
 <!-- Add this script to handle the progress bar -->
 <script>
    document.addEventListener('DOMContentLoaded', function() {
-       // Get cart total from session or calculate it
        let cartTotal = {{ $cartTotal ?? 0 }};
        const minimumOrderValue = {{ $vendor->minimum_order_value ?? 0 }};
 
-       // Calculate progress percentage
        let progressPercentage = 0;
        if (minimumOrderValue > 0) {
            progressPercentage = Math.min((cartTotal / minimumOrderValue) * 100, 100);
        }
 
-       // Update progress bar
        const progressBar = document.querySelector('.xyz-progress-bar.delivery-progress');
        if (progressBar) {
            progressBar.style.width = progressPercentage + '%';
        }
 
-       // Update the text
        const progressText = document.querySelector('.delivery-progress-text');
        if (progressText && minimumOrderValue > 0) {
            const amountNeeded = Math.max(minimumOrderValue - cartTotal, 0);
@@ -173,8 +169,13 @@
        }
    });
 </script>
+
 <section class="extrapadding">
-   <div class="xyz-banner" style="background: url('{{ asset('public/' . $vendor->business_banner) }}') no-repeat center center / cover;">
+   <div class="xyz-banner"
+        style="background: url('{{ $vendor && $vendor->business_banner
+                                    ? asset('public/' . $vendor->business_banner)
+                                    : asset('public/assets/website/images/default-banner.jpg') }}')
+               no-repeat center center / cover;">
       <div class="xyz-gradient">
          <div class="container">
             <div class="d-flex justify-content-between align-items-start mb-3 mt-0 mt-md-5">
@@ -183,59 +184,59 @@
                   <button class="btn btn-light text-danger border12" onclick="showModal()"><b>Coupons</b></button>
                </div>
             </div>
+
             <div class="row">
                <!-- Left column -->
                <div class="col-md-7 pb-4 col7xyz">
-                  <h3>{{$vendor->business_name}} </h3>
+                  <h3>{{ $vendor->business_name ?? 'No Store Found' }}</h3>
+
                   <div class="xyz-location-text">
                      <i class="fas fa-map-marker-alt"></i>
-                     <span>{{$vendor->business_address}}</span>
+                     <span>{{ $vendor->business_address ?? 'Address not available' }}</span>
                   </div>
+
                   @php
-                    // Fix for store time display
-                    $storeTime = json_decode($vendor->store_time, true) ?? [];
-                    $currentDay = date('l');
-                    $currentTimeData = null;
-                    // Find the current day's data
-                    foreach ($storeTime as $time) {
-                    if (isset($time['day_name']) && $time['day_name'] === $currentDay) {
-                    $currentTimeData = $time;
-                    break;
-                    }
-                  }
+                     $storeTime = [];
+                     $currentTimeData = null;
+                     $currentDay = date('l');
+
+                     if ($vendor && $vendor->store_time) {
+                         $decoded = json_decode($vendor->store_time, true);
+                         if (is_array($decoded)) {
+                             $storeTime = $decoded;
+                             foreach ($storeTime as $time) {
+                                 if (($time['day_name'] ?? '') === $currentDay) {
+                                     $currentTimeData = $time;
+                                     break;
+                                 }
+                             }
+                         }
+                     }
                   @endphp
+
                   <div class="xyz-time-box">
-                     @if($currentTimeData && isset($currentTimeData['status']) && $currentTimeData['status'] == "1")
-                     {{ $currentDay }} {{ $currentTimeData['startTime'] ?? '' }} - {{ $currentTimeData['endTime'] ?? '' }}
+                     @if($currentTimeData && ($currentTimeData['status'] ?? "0") === "1")
+                        {{ $currentDay }} {{ $currentTimeData['startTime'] ?? '' }} - {{ $currentTimeData['endTime'] ?? '' }}
                      @else
-                     {{ $currentDay }} Closed
+                        {{ $currentDay }} Closed
                      @endif
                   </div>
                </div>
+
                <!-- Right column -->
                <div class="col-md-5">
                   <div class="xyz-info-box">
-                     <div class="d-flex align-items-center mb-2">
-                        <img src="{{ asset('public/assets/website/images/demo.png')}}" alt="Icon">
-                        <div class="ms-3 w-100">
-                           <div class="coupontext">Add item worth ₹<b>5000</b> to get free cook</div>
-                           <div class="xyz-progress mt-1">
-                              <div class="xyz-progress-bar" style="width: 40%"></div>
-                           </div>
-                           <p class="text-danger pt-2">Remove</p>
-                        </div>
-                     </div>
-                     <div class="xyz-clickable-div" data-state="default" onclick="changeText(this)">
-                        <div class="coupontext delivery-progress-text">
-                           @php
+                     <div class="coupontext delivery-progress-text">
+                        @php
                            $cartTotal = $cartTotal ?? 0;
                            $minimumOrderValue = $vendor->minimum_order_value ?? 0;
                            $amountNeeded = max($minimumOrderValue - $cartTotal, 0);
-                           @endphp
-                           Add item worth ₹<b>{{ number_format($amountNeeded, 2) }}</b> more to get free delivery
-                        </div>
-                        <div class="xyz-progress mt-1">
-                           <div class="xyz-progress-bar delivery-progress" style="width: {{ $minimumOrderValue > 0 ? min(($cartTotal / $minimumOrderValue) * 100, 100) : 0 }}%"></div>
+                        @endphp
+                        Add item worth ₹<b>{{ number_format($amountNeeded, 2) }}</b> more to get free delivery
+                     </div>
+                     <div class="xyz-progress mt-1">
+                        <div class="xyz-progress-bar delivery-progress"
+                             style="width: {{ $minimumOrderValue > 0 ? min(($cartTotal / $minimumOrderValue) * 100, 100) : 0 }}%">
                         </div>
                      </div>
                      <div class="xyz-right-text">*Progress Bar will reset in next order</div>
@@ -246,66 +247,7 @@
       </div>
    </div>
 </section>
-<div class="xyz-modal-overlay" id="couponModal">
-   <div class="xyz-modal">
-      <!-- Header -->
-      <div class="d-flex justify-content-between align-items-center mb-3">
-         <h5 class="mb-0"><b>Coupons</b></h5>
-         <button class="xyz-close" onclick="hideModal()">&times;</button>
-      </div>
-      <!-- Coupon Row 1 -->
-      <div class="xyz-coupon-row row m-2">
-         <div class="col-6">
-            <h6><strong>20% OFF</strong></h6>
-            <div style="color: green;">MAX ₹200</div>
-            <small>Holi Week Discount</small>
-         </div>
-         <div class="col-6 text-end">
-            <img src="images/klogo.png" alt="logo" class="xyz-coupon-logo">
-            <div><small>COUPON EXPIRES 23/05</small></div>
-         </div>
-      </div>
-      <!-- Coupon Row 2 -->
-      <div class="xyz-coupon-row row m-2">
-         <div class="col-6">
-            <h6><strong>20% OFF</strong></h6>
-            <div style="color: green;">MAX ₹200</div>
-            <small>Holi Week Discount</small>
-         </div>
-         <div class="col-6 text-end">
-            <img src="images/klogo.png" alt="logo" class="xyz-coupon-logo">
-            <div><small>COUPON EXPIRES 23/05</small></div>
-         </div>
-      </div>
-      <!-- Coupon Row 3 -->
-      <div class="xyz-coupon-row row m-2">
-         <div class="col-6">
-            <h6><strong>20% OFF</strong></h6>
-            <div style="color: green;">MAX ₹200</div>
-            <small>Holi Week Discount</small>
-         </div>
-         <div class="col-6 text-end">
-            <img src="images/klogo.png" alt="logo" class="xyz-coupon-logo">
-            <div><small>COUPON EXPIRES 23/05</small></div>
-         </div>
-      </div>
-      <!-- Coupon Row 4 -->
-      <div class="xyz-coupon-row row m-2">
-         <div class="col-6">
-            <h6><strong>20% OFF</strong></h6>
-            <div style="color: green;">MAX ₹200</div>
-            <small>Holi Week Discount</small>
-         </div>
-         <div class="col-6 text-end">
-            <img src="images/klogo.png" alt="logo" class="xyz-coupon-logo">
-            <div><small>COUPON EXPIRES 23/05</small></div>
-         </div>
-      </div>
-   </div>
-</div>
-</section>
-<!-- first section end  -->
-<!-- second section start  -->
+
 <section>
    <div class="container mt-4 headingde">
       <h3>Inspiration for your order</h3>
@@ -313,174 +255,95 @@
          <div class="col-md-3">
             <div class="sidebarde">
                <ul>
-                  @foreach($subcategories as $subcategory)
-                  <li class="sidebar-itemde">
-                     <img src="{{ asset('public/uploads/subcategories/'.$subcategory->image) }}">
-                     <a href="{{ route('subcategory.products', [$vendor->id, $category->id, $subcategory->id]) }}" class="text-decoration-none text-dark">
-                     {{ $subcategory->sub_cat_name }}
-                     </a>
-                  </li>
-                  @endforeach
+                  @forelse($subcategories as $subcategory)
+                     <li class="sidebar-itemde">
+                        <img src="{{ asset('public/uploads/subcategories/'.$subcategory->image) }}" >
+                        <a href="{{ $vendor && $category
+                                    ? route('subcategory.products', [$vendor->id, $category->id, $subcategory->id])
+                                    : 'javascript:void(0);' }}"
+                           class="text-decoration-none text-dark" onclick="return redirectWithLocation(this.href)">
+                           {{ $subcategory->sub_cat_name }}
+                        </a>
+                     </li>
+                  @empty
+                     <li>No categories available</li>
+                  @endforelse
                </ul>
             </div>
          </div>
-         <!-- Mobile Sidebar as Horizontal Slider -->
-         <div class="mobile-sidebar d-block d-md-none" style="overflow-x: auto; white-space: nowrap;">
-            @foreach($subcategories as $subcategory)
-            <a href="{{ route('subcategory.products', [$vendor->id, $category->id, $subcategory->id]) }}" class="d-inline-block text-center px-2 text-decoration-none text-dark" style="width: 100px;">
-               <div class="sidebar-itemde">
-                  <img src="{{ asset('public/uploads/subcategories/'.$subcategory->image) }}" alt="" style="width: 50px; height: 50px;">
-                  <div style="font-size: 12px;">{{ $subcategory->sub_cat_name }}</div>
-               </div>
-            </a>
-            @endforeach
-         </div>
+
          <div class="col-md-9 fixedheight ">
             <div class="row pt-3">
-               @if($products->count())
-               @foreach ($products as $product)
-               @php
-               $defaultVariant = $product->variants->first();
-               $hasMultipleVariants = $product->variants->count() > 1;
-               $firstVariant = $defaultVariant;
-               $key = $product->id . '_' . ($firstVariant->id ?? 0);
-               if (auth()->check()) {
-               $cartItem = \App\Models\CartItem::where([
-               'user_id' => auth()->id(),
-               'product_id' => $product->id,
-               'variant_id' => $firstVariant->id,
-               ])->first();
-               $inCart = $cartItem !== null;
-               $quantity = $inCart ? $cartItem->quantity : 1;
-               } else {
-               $cart = session('cart', []);
-               $inCart = isset($cart[$key]);
-               $quantity = $inCart ? $cart[$key]['quantity'] : 1;
-               }
-               $attributes = json_decode($defaultVariant->attributes ?? '{}', true);
-               $firstAttr = collect($attributes)->first();
-               @endphp
-               <div class="col-md-4 pb-4 col-6">
-                  <div class="item">
-                     <div class="product-card2 p-0">
-                        @if ($defaultVariant && $defaultVariant->variant_save_price_in_percent > 0)
-                        <span class="discount-label">{{ $defaultVariant->variant_save_price_in_percent }}% Off</span>
-                        @endif
-                        @if ($product->is_physical)
-                        <a href="{{ route('productdetails', $product->slug) }}">
-                        <img src="{{ asset('public/' . $product->featureImage->feature_image) }}"
-                           class="product-image" alt="{{ $product->title }}">
-                        </a>
-                        @else
-                        <a href="javascript:void(0);">
-                        <img src="{{ asset('public/' . $product->featureImage->feature_image) }}"
-                           class="product-image" alt="{{ $product->title }}">
-                        </a>
-                        @endif
-                        <div class="product-title cardpadding">{{ $product->title }}</div>
-                        @if (!empty($firstAttr))
-                        <div class="product-info cardpadding">{{ $firstAttr }}</div>
-                        @endif
-                        <div class="price-container cardpadding">
-                           <span class="price">
-                           ₹ {{ $defaultVariant->variant_selling_price ?? '--' }}
-                           </span>
-                           @if ($defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
-                           <span class="original-price">
-                           ₹ {{ $defaultVariant->variant_actual_price }}
-                           </span>
-                           @endif
-                           <div class="qty-box" data-product-id="{{ $product->id }}"
-                              data-variant-id="{{ $firstVariant->id }}" data-key="{{ $key }}">
-                              @if ($hasMultipleVariants)
-                              <button class="add-btn" onclick="openPopup({{ $product->id }})">
-                                 Add
-                                 <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
-                                 <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
-                              </button>
-                              @else
-                              @if (!$inCart)
-                              <button class="add-btn" data-product-id="{{ $product->id }}"
-                                 data-variant-id="{{ $firstVariant->id }}">
-                              Add
-                              <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
-                              </button>
-                              @else
-                              <div class="qty-container">
-                                 <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
-                                 <input type="text" class="qty-input quantity-input"
-                                    value="{{ $quantity }}" readonly>
-                                 <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
+               @if($products && $products->count())
+                  @foreach ($products as $product)
+                     @php
+                        $defaultVariant = $product->variants->first();
+                        $hasMultipleVariants = $product->variants->count() > 1;
+                        $firstVariant = $defaultVariant;
+                        $key = $product->id . '_' . ($firstVariant->id ?? 0);
+
+                        if (auth()->check()) {
+                           $cartItem = \App\Models\CartItem::where([
+                              'user_id' => auth()->id(),
+                              'product_id' => $product->id,
+                              'variant_id' => $firstVariant->id ?? 0,
+                           ])->first();
+                           $inCart = $cartItem !== null;
+                           $quantity = $inCart ? $cartItem->quantity : 1;
+                        } else {
+                           $cart = session('cart', []);
+                           $inCart = isset($cart[$key]);
+                           $quantity = $inCart ? $cart[$key]['quantity'] : 1;
+                        }
+
+                        $attributes = json_decode($defaultVariant->attributes ?? '{}', true);
+                        $firstAttr = collect($attributes)->first();
+                     @endphp
+
+                     <div class="col-md-4 pb-4 col-6">
+                        <div class="item">
+                           <div class="product-card2 p-0">
+                              @if ($defaultVariant && $defaultVariant->variant_save_price_in_percent > 0)
+                                 <span class="discount-label">{{ $defaultVariant->variant_save_price_in_percent }}% Off</span>
+                              @endif
+
+                              <a href="{{ $product->is_physical ? route('productdetails', $product->slug) : 'javascript:void(0);' }}">
+                                 <img src="{{ $product->featureImage
+                                                ? asset('public/' . $product->featureImage->feature_image)
+                                                : asset('public/assets/website/images/no-image.png') }}"
+                                      class="product-image" alt="{{ $product->title }}">
+                              </a>
+
+                              <div class="product-title cardpadding">{{ $product->title }}</div>
+
+                              @if (!empty($firstAttr))
+                                 <div class="product-info cardpadding">{{ $firstAttr }}</div>
+                              @endif
+
+                              <div class="price-container cardpadding">
+                                 <span class="price">
+                                    ₹ {{ $defaultVariant->variant_selling_price ?? '--' }}
+                                 </span>
+                                 @if ($defaultVariant && $defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
+                                    <span class="original-price">
+                                       ₹ {{ $defaultVariant->variant_actual_price }}
+                                    </span>
+                                 @endif
                               </div>
-                              @endif
-                              @endif
                            </div>
                         </div>
-                        <div class="store-info ">
-                        </div>
                      </div>
-                  </div>
-               </div>
-               @endforeach
+                  @endforeach
                @else
-               <div class="no-products text-center py-5">
-                  {{-- <img src="{{ asset('public/assets/website/images/empty-box.png') }}" alt="No Products" width="100"> --}}
-                  <h5 class="mt-3">Product not available</h5>
-               </div>
+                  <div class="no-products text-center py-5">
+                     <h5 class="mt-3">Product not available</h5>
+                  </div>
                @endif
             </div>
          </div>
       </div>
    </div>
-   <!-- pop up of add button  -->
-   <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-         <div class="modal-content">
-            <div class="modal-header">
-               <h5 class="modal-title" id="productModalLabel">Mother Dairy Milk</h5>
-               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-               <h6>Select Unit</h6>
-               <div class="unit-list">
-                  <div class="unit-item">
-                     <img src="{{ asset('public/assets/website/images/category1.png')}}" class="unit-image" alt="Milk">
-                     <span>100 ml</span>
-                     <span class="pricepopup">
-                     <span class="rupee-symbol">₹</span> 30
-                     </span>
-                     <span class="original-price">
-                     <span class="rupee-symbol2">₹</span> 38
-                     </span>
-                     <button class="add-btn" onclick="convertToQty(this)">Add <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-1"></button>
-                  </div>
-                  <div class="unit-item">
-                     <img src="{{ asset('public/assets/website/images/category1.png')}}" class="unit-image" alt="Milk">
-                     <span>500 ml</span>
-                     <span class="pricepopup">
-                     <span class="rupee-symbol">₹</span> 30
-                     </span>
-                     <span class="original-price">
-                     <span class="rupee-symbol2">₹</span> 38
-                     </span>
-                     <button class="add-btn" onclick="convertToQty(this)">Add <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-1"></button>
-                  </div>
-                  <div class="unit-item">
-                     <img src="{{ asset('public/assets/website/images/category1.png')}}" class="unit-image" alt="Milk">
-                     <span>500 ml</span>
-                     <span class="pricepopup">
-                     <span class="rupee-symbol">₹</span> 30
-                     </span>
-                     <span class="original-price">
-                     <span class="rupee-symbol2">₹</span> 38
-                     </span>
-                     <button class="add-btn" onclick="convertToQty(this)">Add <img src="{{ asset('public/assets/website/images/cart.svg')}}" alt="" class="ms-1"></button>
-                  </div>
-               </div>
-            </div>
-         </div>
-      </div>
-   </div>
 </section>
+
 <!-- second section end  -->
 @endsection

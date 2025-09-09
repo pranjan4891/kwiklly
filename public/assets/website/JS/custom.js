@@ -373,40 +373,40 @@ function changeQty(button, change) {
 //     });
 //   });
 //   // Show the login box with smooth slide up on mobile
-//   window.onload = function () {
-//     if (window.innerWidth <= 576) {
-//       setTimeout(() => {
-//         document.querySelector('.log-in-box').classList.add('show');
-//       }, 200);
-//     }
-//   }
+  window.onload = function () {
+    if (window.innerWidth <= 576) {
+      setTimeout(() => {
+        document.querySelector('.log-in-box').classList.add('show');
+      }, 200);
+    }
+  }
 //     // Auto focus move to next input
-//     function moveNext(elem, event) {
-//         if (elem.value.length === 1) {
-//           let next = elem.nextElementSibling;
-//           if (next) next.focus();
-//         } else if (event.inputType === "deleteContentBackward") {
-//           let prev = elem.previousElementSibling;
-//           if (prev) prev.focus();
-//         }
-//       }
+    function moveNext(elem, event) {
+        if (elem.value.length === 1) {
+          let next = elem.nextElementSibling;
+          if (next) next.focus();
+        } else if (event.inputType === "deleteContentBackward") {
+          let prev = elem.previousElementSibling;
+          if (prev) prev.focus();
+        }
+      }
 
 //       // detaile page  js start
 //        // Thumbnail slider arrow scroll
-//     const thumbContainer = document.querySelector('.thumb-det');
-//     document.querySelector('.arrow-left-det').onclick = () => thumbContainer.scrollBy({ left: -100, behavior: 'smooth' });
-//     document.querySelector('.arrow-right-det').onclick = () => thumbContainer.scrollBy({ left: 100, behavior: 'smooth' });
+    const thumbContainer = document.querySelector('.thumb-det');
+    document.querySelector('.arrow-left-det').onclick = () => thumbContainer.scrollBy({ left: -100, behavior: 'smooth' });
+    document.querySelector('.arrow-right-det').onclick = () => thumbContainer.scrollBy({ left: 100, behavior: 'smooth' });
 
 //     // Thumbnail image click
-//     const thumbs = document.querySelectorAll('.thumb-det img');
-//     const mainImg = document.querySelector('.main-product-det');
-//     thumbs.forEach(thumb => {
-//       thumb.addEventListener('click', () => {
-//         thumbs.forEach(t => t.classList.remove('active'));
-//         thumb.classList.add('active');
-//         mainImg.src = thumb.src;
-//       });
-//     });
+    const thumbs = document.querySelectorAll('.thumb-det img');
+    const mainImg = document.querySelector('.main-product-det');
+    thumbs.forEach(thumb => {
+      thumb.addEventListener('click', () => {
+        thumbs.forEach(t => t.classList.remove('active'));
+        thumb.classList.add('active');
+        mainImg.src = thumb.src;
+      });
+    });
 
 //     // Memory/RAM option select
 //     document.querySelectorAll('.btn-option-det').forEach(btn => {
@@ -440,35 +440,35 @@ function changeQty(button, change) {
       // myaccount js strat
 
 
-       function toggleDropdown(el) {
-    const dropdown = el.nextElementSibling;
-    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-      if (menu !== dropdown) menu.style.display = 'none';
-    });
-    dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
-  }
+//        function toggleDropdown(el) {
+//     const dropdown = el.nextElementSibling;
+//     document.querySelectorAll('.dropdown-menu').forEach(menu => {
+//       if (menu !== dropdown) menu.style.display = 'none';
+//     });
+//     dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+//   }
 
-  function editAddress() {
-    Swal.fire('Edit Clicked', 'You can add your edit logic here.', 'info');
-  }
+//   function editAddress() {
+//     Swal.fire('Edit Clicked', 'You can add your edit logic here.', 'info');
+//   }
 
-  function deleteAddress(el) {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to delete this address?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ff4d00',
-      cancelButtonColor: '#aaa',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire('Deleted!', 'Your address has been deleted.', 'success');
-        el.closest('.address-card').remove();
-      }
-    });
-  }
+//   function deleteAddress(el) {
+//     Swal.fire({
+//       title: 'Are you sure?',
+//       text: 'Do you want to delete this address?',
+//       icon: 'warning',
+//       showCancelButton: true,
+//       confirmButtonColor: '#ff4d00',
+//       cancelButtonColor: '#aaa',
+//       confirmButtonText: 'Yes, delete it!',
+//       cancelButtonText: 'Cancel'
+//     }).then((result) => {
+//       if (result.isConfirmed) {
+//         Swal.fire('Deleted!', 'Your address has been deleted.', 'success');
+//         el.closest('.address-card').remove();
+//       }
+//     });
+//   }
 
       // myaccount js end
 

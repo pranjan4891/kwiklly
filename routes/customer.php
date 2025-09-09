@@ -7,26 +7,21 @@
 
 
   /*Customer Section-------------------------------*/
-  // Route::get('/login', [CustomerController::class, 'login'])->name('login');
+
     Route::get("/loginbyphone", [
         CustomerController::class,
         "loginbyphone",
     ])->name("loginbyphone");
-    // Route::get('/forgot', [CustomerController::class, 'forgot'])->name('forgot');
-    // Route::get('/signup', [CustomerController::class, 'signup'])->name('signup');
+
     Route::get("/myaccount", [CustomerController::class, "myaccount"])->name(
         "myaccount"
     );
     /*EndCustomer Section-------------------------------*/
 
     Route::get("/signup", [CustomerController::class, "signup"])->name("signup");
-    Route::post("/signup", [CustomerController::class, "signupStore"])->name(
-        "signup.store"
-    );
+    Route::post("/signup", [CustomerController::class, "signupStore"])->name("signup.store");
     Route::get("/login", [CustomerController::class, "login"])->name("login");
-    Route::post("/login", [CustomerController::class, "loginStore"])->name(
-        "login.store"
-    );
+    Route::post("/login", [CustomerController::class, "loginStore"])->name("login.store");
     Route::get("/forgot", [CustomerController::class, "forgot"])->name("forgot");
 
     Route::post("/logout", function () {

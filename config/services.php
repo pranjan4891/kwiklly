@@ -31,4 +31,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'phonepe' => [
+        'base_url' => env('PHONEPE_BASE_URL'),
+        'client_id' => env('PHONEPE_CLIENT_ID'),
+        'client_secret' => env('PHONEPE_CLIENT_SECRET'),
+        'version' => env('PHONEPE_CLIENT_VERSION', 1),
+        'merchant_id' => env('PHONEPE_MERCHANT_ID'),
+    ],
+
 ];

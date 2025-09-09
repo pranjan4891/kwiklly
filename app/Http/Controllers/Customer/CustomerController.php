@@ -82,7 +82,7 @@ class CustomerController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone_number' => 'required|unique:users,phone_number',
             'password' => 'required|confirmed|min:6',
-            'referral_code' => 'nullable|string|max:10',
+            //'referral_code' => 'nullable|string|max:10',
         ]);
 
         $user = User::create([

@@ -116,17 +116,34 @@ class CartController extends Controller
         }
     }
 
-    public function decrementQty(Request $request)
+   public function decrementQty(Request $request)
     {
         $key = $request->key;
         $confirm = $request->confirm ?? false;
 
+        [$productId, $variantId] = explode("_", $key);
+
+        // 🟢 GUEST USER (session-based cart)
         if (!auth()->check()) {
-            // Handle guest case if needed
-            return response()->json(["error" => "Login required."]);
+            $cart = session()->get("cart", []);
+
+            if (isset($cart[$key])) {
+                $cart[$key]["quantity"]--;
+
+                if ($cart[$key]["quantity"] <= 0) {
+                    unset($cart[$key]);
+                }
+            }
+
+            session()->put("cart", $cart);
+
+            return response()->json([
+                "cart"  => $this->getGuestGroupedCart($cart),
+                "count" => array_sum(array_column($cart, "quantity")),
+            ]);
         }
 
-        [$productId, $variantId] = explode("_", $key);
+        // 🟢 LOGGED-IN USER (database cart)
         $item = CartItem::with("variant.product.vendor")
             ->where("user_id", auth()->id())
             ->where("product_id", $productId)
@@ -194,6 +211,8 @@ class CartController extends Controller
 
         return $this->getCartData();
     }
+
+
 
     public function viewCart()
     {

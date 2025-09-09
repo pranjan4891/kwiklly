@@ -9,10 +9,13 @@ use App\Http\Controllers\Website\CheckoutController;
 use App\Http\Controllers\Website\AddressController;
 use App\Http\Controllers\Website\OrderController;
 use App\Http\Controllers\Website\SearchController;
+use App\Http\Controllers\Website\PaymentController;
+use Illuminate\Support\Facades\Log;
 use App\Models\Order;
 use App\Models\VendorAdmin;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
 
 /*
@@ -53,13 +56,18 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
 
 
     /*Website-------------------------------*/
+
     Route::get('/', [HomeController::class, 'index'])->name('home');
+    // routes/web.php
+    Route::post('/location-products', [HomeController::class, 'locationProducts'])->name('location.products');
+
     Route::get('/department', [HomeController::class, 'department'])->name('department');
     Route::get('/department/products', [HomeController::class, 'getProducts'])->name('department.products');
-    Route::get('/stores/{slug?}', [HomeController::class, 'stores'])->name('stores');
+    Route::get('/stores/{slug}', [HomeController::class, 'stores'])->name('stores');
+    Route::get('/categorywiseproducts/{category_id}', [HomeController::class, 'allCategoryProducts'])->name('allcategorywiseproduct');
     Route::get('/categorywiseproduct/{category_id}/{subcategory_id}', [HomeController::class, 'CategoryProducts'])->name('categorywiseproduct');
     Route::get('/productdetails', [HomeController::class, 'productdetails'])->name('productdetails');
-    Route::get('/explorestore/{vendor_id}/{category_id}', [HomeController::class, 'explorestore'])->name('explorestore');
+    Route::get('/explorestore/{vendor_id}/{cat_id}', [HomeController::class, 'explorestore'])->name('explorestore');
     Route::get('/explorestore/{vendor_id}/{category_id}/{subcategory_id}', [HomeController::class, 'subcategoryProducts'])->name('subcategory.products');
     Route::get('/product/{id}/variants', function ($id) {
         $product = Product::with('variants')->findOrFail($id);
@@ -82,9 +90,7 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
 
 
     Route::middleware('auth')->group(function () {
-        Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.page');
-        Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place');
-      //      Route::get('/order-success', fn () => view('web.order_success'))->name('order.success');
+
 
         // New Update
         Route::get('/cart/view', [CartController::class, 'viewCart'])->name('cart.view');
@@ -104,6 +110,9 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         // minimum order amount
         Route::get('/minimum-order-amount', [CartController::class, 'getMinimumOrderAmount'])->name('minimum.order.amount');
 
+          Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.page');
+        Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place');
+      //      Route::get('/order-success', fn () => view('web.order_success'))->name('order.success');
         // Order
         Route::post('/checkout/process-order', [OrderController::class, 'storeOrder'])->name('checkout.process.order');
         Route::get('/delivery-address', [OrderController::class, 'deliveryAddress'])->name('delivery.address');
@@ -146,28 +155,5 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
 
     /*End Website-------------------------------*/
 
-    // Route::get('/pay', function (PhonePeService $phonePe) {
-    //     $orderId = 'ORDER_' . uniqid();
-    //     $amount = 100; // ₹100
-    //     $callbackUrl = route('phonepe.callback', [], true); // FULL URL is important for PhonePe
-
-    //     $response = $phonePe->initiatePayment($orderId, $amount, $callbackUrl);
-
-    //     if (
-    //         isset($response['data']['instrumentResponse']['redirectInfo']['url'])
-    //     ) {
-    //         return redirect($response['data']['instrumentResponse']['redirectInfo']['url']);
-    //     }
-
-    //     \Log::error('PhonePe Payment Initiation Failed', ['response' => $response]);
-    //     return 'Failed to initiate payment. Please try again.';
-    // })->name('phonepe.pay'); // optional route name for testing
-
-    // Route::match(['POST', 'GET'], '/phonepe-callback', function (Request $request) {
-    //     \Log::info('PhonePe Callback Received:', $request->all());
-
-    //     // Optionally: validate response, update order status, etc.
-
-    //     return response('Callback received', 200);
-    // })->name('phonepe.callback');
-
+    Route::get('/pay', [PaymentController::class, 'initiate'])->name('payment.initiate');
+    Route::post('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');

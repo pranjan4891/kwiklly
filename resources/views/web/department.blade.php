@@ -27,7 +27,7 @@
                     <li class="sidebar-itemde active" data-subcategory="all" onclick="filterBySubcategory('all')">All Categories</li>
                     @foreach($subcategories as $subcategory)
                     <li class="sidebar-itemde" data-subcategory="{{ $subcategory->id }}">
-                        <img src="{{ asset('public/assets/website/images/small1.png') }}">
+                        <img src="{{ asset('public/uploads/subcategories/'.$subcategory->image) }}">
                         <a href="javascript:void(0)" onclick="filterBySubcategory({{ $subcategory->id }})" class="text-decoration-none text-dark">
                             {{ $subcategory->sub_cat_name }}
                         </a>
@@ -60,23 +60,6 @@
     </div>
 </div>
 
-<!-- pop up of add button  -->
-<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="productModalLabel">Product Variants</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Select Unit</h6>
-                <div class="unit-list" id="variant-list">
-                    <!-- Variants will be loaded here dynamically -->
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 </section>
 <!-- second section end  -->
 
@@ -131,49 +114,7 @@
         });
     }
 
-    // Open variant popup
-    function openPopup(productId) {
-        fetch(`/product/${productId}/variants`)
-            .then(response => response.json())
-            .then(variants => {
-                const variantList = document.getElementById('variant-list');
-                variantList.innerHTML = '';
 
-                variants.forEach(variant => {
-                    const variantItem = document.createElement('div');
-                    variantItem.className = 'unit-item';
-                    variantItem.innerHTML = `
-                        <img src="${variant.image_url || `{{ asset('public/assets/website/images/category1.png') }}`}" class="unit-image" alt="Product Variant">
-                        <span>${variant.weight || ''}${variant.unit || ''}</span>
-                        <span class="pricepopup"><span class="rupee-symbol">₹</span> ${variant.variant_selling_price}</span>
-                        ${Number(variant.variant_selling_price) < Number(variant.variant_actual_price)
-                            ? `<span class="original-price"><span class="rupee-symbol2">₹</span> ${variant.variant_actual_price}</span>` : ''}
-                        <button class="add-btn" onclick="addToCartVariant(${variant.id})">Add
-                            <img src="{{ asset('public/assets/website/images/cart.svg') }}" alt="" class="ms-1">
-                        </button>
-                    `;
-                    variantList.appendChild(variantItem);
-                });
-
-                const modal = new bootstrap.Modal(document.getElementById('productModal'));
-                modal.show();
-            })
-            .catch(err => console.error('Error fetching variants:', err));
-    }
-
-    // Add product to cart (single-variant items)
-    function addToCart(button) {
-        const productId = button.getAttribute('data-product-id');
-        const variantId = button.getAttribute('data-variant-id');
-        // TODO: AJAX add-to-cart endpoint
-        console.log('Adding product to cart:', productId, variantId);
-    }
-
-    // Add variant to cart (from popup)
-    function addToCartVariant(variantId) {
-        // TODO: AJAX add-to-cart endpoint
-        console.log('Adding variant to cart:', variantId);
-    }
 </script>
 
 @endsection

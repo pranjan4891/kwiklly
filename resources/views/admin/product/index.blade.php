@@ -1,6 +1,7 @@
 @extends('admin.includes.main')
 
 @section('main')
+
 <div class="wraper container-fluid">
     <div class="page-title">
         <h3 class="title">Product List</h3>
@@ -44,7 +45,7 @@
 
                                         <td>{{ $product->title }}</td>
 
-                                        <td>{{ $product->vendor->name ?? 'N/A' }}</td>
+                                        <td>{{ $product->vendor->business_name ?? 'N/A' }}</td>
 
                                         <td>{{ $product->category->name ?? 'N/A' }}</td>
 
