@@ -377,7 +377,7 @@
          <div class="d-flex justify-content-between align-items-center p-3" style="box-shadow: 0 2px 2px rgb(0 0 0 / 25%);position: sticky;top: 0;background-color: white;z-index: 999;">
             <h5 class="fw-bold">My Cart</h5>
             <div class="">
-               {{-- <button class="btn btn-success btn-sm"><i class="fa fa-wallet"></i> <span class="rupee-symbol-sidecart ms-2">₹</span> 30</button> --}}
+               <button class="btn btn-success btn-sm"><span class="rupee-symbol-sidecart ms-2" id="rupee-symbol-sidecart">₹ 30/-</span></button>
                <button class="btn-close mx-2" onclick="document.getElementById('cartSidebar2').classList.remove('show')"></button>
             </div>
          </div>
