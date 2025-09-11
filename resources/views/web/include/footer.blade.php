@@ -50,48 +50,75 @@
                     </div>
                     </div>
                     <hr class="breakdown">
+
+                    @php
+                        $totalCategories = $footerCategories->count();
+
+                        // If more than 9 categories:
+                        $visibleCategories = $totalCategories > 9
+                            ? $footerCategories->take(8)   // show only first 8
+                            : $footerCategories;           // else show all
+
+                        // From 9th onward goes into dropdown
+                        $moreCategories = $totalCategories > 9
+                            ? $footerCategories->slice(8)
+                            : collect();
+                    @endphp
+
                     <div class="row mt-4 footer-links hidecat">
-                      <h5>Category</h5>
-                        <div class="col-md-4 col-6  footer-links">
-                            <ul>
-                                <li><a href="javascript:void(0)">Dry Fruit</a></li>
-                                <li><a href="javascript:void(0)">Bakery</a></li>
-                                <li><a href="javascript:void(0)">Masala</a></li>
-                            </ul>
+                        <h5>Category</h5>
+
+                        <div class="row w-100">
+                            {{-- 8 visible categories (or fewer if total < 9) --}}
+                            @foreach($visibleCategories as $category)
+                                <div class="col-md-4 col-6 footer-links">
+                                    <ul>
+                                        <li>
+                                            <a href="{{ route('allcategorywiseproduct', $category->id) }}" onclick="return redirectWithLocation(this.href)">
+                                                {{ $category->name }}
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            @endforeach
+
+                            {{-- Dropdown in 9th slot if needed --}}
+                            @if($moreCategories->isNotEmpty())
+                                <div class="col-md-4 col-6 footer-links">
+                                    <ul>
+                                        <li>
+                                            <select class="shopmore" onchange="if(this.value) window.location.href=this.value">
+                                                <option>Show More</option>
+                                                @foreach($moreCategories as $category)
+                                                    <option value="{{ route('allcategorywiseproduct', $category->id) }}">
+                                                        <a onclick="return redirectWithLocation(this.href)">{{ $category->name }}</a>
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </li>
+                                    </ul>
+                                </div>
+                            @endif
+
+                            {{-- Mobile Show More (visible on small screens) --}}
+                            @if($moreCategories->isNotEmpty())
+                                <div class="col-12 d-md-none text-center py-3 shopmore2">
+                                    <select class="shopmore-mobile" onchange="if(this.value) window.location.href=this.value">
+                                        <option>Show More</option>
+                                        @foreach($moreCategories as $category)
+                                            <option value="{{ route('allcategorywiseproduct', $category->id) }}">
+                                                <a onclick="return redirectWithLocation(this.href)">{{ $category->name }}</a>
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
                         </div>
-
-                        <!-- Company -->
-                        <div class="col-md-4 col-6 footer-links">
-                            <ul>
-                                <li><a href="javascript:void(0)">Meat & Sea Food</a></li>
-                                <li><a href="javascript:void(0)">Biscuit & Cake</a></li>
-                                <li><a href="javascript:void(0)">Atta Rice & Dal</a></li>
-                            </ul>
-                        </div>
-
-                    <!-- About -->
-                    <div class="col-md-4 col-12 footer-links">
-                        <ul>
-                            <li><a href="javascript:void(0)">Oil & Ghee</a></li>
-                            <li><a href="javascript:void(0)">Creals & Breakfast </a></li>
-                            <select class="shopmore" style="background-color: transparent;padding: 5px 10px; border:1px solid #D8C2BC;">
-                                <option>Show More</option>
-                                <option>Cake </option>
-                                <option>Masala</option>
-                            </select>
-
-                        </ul>
-                            <!-- mobile shop more  -->
-                    <div class="text-center py-3 shopmore2">
-                        <select style="background-color: transparent;padding: 5px 10px; border:1px solid #D8C2BC;">
-                            <option>Show More</option>
-                            <option>Cake </option>
-                            <option>Masala</option>
-                        </select>
                     </div>
-                        <hr class="breakdown">
-                    </div>
-                </div>
+
+
+
+
               </div>
         </div>
         <section>
@@ -140,6 +167,16 @@
     <!--------------- CUSTOM JAVASCRIPT START ----------------->
     <script src="{{ asset('public/assets/website/JS/custom.js')}}"></script>
     <!--------------- CUSTOM JAVASCRIPT END ----------------->
+
+    <script>
+        document.querySelectorAll('.shopmore').forEach(function(select) {
+            select.addEventListener('change', function() {
+                if (this.value) {
+                    window.location.href = this.value;
+                }
+            });
+        });
+    </script>
 
     <!-- Cart Operations -->
     <script type="text/javascript">
@@ -258,11 +295,21 @@
             let total = 0;
 
             if (cartGroups && Object.keys(cartGroups).length > 0) {
+                console.log(cartGroups);
                 $.each(cartGroups, function (businessName, items) {
+                    // ✅ Pick vendor_id from the first item of the group
+                    let firstItemKey = Object.keys(items)[0];
+                    let vendorId = items[firstItemKey].business_id || '#';
+                    console.log("Vendor ID:", vendorId);
+
                     html += `<div class="cart-business-group mb-3">
-                        <h6 class="mb-1">${businessName}</h6>
-                        <a href="#" class="small text-primary mb-2 d-block">Go to store</a>
-                    `;
+                                <h6 class="mb-1">${businessName}</h6>
+                                <a href="/explorestore/${vendorId}/0" 
+                                class="small text-primary mb-2 d-block" 
+                                onclick="return redirectWithLocation(this.href)">
+                                Go to store
+                                </a>
+                            `;
 
                     $.each(items, function (key, item) {
                         let price = parseFloat(item.price);
@@ -288,7 +335,6 @@
                                     <button class="btn btn-danger increment-btn" data-key="${key}">+</button>
                                 </div>
                             </div>
-
                         `;
                     });
 
@@ -303,6 +349,8 @@
             // update grand total
             updateBillSummary(total);
         }
+
+
 
 
         function updateBillSummary(total) {
@@ -566,6 +614,7 @@
 
     </Script>
 
+
     <!-- Google Maps API (for location autocomplete) -->
     <script type="text/javascript">
         const popup = document.getElementById("addpopPopup");
@@ -677,13 +726,17 @@
         function updateLocation(fullAddress, place = null, lat = null, lng = null){
             let shortAddress = getShortAddress(fullAddress, place);
 
-            // Save location
-            localStorage.setItem("userLocation", JSON.stringify({
+            // Get old location
+            let oldLocation = localStorage.getItem("userLocation");
+            let newLocation = JSON.stringify({
                 fullAddress: fullAddress,
                 shortAddress: shortAddress,
                 lat: lat,
                 lng: lng
-            }));
+            });
+
+            // Save new location
+            localStorage.setItem("userLocation", newLocation);
 
             // Hidden inputs
             document.getElementById("latitude").value = lat || "";
@@ -700,7 +753,23 @@
 
             closeAddpop();
 
-            // Reload products if coords exist
+            // 👉 If location changed (not same as old one), clear cart + redirect home
+            if (oldLocation !== newLocation) {
+                $.post("{{ route('cart.clear') }}", {
+                    _token: "{{ csrf_token() }}"
+                }, function () {
+                    // Reset cart count/UI
+                    $('.cart-count').text(0);
+                    if (typeof loadSideCartItems === "function") loadSideCartItems({});
+                    if (typeof currentCart !== "undefined") currentCart = {};
+
+                    // Redirect to home
+                    window.location.href = "{{ url('/') }}";
+                });
+                return; // prevent further execution (avoid AJAX reload here)
+            }
+
+            // --- If same location, just reload products if coords exist ---
             if (lat && lng) {
                 $.ajax({
                     url: "{{ route('location.products') }}",
@@ -721,6 +790,45 @@
             }
         }
 
+       // --- On Page Load ---
+window.addEventListener("DOMContentLoaded", () => {
+    let savedLocation = localStorage.getItem("userLocation");
+
+    if (savedLocation) {
+        // ✅ Only restore UI, no redirect, no cart clear
+        let loc = JSON.parse(savedLocation);
+
+        document.getElementById("latitude").value = loc.lat || "";
+        document.getElementById("longitude").value = loc.lng || "";
+
+        if (headerLocationDesktop) headerLocationDesktop.innerHTML = "Current Location <br>" + getShortAddress(loc.fullAddress);
+        if (headerLocationMobile) headerLocationMobile.innerHTML = "Current Location <br>" + getShortAddress(loc.fullAddress);
+        if (selectedLocationEl) selectedLocationEl.innerText = "📍 " + loc.fullAddress;
+
+        // ✅ Load products for saved location
+        if (loc.lat && loc.lng) {
+            $.ajax({
+                url: "{{ route('location.products') }}",
+                type: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    latitude: loc.lat,
+                    longitude: loc.lng
+                },
+                success: function(res){
+                    $('#trending-products-section').html(res.trending_html);
+                    $('#stores-section').html(res.stores_html);
+                    $('#categories-section').html(res.categories_html);
+
+                    initializeOwlCarousels();
+                }
+            });
+        }
+
+    } else {
+        detectLocation();
+    }
+});
         // --- Function to initialize/reinitialize Owl Carousels ---
         function initializeOwlCarousels() {
             $('.owl-carousel').trigger('destroy.owl.carousel');
@@ -739,17 +847,17 @@
             });
         }
 
-        // --- On Page Load ---
-        window.addEventListener("DOMContentLoaded", () => {
-            let savedLocation = localStorage.getItem("userLocation");
+        // // --- On Page Load ---
+        // window.addEventListener("DOMContentLoaded", () => {
+        //     let savedLocation = localStorage.getItem("userLocation");
 
-            if (savedLocation) {
-                let loc = JSON.parse(savedLocation);
-                updateLocation(loc.fullAddress, null, loc.lat, loc.lng);
-            } else {
-                detectLocation();
-            }
-        });
+        //     if (savedLocation) {
+        //         let loc = JSON.parse(savedLocation);
+        //         updateLocation(loc.fullAddress, null, loc.lat, loc.lng);
+        //     } else {
+        //         detectLocation();
+        //     }
+        // });
 
         // --- Redirect helper ---
         function redirectWithLocation(baseUrl) {
@@ -777,7 +885,7 @@
     <input type="hidden" id="longitude" name="longitude">
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places&callback=initAutocomplete" async defer></script>
-   <!-- End Google Maps API -->
+
     @stack('scripts')
 </body>
 </html>

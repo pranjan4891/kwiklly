@@ -56,7 +56,7 @@
                         @php
                             $firstProduct = $store->products->first();
                             $firstProductCategoryId = $firstProduct && $firstProduct->fcategory
-                                ? $firstProduct->fcategory->slug
+                                ? $firstProduct->fcategory->id
                                 : 0; // fallback if no category found
                         @endphp
                         <div class="col-md-4 col-12 storedetailanchor">

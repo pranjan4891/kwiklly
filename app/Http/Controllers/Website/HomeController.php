@@ -11,8 +11,8 @@ use App\Models\MasterLocation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
@@ -135,6 +135,8 @@ class HomeController extends Controller
         $lat = $request->input('latitude');
         $lng = $request->input('longitude');
 
+
+
         // ✅ Vendors only inside polygon (admin + branch)
         $branches = collect();
         if ($lat && $lng) {
@@ -162,12 +164,19 @@ class HomeController extends Controller
         $selectedVendor   = null;
 
         if ($selectedBranchId) {
+            // If branch id is provided, select directly
             $selectedVendor = $branches->where('id', (int) $selectedBranchId)->first();
+
         }
 
         if (!$selectedVendor) {
-            // fallback → pick the first admin branch
+            // 👉 Prefer admin first
             $selectedVendor = $branches->where('user_type', 'admin')->first();
+
+            // 👉 If no admin, then pick first branch
+            if (!$selectedVendor) {
+                $selectedVendor = $branches->where('user_type', 'branch')->first();
+            }
         }
 
         // ✅ Products & Subcategories
@@ -175,17 +184,20 @@ class HomeController extends Controller
         $subcategories = collect();
 
         if ($selectedVendor) {
-            // Get products
             $products = Product::with('variants')
                 ->where('vendor_id', $selectedVendor->id)
-                ->where('is_deleted', '0')
                 ->where('is_active', '1')
                 ->get();
 
-            // Get only subcategories that have at least one product
-            $subcategories = SubCategory::where('is_deleted', '0')
-                ->whereIn('id', $products->pluck('subcategory_id')->unique())
+            // ✅ Get unique sub_category_ids from products
+            $subcategoryIds = $products->pluck('sub_category_id')->filter()->unique();
+
+            $subcategories = Subcategory::where('is_deleted', '0')
+                ->whereIn('id', $subcategoryIds)
                 ->get();
+
+        } else {
+            //Log::warning('No selected vendor found', ['branches_count' => $branches->count()]);
         }
 
         // ✅ Store time
@@ -219,6 +231,7 @@ class HomeController extends Controller
             'isOpen'
         ));
     }
+
 
     public function getProducts(Request $request)
     {
@@ -332,9 +345,6 @@ class HomeController extends Controller
                     ->filter(function ($vendor) use ($insideLocation) {
                         return $this->pointInPolygon($vendor->latitude, $vendor->longitude, $insideLocation->lat_long);
                     });
-
-
-              //  Log::info("🛍 Vendors inside polygon:", $vendors->pluck('id')->toArray());
             }
         } else {
           //  Log::warning("⚠️ No lat/lng provided in request");
@@ -377,17 +387,10 @@ class HomeController extends Controller
     }
 
 
-    public function explorestore(Request $request, $vendor_id, $category_slug)
+    public function explorestore(Request $request, $vendor_id, $cat_id = 0)
     {
         $lat = $request->input('latitude');
         $lng = $request->input('longitude');
-
-        // Log::info("🌍 Explorestore called", [
-        //     'vendor_id' => $vendor_id,
-        //     'category_slug' => $category_slug,
-        //     'lat' => $lat,
-        //     'lng' => $lng
-        // ]);
 
         $vendors = collect();
         $insideLocation = null;
@@ -398,75 +401,55 @@ class HomeController extends Controller
                 ->where('is_deleted', 0)
                 ->get()
                 ->first(function ($location) use ($lat, $lng) {
-                    $inside = $this->pointInPolygon($lat, $lng, $location->lat_long);
-                 //   Log::info("🔎 Polygon check for location {$location->id}", ['inside' => $inside]);
-                    return $inside;
+                    return $this->pointInPolygon($lat, $lng, $location->lat_long);
                 });
 
-            if (!$insideLocation) {
-               // Log::warning("⚠️ No polygon matched for lat/lng", ['lat' => $lat, 'lng' => $lng]);
-            } else {
-               // Log::info("✅ Inside Location Found", ['id' => $insideLocation->id]);
-
+            if ($insideLocation) {
                 // 2. Get vendors inside that polygon
                 $vendors = VendorAdmin::where('status', '1')
                     ->where('is_active', '1')
                     ->where('user_type', 'vendor')
                     ->whereNull('deleted_at')
-                    ->with(['products.category']) // ✅ eager load correct relation
+                    ->with(['products.category', 'products.subcategory'])
                     ->get()
                     ->filter(function ($vendor) use ($insideLocation) {
                         return $this->pointInPolygon($vendor->latitude, $vendor->longitude, $insideLocation->lat_long);
                     });
-
-              //  Log::info("🛍 Vendors inside polygon", $vendors->pluck('id')->toArray());
             }
-        } else {
-           // Log::warning("⚠️ No lat/lng provided in request");
         }
 
         // ✅ Vendor check
         $vendor = $vendors->firstWhere('id', (int) $vendor_id);
-
         if (!$vendor) {
-           // Log::warning("🚫 Vendor not found inside polygon or not active", ['vendor_id' => $vendor_id]);
             abort(404, 'Vendor not found in your location');
         }
 
-        // Log::info("✅ Vendor found", [
-        //     'vendor_id' => $vendor->id,
-        //     'vendor_name' => $vendor->name ?? 'N/A',
-        //     'product_total' => $vendor->products->count(),
-        //     'product_ids' => $vendor->products->pluck('id')->toArray(),
-        //     'product_category_ids' => $vendor->products->pluck('category_id')->unique()->toArray() // ✅ corrected
-        // ]);
+        // ✅ Products logic
+        if ($cat_id == 0) {
+            // All vendor products
+            $category = null;
+            $products = $vendor->products;
 
-        // 3. Get category
-        $category = Category::where('slug', $category_slug)->firstOrFail();
-        // Log::info("📂 Category loaded", [
-        //     'slug' => $category_slug,
-        //     'category_id' => $category->id,
-        //     'category_name' => $category->name
-        // ]);
+            // Get all subcategories that have products for this vendor
+            $subcategories = SubCategory::whereIn('id', $products->pluck('sub_category_id')->filter())
+                ->where('is_deleted', 0)
+                ->get();
+        } else {
+            // Products for one category
+            $category = Category::findOrFail($cat_id);
+            $products = $vendor->products->where('category_id', $cat_id);
 
-        // 4. Get products of this vendor + category ✅ fixed
-        $products = $vendor->products->where('category_id', $category->id);
-
-        // Log::info("📦 Products filtered by category", [
-        //     'vendor_id' => $vendor->id,
-        //     'category_id' => $category->id,
-        //     'product_count' => $products->count(),
-        //     'product_ids' => $products->pluck('id')->toArray(),
-        //     'product_category_ids' => $products->pluck('category_id')->unique()->toArray()
-        // ]);
-
-        // 5. Subcategories
-        $subcategories = SubCategory::where('category_id', $category->id)
-            ->where('is_deleted', '0')
-            ->get();
+            // Get only subcategories from this category that vendor has products in
+            $subcategories = SubCategory::where('category_id', $cat_id)
+                ->whereIn('id', $products->pluck('sub_category_id')->filter())
+                ->where('is_deleted', 0)
+                ->get();
+        }
 
         return view('web.explorestore', compact('vendor', 'category', 'subcategories', 'products'));
     }
+
+
 
 
     public function subcategoryProducts(Request $request, $vendor_id, $category_id, $subcategory_id)

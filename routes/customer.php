@@ -22,7 +22,13 @@
     Route::post("/signup", [CustomerController::class, "signupStore"])->name("signup.store");
     Route::get("/login", [CustomerController::class, "login"])->name("login");
     Route::post("/login", [CustomerController::class, "loginStore"])->name("login.store");
-    Route::get("/forgot", [CustomerController::class, "forgot"])->name("forgot");
+  //  Route::get("/forgot", [CustomerController::class, "forgot"])->name("forgot");
+
+    Route::get('/forgot-password', [CustomerController::class, 'showForgotPasswordForm'])->name('forgot.password.form');
+    Route::post('/forgot-password', [CustomerController::class, 'sendResetLink'])->name('forgot.password.send');
+
+    Route::get('/reset-password/{token}', [CustomerController::class, 'showResetPasswordForm'])->name('password.reset.form');
+    Route::post('/reset-password', [CustomerController::class, 'resetPassword'])->name('password.reset');
 
     Route::post("/logout", function () {
         Auth::logout();

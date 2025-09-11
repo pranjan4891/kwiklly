@@ -12,6 +12,7 @@ use App\Models\TimeSlot;
 use App\Models\VendorAdmin;
 use App\Models\WalletTransaction;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
@@ -212,6 +213,24 @@ class CartController extends Controller
         return $this->getCartData();
     }
 
+    // App\Http\Controllers\CartController.php
+    public function clear(Request $request)
+    {
+        if (auth()->check()) {
+            // Logged-in user: clear cart from DB
+            CartItem::where('user_id', auth()->id())->delete();
+        } else {
+            // Guest user: clear from session
+            session()->forget('cart');
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Cart cleared',
+            'count' => 0,
+            'cart' => []
+        ]);
+    }
 
 
     public function viewCart()
@@ -279,47 +298,74 @@ class CartController extends Controller
             $groupedCart = [];
 
             foreach ($items as $item) {
-                if (!$item->variant || !$item->variant->product || !$item->variant->product->vendor) {
+                if (!$item->variant || !$item->variant->product) {
                     continue;
                 }
 
-                $businessId = $item->variant->product->vendor->id;
-                $businessName = $item->variant->product->vendor->business_name;
+                // ✅ Safe vendor_id and vendor name
+              $businessId = $item->variant->product->vendor->id;
+                $businessName = $item->variant->product->vendor->business_name ?? 'Unknown Store';
+
                 $key = $item->product_id . "_" . $item->variant_id;
 
                 $groupedCart[$businessName][$key] = [
-                    "product_id" => $item->product_id,
-                    "variant_id" => $item->variant_id,
-                    "title" => $item->variant->product->title,
-                    "business_id" => $businessId,
-                    "business_name" => $businessName,
-                    "image" => $item->variant->product->feature_image_id && $item->variant->product->featureImage
-                        ? url("public/" . $item->variant->product->featureImage->feature_image)
-                        : asset("public/assets/website/images/default.png"),
-                    "price" => $item->price ?? $item->variant->variant_selling_price,
+                    "product_id"     => $item->product_id,
+                    "variant_id"     => $item->variant_id,
+                    "title"          => $item->variant->product->title,
+                    "business_id"    => $businessId,
+                    "business_name"  => $businessName,
+                    "image"          => $item->variant->product->feature_image_id && $item->variant->product->featureImage
+                                        ? url("public/" . $item->variant->product->featureImage->feature_image)
+                                        : asset("public/assets/website/images/default.png"),
+                    "price"          => $item->price ?? $item->variant->variant_selling_price,
                     "original_price" => $item->variant->variant_actual_price,
-                    "quantity" => $item->quantity,
+                    "quantity"       => $item->quantity,
                 ];
             }
 
-            // Get wallet balance
+            // ✅ Wallet balance
             $walletBalance = WalletTransaction::getBalance(auth()->id());
 
             return response()->json([
-                "cart" => $groupedCart,
-                "count" => $items->count(),
+                "cart"           => $groupedCart,
+                "count"          => $items->count(),
                 "vendor_coupons" => session("vendor_coupons", []),
-                "wallet_balance" => $walletBalance, // Include wallet balance in response
+                "wallet_balance" => $walletBalance,
             ]);
         } else {
             $cart = session()->get("cart", []);
             return response()->json([
-                "cart" => $this->getGuestGroupedCart($cart),
-                "count" => count($cart),
-                "wallet_balance" => 0, // Guests have 0 wallet balance
+                "cart"           => $this->getGuestGroupedCart($cart),
+                "count"          => count($cart),
+                "wallet_balance" => 0,
             ]);
         }
     }
+
+    private function getGuestGroupedCart($cart)
+    {
+        $grouped = [];
+
+        foreach ($cart as $key => $item) {
+            // If vendor id is missing, fetch from DB
+            if (!isset($item['business_id']) || $item['business_id'] == 0) {
+                $product = \App\Models\Product::with('vendor')->find($item['product_id']);
+                if ($product && $product->vendor) {
+                    $item['business_id']   = $product->vendor->id;
+                    $item['business_name'] = $product->vendor->business_name;
+                } else {
+                    $item['business_id']   = 0;
+                    $item['business_name'] = $item['business_name'] ?? 'Unknown Store';
+                }
+            }
+
+            $grouped[$item["business_name"]][$key] = $item;
+        }
+
+        return $grouped;
+    }
+
+
 
     /**
      * Apply wallet balance to order
@@ -387,23 +433,6 @@ class CartController extends Controller
             "success" => true,
             "balance" => $balance,
         ]);
-    }
-
-    private function getGuestGroupedCart($cart)
-    {
-        $grouped = [];
-
-        foreach ($cart as $key => $item) {
-            // FIX: Ensure guest cart items have business_id
-            if (!isset($item['business_id'])) {
-                // For guest users, we need to get business_id from product/variant
-                // This is a temporary fix - you might need to modify your guest cart structure
-                $item['business_id'] = 0; // Default value or fetch from DB if needed
-            }
-            $grouped[$item["business_name"]][$key] = $item;
-        }
-
-        return $grouped;
     }
 
     public function getMinimumOrderAmount(Request $request)

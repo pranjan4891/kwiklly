@@ -39,7 +39,7 @@
     <div class="container-fluid">
         <!-- Desktop: Logo + Location & Search -->
         <div class="d-flex align-items-center w-100 d-none d-md-flex">
-            <a class="navbar-brand" href="index.php">
+            <a class="navbar-brand" href="{{ route('home')}}">
                 <img src="{{ asset('public/assets/website/images/logo.png')}}" alt="Logo">
             </a>
         </div>
@@ -51,7 +51,7 @@
         </div>
     </div>
     <div class="mobile-top d-md-none">
-            <a class="navbar-brand" href="index.php">
+            <a class="navbar-brand" href="{{ route('home')}}">
                 <img src="{{ asset('public/assets/website/images/logo.png')}}" alt="Logo">
             </a>
             <div class="cart-btn">

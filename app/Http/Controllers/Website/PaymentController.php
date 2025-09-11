@@ -5,43 +5,43 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use App\Services\PhonePeService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
-    protected $phonePe;
+    protected PhonePeService $phonePe;
 
     public function __construct(PhonePeService $phonePe)
     {
         $this->phonePe = $phonePe;
     }
 
-    public function initiate(Request $request)
+    public function pay(Request $request)
     {
-        $orderId = 'ORD' . time();
-        $amount = 100; // ₹100
-        $callbackUrl = route('payment.callback');
+        // ✅ Initiate Payment
 
-        $response = $this->phonePe->initiatePayment($orderId, $amount, $callbackUrl);
-        Log::info('PhonePe Initiate Response: ', $response);
-        if (isset($response['success']) && $response['success'] == true) {
-            return redirect()->away($response['data']['instrumentResponse']['redirectInfo']['url']);
+        $response = $this->phonePe->initiatePayment([
+            'amount' => $request->amount ?? 10000, // amount in INR
+            'mobile' => $request->mobile?? 9999999999,
+        ]);
+
+        if (isset($response['data']['instrumentResponse']['redirectInfo']['url'])) {
+            return redirect($response['data']['instrumentResponse']['redirectInfo']['url']);
         }
 
-        return back()->with('error', 'Payment initiation failed');
+        return response()->json($response);
     }
 
     public function callback(Request $request)
     {
-        $orderId = $request->input('transactionId'); // or your own tracking ID
+        // ✅ Handle PhonePe callback here
+        // Save status in DB
+        return response()->json($request->all());
+    }
 
-        $status = $this->phonePe->checkStatus($orderId);
-
-        if ($status['success'] && $status['code'] == 'PAYMENT_SUCCESS') {
-            // ✅ Payment success, update DB
-            return view('payment.success');
-        }
-
-        return view('payment.failed', ['status' => $status]);
+    public function status($txnId)
+    {
+        return $this->phonePe->checkStatus($txnId);
     }
 }

@@ -35,7 +35,7 @@
         @enderror
     </div>
     <div class="mb-2">
-        <input type="text" name="phone_number" class="form-control log-in-form-control" placeholder="Phone Number" required value="{{ old('phone_number') }}">
+        <input type="text" name="phone_number" class="form-control log-in-form-control" placeholder="Phone Number" required value="{{ old('phone_number') }}" minlength="10" maxlength="10">
         @error('phone_number')
             <div class="text-danger mt-1">{{ $message }}</div>
         @enderror
@@ -56,7 +56,7 @@
         <input type="text" name="referral_code" class="form-control log-in-form-control" placeholder="Referral Code">
     </div>
 
-    <a href="{{ route('forgot') }}" class="log-in-forgot-pass">Forgot Password?</a>
+    {{-- <a href="{{ route('forgot.password.form') }}" class="log-in-forgot-pass">Forgot Password?</a> --}}
     <button type="submit" class="btn log-in-btn w-100 py-2 mb-3">Sign Up</button>
 
     <p class="mb-0">If already have account! <a href="{{ route('login') }}" class="log-in-signup-link">Login</a></p>

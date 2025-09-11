@@ -27,17 +27,24 @@
 
     <div class="mb-3">
         <input type="email" name="email" class="form-control log-in-form-control" placeholder="Email id" required>
+            @error('email')
+                <div class="text-danger mb-2">{{ $message }}</div>
+            @enderror
     </div>
 
     <div class="mb-2">
         <input type="password" name="password" class="form-control log-in-form-control" placeholder="Password" required>
+         @error('password')
+            <div class="text-danger mb-2">{{ $message }}</div>
+        @enderror
     </div>
 
-    <a href="{{ route('forgot') }}" class="log-in-forgot-pass">Forgot Password?</a>
+
+    <a href="{{ route('forgot.password.form') }}" class="log-in-forgot-pass">Forgot Password?</a>
 
     <button type="submit" class="btn log-in-btn w-100 py-2 mb-3">Log In</button>
 
-    <a href="{{ route('loginbyphone') }}" class="log-in-phone-login d-block mb-3">Log in using phone number</a>
+    {{-- <a href="{{ route('loginbyphone') }}" class="log-in-phone-login d-block mb-3">Log in using phone number</a> --}}
 
     <p class="mb-0">Don't have an account? <a href="{{ route('signup') }}" class="log-in-signup-link">Sign Up</a></p>
 </form>

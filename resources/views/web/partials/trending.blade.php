@@ -1,3 +1,5 @@
+@if ($trending_products->isNotEmpty())
+
 
 <div class="container mt-4">
       <h4 class="pb-3 pt-4 headingclass">Trending Products</h4>
@@ -89,3 +91,4 @@
          @endforeach
       </div>
    </div>
+   @endif

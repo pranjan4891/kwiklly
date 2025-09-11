@@ -10,6 +10,7 @@ use App\Http\Controllers\Website\AddressController;
 use App\Http\Controllers\Website\OrderController;
 use App\Http\Controllers\Website\SearchController;
 use App\Http\Controllers\Website\PaymentController;
+use App\Http\Controllers\Website\PhonePeController;
 use Illuminate\Support\Facades\Log;
 use App\Models\Order;
 use App\Models\VendorAdmin;
@@ -82,6 +83,8 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
     Route::post('/cart/increment', [CartController::class, 'incrementQty'])->name('cart.increment');
     Route::post('/cart/decrement', [CartController::class, 'decrementQty'])->name('cart.decrement');
     Route::get('/cart-data', [CartController::class, 'getCartData'])->name('cart.data');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+
 
 
     Route::get('/auth-status', function () {
@@ -155,5 +158,27 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
 
     /*End Website-------------------------------*/
 
-    Route::get('/pay', [PaymentController::class, 'initiate'])->name('payment.initiate');
-    Route::post('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+    // Route::get('/phonepe/pay', [PaymentController::class, 'pay']);
+    // Route::any('/api/phonepe/callback', [PaymentController::class, 'callback']);
+    // Route::match(['get', 'post'], '/phonepe/pay', [PaymentController::class, 'pay'])->name('phonepe.pay');
+
+    // //  Route::post('/phonepe/pay', [PaymentController::class, 'pay'])->name('phonepe.pay');
+    // Route::any('/api/phonepe/callback', [PaymentController::class, 'callback'])->name('phonepe.callback');
+    // Route::get('/phonepe/status/{txnId}', [PaymentController::class, 'status'])->name('phonepe.status');
+
+
+
+Route::prefix('phonepe')->group(function () {
+    Route::match(['get', 'post'], '/pay', [PhonePeController::class, 'pay'])->name('phonepe.pay');
+    Route::get('/redirect/{orderId}', [PhonePeController::class, 'redirect'])->name('phonepe.redirect');
+    Route::get('/status', [PhonePeController::class, 'status'])->name('phonepe.status');
+});
+// routes/web.php
+Route::match(['get','post'],'/phonepe/callback',[PhonePeController::class,'callback']);
+
+
+// Success/Failure UI pages (you can customize with Blade)
+Route::view('/success', 'web.phonepe.success')->name('phonepe.success');
+Route::view('/failure', 'web.phonepe.failure')->name('phonepe.failure');
+
+

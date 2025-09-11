@@ -16,7 +16,9 @@ use App\Models\CustomerAddress;
 use App\Models\Coupon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 
 class CustomerController extends Controller
 {
@@ -66,16 +68,84 @@ class CustomerController extends Controller
     {
         return view('web.loginphone');
     }
-    public function forgot()
+   // Show Forgot Password form
+    public function showForgotPasswordForm()
     {
-        return view('web.forgot');
+        return view('web.forgot-password');
     }
+
+    // Send Reset Link
+    public function sendResetLink(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $token = Str::random(64);
+
+        // Store token in password_resets
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'email' => $request->email,
+                'token' => $token,
+                'created_at' => now()
+            ]
+        );
+
+        // Send reset link via email
+        $link = url('/reset-password/' . $token . '?email=' . urlencode($request->email));
+
+        Mail::raw("Click the link to reset your password: $link", function ($message) use ($request) {
+            $message->to($request->email)
+                ->subject('Password Reset Link');
+        });
+
+        return back()->with('success', 'We have emailed your password reset link!');
+    }
+
+    // Show Reset Password form
+    public function showResetPasswordForm(Request $request, $token)
+    {
+        $email = $request->query('email');
+        return view('web.reset-password', compact('token', 'email'));
+    }
+
+    // Handle Reset Password
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|string|min:6|confirmed',
+            'token' => 'required'
+        ]);
+
+        $reset = DB::table('password_resets')
+            ->where('email', $request->email)
+            ->where('token', $request->token)
+            ->first();
+
+        if (!$reset) {
+            return back()->withErrors(['email' => 'Invalid reset token!']);
+        }
+
+        // Update password
+        User::where('email', $request->email)->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Delete token
+        DB::table('password_resets')->where('email', $request->email)->delete();
+
+        return redirect('/login')->with('success', 'Your password has been reset!');
+    }
+
     public function signup()
     {
         return view('web.signup');
     }
 
-   public function signupStore(Request $request)
+    public function signupStore(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:100',

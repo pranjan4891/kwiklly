@@ -32,11 +32,14 @@ return [
     ],
 
     'phonepe' => [
-        'base_url' => env('PHONEPE_BASE_URL'),
+        'env' => env('PHONEPE_ENV', 'uat'),
         'client_id' => env('PHONEPE_CLIENT_ID'),
+        'client_version' => env('PHONEPE_CLIENT_VERSION'),
         'client_secret' => env('PHONEPE_CLIENT_SECRET'),
-        'version' => env('PHONEPE_CLIENT_VERSION', 1),
-        'merchant_id' => env('PHONEPE_MERCHANT_ID'),
+        'backend_url' => env('PHONEPE_BACKEND_URL'),
+        'frontend_url' => env('PHONEPE_FRONTEND_URL'),
     ],
+
+
 
 ];
