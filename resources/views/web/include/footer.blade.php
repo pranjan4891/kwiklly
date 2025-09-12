@@ -304,8 +304,8 @@
 
                     html += `<div class="cart-business-group mb-3">
                                 <h6 class="mb-1">${businessName}</h6>
-                                <a href="/explorestore/${vendorId}/0" 
-                                class="small text-primary mb-2 d-block" 
+                                <a href="/explorestore/${vendorId}/0"
+                                class="small text-primary mb-2 d-block"
                                 onclick="return redirectWithLocation(this.href)">
                                 Go to store
                                 </a>
@@ -791,44 +791,44 @@
         }
 
        // --- On Page Load ---
-window.addEventListener("DOMContentLoaded", () => {
-    let savedLocation = localStorage.getItem("userLocation");
+        window.addEventListener("DOMContentLoaded", () => {
+            let savedLocation = localStorage.getItem("userLocation");
 
-    if (savedLocation) {
-        // ✅ Only restore UI, no redirect, no cart clear
-        let loc = JSON.parse(savedLocation);
+            if (savedLocation) {
+                // ✅ Only restore UI, no redirect, no cart clear
+                let loc = JSON.parse(savedLocation);
 
-        document.getElementById("latitude").value = loc.lat || "";
-        document.getElementById("longitude").value = loc.lng || "";
+                document.getElementById("latitude").value = loc.lat || "";
+                document.getElementById("longitude").value = loc.lng || "";
 
-        if (headerLocationDesktop) headerLocationDesktop.innerHTML = "Current Location <br>" + getShortAddress(loc.fullAddress);
-        if (headerLocationMobile) headerLocationMobile.innerHTML = "Current Location <br>" + getShortAddress(loc.fullAddress);
-        if (selectedLocationEl) selectedLocationEl.innerText = "📍 " + loc.fullAddress;
+                if (headerLocationDesktop) headerLocationDesktop.innerHTML = "Current Location <br>" + getShortAddress(loc.fullAddress);
+                if (headerLocationMobile) headerLocationMobile.innerHTML = "Current Location <br>" + getShortAddress(loc.fullAddress);
+                if (selectedLocationEl) selectedLocationEl.innerText = "📍 " + loc.fullAddress;
 
-        // ✅ Load products for saved location
-        if (loc.lat && loc.lng) {
-            $.ajax({
-                url: "{{ route('location.products') }}",
-                type: "POST",
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    latitude: loc.lat,
-                    longitude: loc.lng
-                },
-                success: function(res){
-                    $('#trending-products-section').html(res.trending_html);
-                    $('#stores-section').html(res.stores_html);
-                    $('#categories-section').html(res.categories_html);
+                // ✅ Load products for saved location
+                if (loc.lat && loc.lng) {
+                    $.ajax({
+                        url: "{{ route('location.products') }}",
+                        type: "POST",
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            latitude: loc.lat,
+                            longitude: loc.lng
+                        },
+                        success: function(res){
+                            $('#trending-products-section').html(res.trending_html);
+                            $('#stores-section').html(res.stores_html);
+                            $('#categories-section').html(res.categories_html);
 
-                    initializeOwlCarousels();
+                            initializeOwlCarousels();
+                        }
+                    });
                 }
-            });
-        }
 
-    } else {
-        detectLocation();
-    }
-});
+            } else {
+                detectLocation();
+            }
+        });
         // --- Function to initialize/reinitialize Owl Carousels ---
         function initializeOwlCarousels() {
             $('.owl-carousel').trigger('destroy.owl.carousel');
@@ -847,17 +847,6 @@ window.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // // --- On Page Load ---
-        // window.addEventListener("DOMContentLoaded", () => {
-        //     let savedLocation = localStorage.getItem("userLocation");
-
-        //     if (savedLocation) {
-        //         let loc = JSON.parse(savedLocation);
-        //         updateLocation(loc.fullAddress, null, loc.lat, loc.lng);
-        //     } else {
-        //         detectLocation();
-        //     }
-        // });
 
         // --- Redirect helper ---
         function redirectWithLocation(baseUrl) {

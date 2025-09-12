@@ -303,7 +303,7 @@ class CartController extends Controller
                 }
 
                 // ✅ Safe vendor_id and vendor name
-              $businessId = $item->variant->product->vendor->id;
+                $businessId = $item->variant->product->vendor->id;
                 $businessName = $item->variant->product->vendor->business_name ?? 'Unknown Store';
 
                 $key = $item->product_id . "_" . $item->variant_id;

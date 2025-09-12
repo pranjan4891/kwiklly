@@ -306,7 +306,6 @@ class HomeController extends Controller
         ]);
     }
 
-
     public function stores(Request $request, $slug = 'all')
     {
         $lat = $request->input('latitude');
@@ -381,11 +380,10 @@ class HomeController extends Controller
           //  Log::info("📍 Showing all vendors:", $vendors->pluck('id')->toArray());
         }
 
-        $data['banners'] = Banner::where('is_deleted', '0')->get();
+        $data['banners'] = Banner::where('banner_cat_id', '4')->where('is_deleted', '0')->get();
 
         return view('web.stores')->with($data);
     }
-
 
     public function explorestore(Request $request, $vendor_id, $cat_id = 0)
     {
@@ -449,22 +447,10 @@ class HomeController extends Controller
         return view('web.explorestore', compact('vendor', 'category', 'subcategories', 'products'));
     }
 
-
-
-
     public function subcategoryProducts(Request $request, $vendor_id, $category_id, $subcategory_id)
     {
         $lat = $request->latitude;
         $lng = $request->longitude;
-
-        // Log::info("🌍 SubcategoryProducts called", [
-        //     'vendor_id'     => $vendor_id,
-        //     'category_id'   => $category_id,
-        //     'subcategory_id'=> $subcategory_id,
-        //     'lat'           => $lat,
-        //     'lng'           => $lng
-        // ]);
-
         $insideLocation = null;
 
         if ($lat && $lng) {
@@ -520,14 +506,6 @@ class HomeController extends Controller
             ->where('is_active', '1')
             ->get();
 
-        // Log::info("📦 Products loaded (subcategory filter)", [
-        //     'vendor_id'      => $vendor->id,
-        //     'category_id'    => $category->id,
-        //     'subcategory_id' => $subcategory->id,
-        //     'product_count'  => $products->count(),
-        //     'product_ids'    => $products->pluck('id')->toArray()
-        // ]);
-
         return view('web.explorestore', compact('vendor', 'category', 'subcategory', 'subcategories', 'products'));
     }
 
@@ -536,8 +514,6 @@ class HomeController extends Controller
     {
         $lat = $request->input('latitude');
         $lng = $request->input('longitude');
-
-      //  Log::info("CategoryProducts Request:", ['lat' => $lat, 'lng' => $lng]);
 
         $category = Category::findOrFail($category_id);
 
@@ -711,39 +687,7 @@ class HomeController extends Controller
     {
         return view('web.productdetails');
     }
-    // public function searchresults()
-    // {
 
-    //     return view('web.searchresults');
-    // }
-
-    /*------------------------------------------------*/
-
-
-    // public function product()
-    // {
-    //     return view('vendor.vendor-signin');
-    // }
-    // public function privacyPolicy()
-    // {
-    //     return view('vendor.vendor-signin');
-    // }
-    // public function termsConditions()
-    // {
-    //     return view('vendor.vendor-signin');
-    // }
-    // public function returnPolicy()
-    // {
-    //     return view('vendor.vendor-signin');
-    // }
-    // public function aboutUs()
-    // {
-    //     return view('vendor.vendor-signin');
-    // }
-    // public function contactUs()
-    // {
-    //     return view('vendor.vendor-signin');
-    // }
 
 
 

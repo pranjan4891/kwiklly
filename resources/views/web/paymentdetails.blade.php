@@ -11,9 +11,20 @@
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
-        .payment-option.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .payment-option {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .payment-option:hover {
+            background-color: #f8f9fa;
+        }
+        .payment-option.selected {
+            background-color: #e7f3ff;
+            border-color: #0d6efd;
         }
         .payment-note {
             background-color: #f8f9fa;
@@ -21,6 +32,42 @@
             border-radius: 5px;
             margin-top: 10px;
             font-size: 0.9rem;
+        }
+        .phonepe-option {
+            display: flex;
+            align-items: center;
+        }
+        .phonepe-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            background-color: #6739B5;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .pay-now-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        .pay-now-btn:hover {
+            background-color: #0b5ed7;
+        }
+        .pay-now-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -140,16 +187,12 @@
                         <div class="payment-methods-box">
                             <div class="order-summary-title">Select Payment Method</div>
 
-                            <div class="payment-option disabled">
-                                <input type="radio" id="card" name="payment_method" value="card" disabled>
-                                <i class="fas fa-credit-card payment-icon"></i>
-                                <label for="card">Credit/Debit Card</label>
-                            </div>
-
-                            <div class="payment-option disabled">
-                                <input type="radio" id="upi" name="payment_method" value="upi" disabled>
-                                <i class="fas fa-mobile-alt payment-icon"></i>
-                                <label for="upi">UPI</label>
+                            <div class="payment-option" onclick="selectPayment('phonepe')">
+                                <input type="radio" id="phonepe" name="payment_method" value="phonepe">
+                                <div class="phonepe-option">
+                                    <div class="phonepe-icon">P</div>
+                                    <label for="phonepe">PhonePe (Online Payment)</label>
+                                </div>
                             </div>
 
                             <div class="payment-option selected" onclick="selectPayment('cod')">
@@ -160,11 +203,11 @@
 
                             <div class="payment-note">
                                 <i class="fas fa-info-circle me-2"></i>
-                                Online payment options will be available soon. Currently, only Cash on Delivery is supported.
+                                PhonePe offers secure online payments via UPI, credit/debit cards, and net banking.
                             </div>
 
                             <!-- Pay Now Button -->
-                            <button class="pay-now-btn" onclick="processCOD()">
+                            <button class="pay-now-btn" id="pay-now-button">
                                 Confirm Order ₹{{number_format($order->final_amount, 2)}}
                             </button>
                         </div>
@@ -177,8 +220,10 @@
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <script>
+        let selectedPaymentMethod = 'cod';
+
         function selectPayment(method) {
-            if (method !== 'cod') return;
+            selectedPaymentMethod = method;
 
             // Update radio button selection
             document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
@@ -188,8 +233,26 @@
             // Update visual selection
             document.querySelectorAll('.payment-option').forEach(option => {
                 option.classList.remove('selected');
+                if (option.querySelector('input').value === method) {
+                    option.classList.add('selected');
+                }
             });
-            document.querySelector('.payment-option:not(.disabled)').classList.add('selected');
+
+            // Update button text based on selection
+            const payButton = document.getElementById('pay-now-button');
+            if (method === 'cod') {
+                payButton.textContent = `Confirm Order ₹{{number_format($order->final_amount, 2)}}`;
+            } else {
+                payButton.textContent = `Pay Now ₹{{number_format($order->final_amount, 2)}}`;
+            }
+        }
+
+        function processPayment() {
+            if (selectedPaymentMethod === 'cod') {
+                processCOD();
+            } else if (selectedPaymentMethod === 'phonepe') {
+                processPhonePe();
+            }
         }
 
         function processCOD() {
@@ -211,9 +274,56 @@
             });
         }
 
+        function processPhonePe() {
+            // Show loading state
+            const btn = document.getElementById('pay-now-button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Redirecting...';
+            btn.disabled = true;
+
+            // Send AJAX request to initiate PhonePe payment
+            fetch('{{ route("phonepe.pay") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    order_id: {{ $order->id }},
+                    amount: {{ $order->final_amount * 100 }} // Convert to paise
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('PhonePe Response:', data);
+
+                if (data.success && data.redirectUrl) {
+                    // DIRECTLY REDIRECT to PhonePe payment page without SweetAlert
+                    window.location.href = data.redirectUrl;
+                } else {
+                    // Show error message in console only (no SweetAlert)
+                    console.error('PhonePe Error:', data.message, data.debug);
+
+                    // Simple alert instead of SweetAlert
+                    alert('Payment Error: ' + (data.message || 'Something went wrong. Please try again.'));
+
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Simple alert instead of SweetAlert
+                alert('An error occurred. Please try again.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
         function processOrder() {
             // Show loading state
-            const btn = document.querySelector('.pay-now-btn');
+            const btn = document.getElementById('pay-now-button');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
             btn.disabled = true;
@@ -273,6 +383,9 @@
         // Initialize the page with COD selected
         document.addEventListener('DOMContentLoaded', function() {
             selectPayment('cod');
+
+            // Add event listener to the pay button
+            document.getElementById('pay-now-button').addEventListener('click', processPayment);
         });
     </script>
 </body>

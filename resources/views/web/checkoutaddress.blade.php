@@ -17,6 +17,35 @@
             border: 2px solid #28a745 !important;
             background-color: #f8fff9;
          }
+         .location-detect-btn {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+         }
+         .location-detect-btn:hover {
+            background-color: #e9ecef;
+         }
+         .location-loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+         }
+         @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+         }
       </style>
    </head>
    <body>
@@ -61,7 +90,7 @@
                   <div class="p-3 ">
                      <!-- Location address text -->
                      <div class="pata-location-title">Your Location</div>
-                     <div class="pata-location-desc">
+                     <div class="pata-location-desc" id="current-location-display">
                         Cisf ground, gali no 2, near metro station gate no 3, saket, Delhi
                      </div>
                      <!-- Buttons: Home / Work -->
@@ -73,13 +102,21 @@
                      <form id="addressForm">
                         <input type="hidden" id="addressId" name="id" value="">
                         <input type="hidden" name="type" id="addressType" value="home">
-                        <div class="pata-input"><input type="text" name="area" placeholder="Area / Sector / Locality*" class="form-control" required></div>
+                        <div class="pata-input">
+                           <input type="text" id="autocomplete" name="area" placeholder="Area / Sector / Locality*" class="form-control" required>
+                        </div>
                         <div class="pata-input"><input type="text" name="flat" placeholder="Flat / Building no*" class="form-control" required></div>
                         <div class="pata-input"><input type="text" name="landmark" placeholder="Landmark (optional)" class="form-control"></div>
                         <div class="pata-input"><input type="text" name="pincode" placeholder="Pincode*" class="form-control" required></div>
                         <div class="pata-input"><input type="text" name="name" placeholder="Name*" class="form-control" required></div>
                         <div class="pata-input"><input type="text" name="phone" placeholder="Phone Number*" class="form-control" required></div>
                         <div class="pata-input"><input type="text" name="alt_phone" placeholder="Alternate Phone Number (optional)" class="form-control"></div>
+
+                        <!-- Use Current Location Button -->
+                        <div class="location-detect-btn" id="use-current-location">
+                           <i class="fas fa-location-arrow"></i> Use my current location
+                        </div>
+
                         <button type="submit" class="pata-save-btn mt-3 w-100">Save Address</button>
                      </form>
                   </div>
@@ -111,10 +148,15 @@
          <input type="hidden" name="address_id" id="selectedAddressId" value="">
       </form>
 
+      <!-- Hidden inputs for location data -->
+      <input type="hidden" id="latitude" name="latitude">
+      <input type="hidden" id="longitude" name="longitude">
 
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
       <script type="text/javascript">
          let selectedAddressId = null;
+         let googlemapkey = "{{ env('GOOGLE_MAPS_API_KEY') }}";
+         let autocomplete;
 
          document.addEventListener("DOMContentLoaded", function () {
            const homeBtn = document.getElementById("pataHomeBtn");
@@ -123,6 +165,14 @@
            const form = document.getElementById('addressForm');
            const saveBtn = document.querySelector('.pata-save-btn');
            const proceedBtn = document.getElementById('proceedToPayBtn');
+           const useCurrentLocationBtn = document.getElementById('use-current-location');
+           const currentLocationDisplay = document.getElementById('current-location-display');
+
+           // Initialize location from localStorage
+           initLocation();
+
+           // Initialize Google Places Autocomplete
+           initAutocomplete();
 
            // Toggle Home/Work button
            homeBtn.addEventListener("click", function () {
@@ -135,6 +185,11 @@
              workBtn.classList.add("active");
              homeBtn.classList.remove("active");
              addressType.value = "work";
+           });
+
+           // Use Current Location button
+           useCurrentLocationBtn.addEventListener('click', function() {
+             detectLocation();
            });
 
            // Submit form (Add/Update)
@@ -222,6 +277,173 @@
                    section.innerHTML += card;
                  });
                });
+           }
+
+           // Initialize location from localStorage
+           function initLocation() {
+             let savedLocation = localStorage.getItem("userLocation");
+             if (savedLocation) {
+               try {
+                 let loc = JSON.parse(savedLocation);
+                 if (loc.fullAddress) {
+                   currentLocationDisplay.textContent = loc.fullAddress;
+                 }
+               } catch (e) {
+                 console.error("Error parsing saved location:", e);
+               }
+             }
+           }
+
+           // Initialize Google Places Autocomplete
+           function initAutocomplete() {
+             const input = document.getElementById("autocomplete");
+             if (!input || typeof google === 'undefined') return;
+
+             autocomplete = new google.maps.places.Autocomplete(input, {
+               types: ['geocode'],
+               componentRestrictions: { country: 'in' }
+             });
+
+             autocomplete.addListener('place_changed', function() {
+               const place = autocomplete.getPlace();
+               if (!place.geometry) {
+                 console.warn("No details available for input: '" + place.name + "'");
+                 return;
+               }
+
+               // Extract address components
+               extractAddressComponents(place);
+             });
+           }
+
+           // Extract address components from Google Places result
+           function extractAddressComponents(place) {
+             let streetNumber = '';
+             let route = '';
+             let locality = '';
+             let postalCode = '';
+             let administrativeArea = '';
+
+             // Get each component of the address
+             for (const component of place.address_components) {
+               const componentType = component.types[0];
+
+               switch (componentType) {
+                 case "street_number":
+                   streetNumber = component.long_name;
+                   break;
+                 case "route":
+                   route = component.long_name;
+                   break;
+                 case "locality":
+                   locality = component.long_name;
+                   break;
+                 case "postal_code":
+                   postalCode = component.long_name;
+                   break;
+                 case "administrative_area_level_1":
+                   administrativeArea = component.long_name;
+                   break;
+               }
+             }
+
+             // Populate form fields
+             if (streetNumber || route) {
+               document.querySelector('input[name="flat"]').value = [streetNumber, route].filter(Boolean).join(' ');
+             }
+
+             if (locality) {
+               document.querySelector('input[name="area"]').value = locality;
+             }
+
+             if (postalCode) {
+               document.querySelector('input[name="pincode"]').value = postalCode;
+             }
+           }
+
+           // Detect current location
+           function detectLocation() {
+             useCurrentLocationBtn.innerHTML = '<span class="location-loading"></span> Detecting location...';
+
+             if (navigator.geolocation) {
+               navigator.geolocation.getCurrentPosition(
+                 (position) => {
+                   let lat = position.coords.latitude;
+                   let lng = position.coords.longitude;
+
+                   document.getElementById('latitude').value = lat;
+                   document.getElementById('longitude').value = lng;
+
+                   reverseGeocode(lat, lng);
+                 },
+                 (error) => {
+                   console.warn("Geolocation error:", error);
+                   useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
+                   alert('Unable to detect your location. Please try again or enter manually.');
+                 }
+               );
+             } else {
+               useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
+               alert('Geolocation is not supported by this browser.');
+             }
+           }
+
+           // Reverse geocode coordinates to address
+           async function reverseGeocode(lat, lng) {
+             let geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${googlemapkey}`;
+
+             try {
+               let response = await fetch(geocodeUrl);
+               let data = await response.json();
+
+               if (data.status === "OK" && data.results.length) {
+                 let result = data.results[0];
+                 let address = result.formatted_address;
+
+                 // Update location display
+                 currentLocationDisplay.textContent = address;
+
+                 // Extract and populate address components
+                 extractAddressComponents(result);
+
+                 // Save to localStorage
+                 let shortAddress = getShortAddress(address, result);
+                 localStorage.setItem("userLocation", JSON.stringify({
+                   fullAddress: address,
+                   shortAddress: shortAddress,
+                   lat: lat,
+                   lng: lng
+                 }));
+
+                 useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
+               } else {
+                 throw new Error("No results found");
+               }
+             } catch (error) {
+               console.error("Reverse geocoding error:", error);
+               useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
+               alert('Unable to get address from your location. Please try again or enter manually.');
+             }
+           }
+
+           // Helper: shorten address for display
+           function getShortAddress(fullAddress, place = null) {
+             if (place && place.address_components) {
+               let components = place.address_components;
+               let sublocality = components.find(c =>
+                 c.types.includes("sublocality") || c.types.includes("sublocality_level_1")
+               );
+               let neighborhood = components.find(c => c.types.includes("neighborhood"));
+               let city = components.find(c => c.types.includes("locality"));
+               let state = components.find(c => c.types.includes("administrative_area_level_1"));
+
+               let area = sublocality ? sublocality.long_name : (neighborhood ? neighborhood.long_name : "");
+
+               if (area || city || state) {
+                 return `${area ? area + ", " : ""}${city ? city.long_name + ", " : ""}${state ? state.long_name : ""}`;
+               }
+             }
+             return fullAddress.length > 40 ? fullAddress.substring(0, 40) + "..." : fullAddress;
            }
 
            // Load on page load
@@ -340,5 +562,8 @@
            }
          });
       </script>
+
+      <!-- Google Maps API (for location autocomplete) -->
+      <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places&callback=initAutocomplete" async defer></script>
    </body>
 </html>

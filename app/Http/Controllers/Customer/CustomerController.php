@@ -83,7 +83,7 @@ class CustomerController extends Controller
 
         $token = Str::random(64);
 
-        // Store token in password_resets
+        // Store token in password_reset_tokens
         DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $request->email],
             [
@@ -120,7 +120,7 @@ class CustomerController extends Controller
             'token' => 'required'
         ]);
 
-        $reset = DB::table('password_resets')
+        $reset = DB::table('password_reset_tokens')
             ->where('email', $request->email)
             ->where('token', $request->token)
             ->first();
@@ -135,7 +135,7 @@ class CustomerController extends Controller
         ]);
 
         // Delete token
-        DB::table('password_resets')->where('email', $request->email)->delete();
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
         return redirect('/login')->with('success', 'Your password has been reset!');
     }

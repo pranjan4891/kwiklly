@@ -393,20 +393,20 @@ function changeQty(button, change) {
 
 //       // detaile page  js start
 //        // Thumbnail slider arrow scroll
-    const thumbContainer = document.querySelector('.thumb-det');
-    document.querySelector('.arrow-left-det').onclick = () => thumbContainer.scrollBy({ left: -100, behavior: 'smooth' });
-    document.querySelector('.arrow-right-det').onclick = () => thumbContainer.scrollBy({ left: 100, behavior: 'smooth' });
+//     const thumbContainer = document.querySelector('.thumb-det');
+//     document.querySelector('.arrow-left-det').onclick = () => thumbContainer.scrollBy({ left: -100, behavior: 'smooth' });
+//     document.querySelector('.arrow-right-det').onclick = () => thumbContainer.scrollBy({ left: 100, behavior: 'smooth' });
 
-//     // Thumbnail image click
-    const thumbs = document.querySelectorAll('.thumb-det img');
-    const mainImg = document.querySelector('.main-product-det');
-    thumbs.forEach(thumb => {
-      thumb.addEventListener('click', () => {
-        thumbs.forEach(t => t.classList.remove('active'));
-        thumb.classList.add('active');
-        mainImg.src = thumb.src;
-      });
-    });
+// //     // Thumbnail image click
+//     const thumbs = document.querySelectorAll('.thumb-det img');
+//     const mainImg = document.querySelector('.main-product-det');
+//     thumbs.forEach(thumb => {
+//       thumb.addEventListener('click', () => {
+//         thumbs.forEach(t => t.classList.remove('active'));
+//         thumb.classList.add('active');
+//         mainImg.src = thumb.src;
+//       });
+//     });
 
 //     // Memory/RAM option select
 //     document.querySelectorAll('.btn-option-det').forEach(btn => {
