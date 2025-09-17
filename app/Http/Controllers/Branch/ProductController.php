@@ -26,7 +26,7 @@ class ProductController extends Controller
         $title = 'Product List';
        $branch= Auth::guard('branch')->user();
         if (!$branch) {
-            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+            return redirect()->route('branch.login')->with('error', 'You are not authorized to access this page.');
         }
         $products = Product::with(['category', 'subcategory', 'vendor', 'featureImage'])->where('vendor_id', $branch->id)->get();
         return view('branch.product.index', compact('products', 'title', 'branch'));
@@ -37,7 +37,7 @@ class ProductController extends Controller
         $title = 'Add Product';
        $branch= Auth::guard('branch')->user();
         if (!$branch) {
-            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+            return redirect()->route('branch.login')->with('error', 'You are not authorized to access this page.');
         }
         $categories = Category::all();
         $images = ProductImages::all();
@@ -92,7 +92,7 @@ class ProductController extends Controller
 
         $product->save();
 
-        return redirect()->route('admin.products')->with('success', 'Product created successfully.');
+        return redirect()->route('branch.products')->with('success', 'Product created successfully.');
     }
 
     public function edit($id)
@@ -100,7 +100,7 @@ class ProductController extends Controller
         $title = 'Edit Product';
        $branch= Auth::guard('branch')->user();
         if (!$branch) {
-            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+            return redirect()->route('branch.login')->with('error', 'You are not authorized to access this page.');
         }
         $product = Product::with(['category', 'subcategory', 'featureImage'])->findOrFail($id);
         $categories = Category::all();
@@ -152,7 +152,7 @@ class ProductController extends Controller
 
         $product->save();
 
-        return redirect()->route('admin.products')->with('success', 'Product updated successfully.');
+        return redirect()->route('branch.products')->with('success', 'Product updated successfully.');
     }
 
     public function destroy($id)
@@ -161,7 +161,7 @@ class ProductController extends Controller
         $product->is_deleted = 1; // Soft delete
         $product->save();
 
-        return redirect()->route('admin.products')->with('success', 'Product deleted successfully.');
+        return redirect()->route('branch.products')->with('success', 'Product deleted successfully.');
     }
 
     public function createVariant($productId)
@@ -169,7 +169,7 @@ class ProductController extends Controller
         $title = 'Add Product Variant';
        $branch= Auth::guard('branch')->user();
         if (!$branch) {
-            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+            return redirect()->route('branch.login')->with('error', 'You are not authorized to access this page.');
         }
         $product = Product::with('subcategory')->findOrFail($productId);
         $subcategoryId = $product->sub_category_id;
@@ -220,7 +220,7 @@ class ProductController extends Controller
         $title = 'Edit Product Variant';
        $branch= Auth::guard('branch')->user();
         if (!$branch) {
-            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+            return redirect()->route('branch.login')->with('error', 'You are not authorized to access this page.');
         }
         $variant = ProductVariant::findOrFail($id);
         $product = Product::findOrFail($variant->product_id);
@@ -355,7 +355,7 @@ class ProductController extends Controller
         $title = 'Product List';
        $branch= Auth::guard('branch')->user();
         if (!$branch) {
-            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+            return redirect()->route('branch.login')->with('error', 'You are not authorized to access this page.');
         }
 
         return view('branch.product.import', compact('title', 'branch'));

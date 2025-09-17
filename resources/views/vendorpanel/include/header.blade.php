@@ -2,12 +2,12 @@
 <html lang="en">
     <head>
         <!-- META SECTION -->
-        <title>Kwiklly</title>
+        <title>Kwiklly | Vendor</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <link rel="icon" href="{{ asset('public/web/images/logo.png')}}" type="image/x-icon" />
+        {{-- <link rel="icon" href="{{ asset('public/web/images/logo.png')}}" type="image/x-icon" /> --}}
         <!-- END META SECTION -->
         <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:100,300,400,600,700,900,400italic' rel='stylesheet'>
         <link href="{{ asset('public/assets/admin/assets/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -81,7 +81,7 @@
                         <a href="#"><span class="fa fa-pencil"></span> <span class="xn-text">Product Images</span></a>
                         <ul>
                             <li><a href="{{ route('vendor.product.images')}}"><span class="fa fa-list-ul"></span> Active Product Image</a></li>
-                            <li><a href="{{route('admin.product.images.deleted')}}">InActive Product Image</a></li>
+                            <li><a href="{{route('vendor.product.images.deleted')}}">InActive Product Image</a></li>
                         </ul>
                     </li>
                     <li class="xn-openable">

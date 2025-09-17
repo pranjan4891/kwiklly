@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\PhonePeService;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\CartItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -69,6 +70,9 @@ class PhonePeController extends Controller
                     'success' => true,
                     'redirectUrl' => $result['redirectUrl']
                 ]);
+
+                // Clear cart
+                CartItem::where('user_id', Auth::id())->delete();
             }
 
             // If failed, update payment status

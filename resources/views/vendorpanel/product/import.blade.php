@@ -21,8 +21,8 @@
                     <div class="panel-body">
                         <div class="mt-3">
                             <a href="{{ route('admin.sample.csv') }}" class="btn btn-info">Download Sample CSV</a>
-                            <a href="{{ route('vendor.export.categories') }}" class="btn btn-success">Export Categories</a>
-                            <a href="{{ route('vendor.export.subcategories') }}" class="btn btn-primary">Export Subcategories</a>
+                            <a href="{{ route('admin.export.categories') }}" class="btn btn-success">Export Categories</a>
+                            <a href="{{ route('admin.export.subcategories') }}" class="btn btn-primary">Export Subcategories</a>
                         </div>
                     </div>
                 </div>

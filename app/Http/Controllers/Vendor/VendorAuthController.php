@@ -20,7 +20,7 @@ class VendorAuthController extends Controller
 
         $check = VendorAdmin::where('email', $credentials['email'])->where('user_type','admin')->first();
         if ($check) {
-            return redirect()->route('admin.login');
+            return redirect()->route('vendor.login');
         }
 
         if (Auth::guard('vendor')->attempt($credentials)) {

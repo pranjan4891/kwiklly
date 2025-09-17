@@ -1,6 +1,6 @@
 @extends('vendorpanel.include.main')
 
-@section('main')
+@section('content')
 <div class="wraper container-fluid">
     <div class="page-title">
         <h3 class="title">Edit Coupon</h3>

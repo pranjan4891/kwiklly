@@ -21,7 +21,7 @@ class CouponController extends Controller
             return redirect()->route('admin.dashboard')->with('error', 'You do not have permission to view this page.');
         }
 
-        $coupons = Coupon::where('is_deleted', 0)->where('is_active', 1)->latest()->get();
+        $coupons = Coupon::where('is_deleted', 0)->where('is_active', 1)->where('created_by_id', $admin->id)->latest()->get();
         return view('admin.coupon.index', compact('coupons', 'title', 'admin'));
     }
 

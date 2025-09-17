@@ -15,7 +15,7 @@ class ProductImagesController extends Controller
         $title = 'Branch | Product Images';
         $branch = auth()->guard('branch')->user();
         if (!$branch) {
-            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+            return redirect()->route('branch.login')->with('error', 'You are not authorized to access this page.');
         }
         $productImages = ProductImages::where('is_deleted', 0)->latest()->get();
         $isDeletedView = false;
@@ -178,7 +178,7 @@ class ProductImagesController extends Controller
         $title = 'Branch | Deleted Product Images';
         $branch = auth()->guard('branch')->user();
         if (!$branch) {
-            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+            return redirect()->route('branch.login')->with('error', 'You are not authorized to access this page.');
         }
         $productImages = ProductImages::where('is_deleted', 1)->get();
         $isDeletedView = true;

@@ -175,7 +175,7 @@ class ProductImagesController extends Controller
     //soft delete images show
     public function showDeletedImages()
     {
-        $title = 'Admin | Deleted Product Images';
+        $title = 'Vendor | Deleted Product Images';
         $vendor = auth()->guard('vendor')->user();
         if (!$vendor) {
             return redirect()->route('vendor.login')->with('error', 'You are not authorized to access this page.');

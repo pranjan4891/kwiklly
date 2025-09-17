@@ -56,27 +56,53 @@
                         @endphp
 
                         <div class="qty-box"
-                           data-product-id="{{ $product->id }}"
-                           data-variant-id="{{ $firstVariant->id }}"
-                           data-key="{{ $key }}">
-                           @if ($hasMultipleVariants)
-                              <button class="add-btn d-flex position-relative" onclick="openPopup({{ $product->id }})">
-                                 Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
-                                 <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
-                              </button>
-                           @else
-                              @if (!$inCart)
-                                 <button class="add-btn" data-product-id="{{ $product->id }}" data-variant-id="{{ $firstVariant->id }}">
-                                    Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
-                                 </button>
-                              @else
-                                 <div class="qty-container">
-                                    <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
-                                    <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
-                                    <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
-                                 </div>
-                              @endif
-                           @endif
+                            data-product-id="{{ $product->id }}"
+                            data-variant-id="{{ $firstVariant->id ?? '' }}"
+                            data-key="{{ $key }}">
+
+                            @php
+
+                                $isOpen = \App\Helpers\StoreHelper::isStoreOpen($product->vendor->store_time);
+                            @endphp
+
+                            @if ($isOpen)
+                                {{-- ✅ Store is open --}}
+                                @if ($hasMultipleVariants)
+                                    <button class="add-btn d-flex flex-column align-items-center position-relative"
+                                            onclick="openPopup({{ $product->id }})">
+                                        <div class="d-flex align-items-center">
+                                            Add
+                                            <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                        </div>
+                                        <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
+                                    </button>
+                                @else
+                                    @if (!$defaultVariant)
+                                        <button class="add-btn" disabled>Unavailable</button>
+                                    @else
+                                        @if (!$inCart)
+                                            <button class="add-btn"
+                                                    data-product-id="{{ $product->id }}"
+                                                    data-variant-id="{{ $firstVariant->id }}"
+                                                    onclick="addToCart(this)">
+                                                Add
+                                                <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                            </button>
+                                        @else
+                                            <div class="qty-container">
+                                                <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
+                                                <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
+                                                <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
+                                            </div>
+                                        @endif
+                                    @endif
+                                @endif
+                            @else
+                                {{-- ❌ Store is closed --}}
+                                <button class="add-btn disabled" disabled>
+                                    Store Closed
+                                </button>
+                            @endif
                         </div>
                      </div>
 

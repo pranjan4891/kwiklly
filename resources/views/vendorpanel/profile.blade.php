@@ -16,18 +16,7 @@
 <!-- PAGE CONTENT WRAPPER -->
 <div class="page-content-wrap">
    <div class="row">
-      <!-- <div class="col-md-6">
-         <div class="alert alert-warning" role="alert">
-             <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-             <strong>Important!</strong> Main feature of this page is "Change photo" function. Press button "Change photo" and try to use this awesome feature.
-         </div>
-         </div> -->
-      {{-- <div class="col-md-12">
-         <div class="alert alert-danger" role="alert">
-            <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-            <strong>Important Note!</strong> First need to verified your "Email & Phone" Number than you can run your shop on this platform. Press button "Verify".
-         </div>
-      </div> --}}
+
    </div>
    <div class="row">
       <div class="col-md-4 col-sm-6 col-xs-12">
@@ -315,6 +304,24 @@
                         </div>
                         <div class="col-6">
                            <input type="number" name="minimum_order_value" id="minimum_order_value" class="form-control" value="{{ old('minimum_order_value', $vendor->minimum_order_value) }}">
+                        </div>
+                     </div>
+                     <div class="row">
+                        {{-- Maximum Order Value --}}
+                        <div class="col-3">
+                           <label for="delivery_charge">Delivery Charge (Rs.)</label>
+                        </div>
+                        <div class="col-6">
+                           <input type="number" name="delivery_charge" id="delivery_charge" class="form-control" value="{{ old('delivery_charge', $vendor->delivery_charge) }}">
+                        </div>
+                     </div>
+                     <div class="row">
+                        {{-- Delivery Time --}}
+                        <div class="col-3">
+                           <label for="delivery_range">Delivery Range (KM)</label>
+                        </div>
+                        <div class="col-6">
+                           <input type="number" name="delivery_range" id="delivery_range" class="form-control" value="{{ old('delivery_range', $vendor->delivery_range) }}">
                         </div>
                      </div>
                      <div class="row">

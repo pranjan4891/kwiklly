@@ -62,15 +62,26 @@
 <!-- first section start  -->
 <section>
 <div class="container log-in-container form-section">
+    @if (session('success') || session('error'))
+        <div class="alert alert-{{ session('success') ? 'success' : 'danger' }}">
+            {{ session('success') ?? session('error') }}
+        </div>
+    @endif
     <div class="log-in-box">
       <h4 class="mb-4 fw-bold">Vendor LogIn  Here</h4>
       <form method="POST" action="{{ route('vendor.login.submit') }}">
           @csrf
           <div class="mb-3">
             <input type="email" name="email" class="form-control log-in-form-control" placeholder="Email id" required>
+            @error('email')
+                <div class="text-danger mb-2">{{ $message }}</div>
+            @enderror
           </div>
           <div class="mb-2">
             <input type="password" name="password" class="form-control log-in-form-control" placeholder="Password" required>
+            @error('password')
+                <div class="text-danger mb-2">{{ $message }}</div>
+            @enderror
           </div>
           <button type="submit" class="btn log-in-btn w-100 py-2 mb-3">Log In</button>
           {{-- <p class="mb-0">

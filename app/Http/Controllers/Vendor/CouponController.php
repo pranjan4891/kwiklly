@@ -82,7 +82,7 @@ class CouponController extends Controller
         return view('vendorpanel.coupon.edit', compact('title', 'vendor', 'coupon', 'products', 'categories', 'subcategories'));
     }
 
-   public function update(Request $request, Coupon $coupon)
+    public function update(Request $request, Coupon $coupon)
     {
         $vendor = Auth::guard('vendor')->user();
 

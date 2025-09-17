@@ -50,61 +50,63 @@ class VendorDashboardController extends Controller
     }
 
 
-  public function updateProfile(Request $request)
-{
-    \Log::info('Update profile request received', $request->all());
-    $vendor = VendorAdmin::find(Auth::id());
-    if (!$vendor) {
-        return back()->with('error', 'Vendor not found');
-    }
-
-    // Update fields
-    $vendor->display_name = $request->display_name;
-    $vendor->business_category = is_array($request->business_category) ? implode(',', $request->business_category) : null;
-    $vendor->minimum_order_value = $request->minimum_order_value;
-    $vendor->business_description = $request->business_description;
-    $vendor->service_offered = $request->service_offered;
-    $vendor->business_name = $request->business_name;
-    $vendor->gstin = $request->gstin;
-    $vendor->landmark = $request->landmark;
-    $vendor->business_address = $request->business_address;
-    $vendor->email = $request->email;
-    $vendor->phone = $request->phone;
-    $vendor->account_holder_name = $request->account_holder_name;
-    $vendor->account_number = $request->account_number;
-    $vendor->ifsc_code = $request->ifsc_code;
-    $vendor->bank_name = $request->bank_name;
-    $vendor->bank_city = $request->bank_city;
-    $vendor->bank_branch = $request->bank_branch;
-
-    // Handle file uploads
-    $fileFields = [
-        'cancel_cheque_image',
-        'pan_image',
-        'address_proof_image',
-        'tan_image',
-        'cin_image',
-        'personal_pan_image',
-        'personal_address_proof_image'
-    ];
-
-    foreach ($fileFields as $field) {
-        if ($request->hasFile($field)) {
-            $file = $request->file($field);
-            $filename = time() . '_' . $field . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('vendor_files', $filename, 'public');
-            $vendor->$field = $path;
+    public function updateProfile(Request $request)
+    {
+        //\Log::info('Update profile request received', $request->all());
+        $vendor = VendorAdmin::find(Auth::id());
+        if (!$vendor) {
+            return back()->with('error', 'Vendor not found');
         }
+
+        // Update fields
+        $vendor->display_name = $request->display_name;
+        $vendor->business_category = is_array($request->business_category) ? implode(',', $request->business_category) : null;
+        $vendor->minimum_order_value = $request->minimum_order_value;
+        $vendor->delivery_charge = $request->delivery_charge;
+        $vendor->delivery_range = $request->delivery_range;
+        $vendor->business_description = $request->business_description;
+        $vendor->service_offered = $request->service_offered;
+        $vendor->business_name = $request->business_name;
+        $vendor->gstin = $request->gstin;
+        $vendor->landmark = $request->landmark;
+        $vendor->business_address = $request->business_address;
+        $vendor->email = $request->email;
+        $vendor->phone = $request->phone;
+        $vendor->account_holder_name = $request->account_holder_name;
+        $vendor->account_number = $request->account_number;
+        $vendor->ifsc_code = $request->ifsc_code;
+        $vendor->bank_name = $request->bank_name;
+        $vendor->bank_city = $request->bank_city;
+        $vendor->bank_branch = $request->bank_branch;
+
+        // Handle file uploads
+        $fileFields = [
+            'cancel_cheque_image',
+            'pan_image',
+            'address_proof_image',
+            'tan_image',
+            'cin_image',
+            'personal_pan_image',
+            'personal_address_proof_image'
+        ];
+
+        foreach ($fileFields as $field) {
+            if ($request->hasFile($field)) {
+                $file = $request->file($field);
+                $filename = time() . '_' . $field . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('vendor_files', $filename, 'public');
+                $vendor->$field = $path;
+            }
+        }
+
+        $vendor->save();
+
+        return back()->with('success', 'Profile updated successfully.');
     }
-
-    $vendor->save();
-
-    return back()->with('success', 'Profile updated successfully.');
-}
 
   public function storeTime(Request $request)
 {
-\Log::info('Store time request received', $request->all());
+//\Log::info('Store time request received', $request->all());
     $storeSchedule = [];
 
     for ($i = 1; $i <= 7; $i++) {

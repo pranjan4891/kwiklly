@@ -194,20 +194,23 @@ Route::group(['prefix' => 'admin'], function () {
 
 });
 
-    Route::get('/admin/get-area', [AdminController::class, 'getArea'])->name('admin.get.area');
-    // Get Cities by State
-    Route::get('/get-cities/{state_id}', function ($state_id) {
-        return City::where('state_id', $state_id)->get();
-    })->name('admin.get.cities');
-    //Export Category & Subcategory
-    Route::get('/export/categories', [CategoryController::class, 'exportCategories'])->name('admin.export.categories');
-    Route::get('/export/subcategories', [CategoryController::class, 'exportSubcategories'])->name('admin.export.subcategories');
-    Route::get('download/sample-csv', function () {
-        $file = public_path('sample.csv');
-        return response()->download($file, 'sample.csv', [
-            'Content-Type' => 'text/csv',
-        ]);
-    })->name('admin.sample.csv');
+Route::get('/admin/get-area', [AdminController::class, 'getArea'])->name('admin.get.area');
+
+Route::get('/admin/check-lat-lon', [AdminController::class, 'pointInPolygon'])->name('admin.check.lat.lon');
+
+// Get Cities by State
+Route::get('/get-cities/{state_id}', function ($state_id) {
+    return City::where('state_id', $state_id)->get();
+})->name('admin.get.cities');
+//Export Category & Subcategory
+Route::get('/export/categories', [CategoryController::class, 'exportCategories'])->name('admin.export.categories');
+Route::get('/export/subcategories', [CategoryController::class, 'exportSubcategories'])->name('admin.export.subcategories');
+Route::get('download/sample-csv', function () {
+    $file = public_path('sample.csv');
+    return response()->download($file, 'sample.csv', [
+        'Content-Type' => 'text/csv',
+    ]);
+})->name('admin.sample.csv');
 
 
 

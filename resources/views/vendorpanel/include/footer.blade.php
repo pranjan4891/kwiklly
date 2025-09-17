@@ -1,4 +1,4 @@
-<!-- MESSAGE BOX-->
+        <!-- MESSAGE BOX-->
         <div class="message-box animated fadeIn" data-sound="alert" id="mb-signout">
             <div class="mb-container">
                 <div class="mb-middle">
@@ -22,8 +22,6 @@
         <audio id="audio-alert" src="{{ asset('public/assets/vendor/audio/alert.mp3') }} " preload="auto"></audio>
         <audio id="audio-fail" src="{{ asset('public/assets/vendor/audio/fail.mp3') }}" preload="auto"></audio>
         <!-- END PRELOADS -->
-
-    <!-- START SCRIPTS -->
         <!-- START PLUGINS -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script type="text/javascript" src="{{ asset('public/assets/vendor/js/plugins/jquery/jquery.min.js') }}"></script>

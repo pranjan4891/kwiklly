@@ -1,7 +1,41 @@
 @php
+    use Carbon\Carbon;
+
     $currentDay = $currentDay ?? now()->format('l');
-    $currentTime = $currentTime ?? null;
-    $isOpen = $isOpen ?? false;
+    $currentTime = now()->format('h:i A');
+    $isOpen = false;
+
+    if ($selectedVendor && $selectedVendor->store_time) {
+        $storeTimes = is_string($selectedVendor->store_time)
+            ? json_decode($selectedVendor->store_time, true)
+            : $selectedVendor->store_time;
+
+        if (is_array($storeTimes)) {
+            foreach ($storeTimes as $day) {
+                if (strtolower($day['day_name']) === strtolower($currentDay)) {
+                    // If day is marked closed
+                    if (isset($day['status']) && $day['status'] == "0") {
+                        $isOpen = false;
+                        break;
+                    }
+
+                    if (!empty($day['startTime']) && !empty($day['endTime'])) {
+                        $start = Carbon::parse($day['startTime']);
+                        $end   = Carbon::parse($day['endTime']);
+                        $now   = Carbon::now();
+
+                        if ($end->greaterThan($start)) {
+                            // Normal hours
+                            $isOpen = $now->between($start, $end);
+                        } else {
+                            // Overnight hours (e.g. 9 PM to 2 AM)
+                            $isOpen = $now->greaterThanOrEqualTo($start) || $now->lessThanOrEqualTo($end);
+                        }
+                    }
+                }
+            }
+        }
+    }
 @endphp
 
 <div class="store-sectionde">
@@ -9,23 +43,24 @@
         <h2>Departments</h2>
         <p>Explore the best of the premium store in your locality. We provide you the access of awesome products under one roof from the store with exclusive coupons, deals, and discounts.</p>
 
-        @if($currentTime)
         <div class="time-container" style="width:50%">
-            <div class="time-boxde">{{ $currentDay }} {{ $currentTime }}</div>
+            <div class="time-boxde">
+                {{ $currentDay }}
+                {{ $isOpen ? $currentTime : 'Closed' }}
+            </div>
         </div>
-        @endif
 
         @if($branches && count($branches) > 0)
-        <div class="time-container" style="width:50%">
-            <label for="brnch" class="me-2">Select Branch:</label>
-            <select name="branch" id="brnch" class="time-boxde" onchange="changeBranch(this.value)">
-                @foreach($branches as $branch)
-                    <option value="{{ $branch->id }}" {{ ($selectedVendor && $selectedVendor->id == $branch->id) ? 'selected' : '' }}>
-                        {{ $branch->business_name }} ({{ ucfirst($branch->user_type) }})
-                    </option>
-                @endforeach
-            </select>
-        </div>
+            <div class="time-container" style="width:50%">
+                <label for="brnch" class="me-2">Select Branch:</label>
+                <select name="branch" id="brnch" class="time-boxde" onchange="changeBranch(this.value)">
+                    @foreach($branches as $branch)
+                        <option value="{{ $branch->id }}" {{ ($selectedVendor && $selectedVendor->id == $branch->id) ? 'selected' : '' }}>
+                            {{ $branch->business_name }} ({{ ucfirst($branch->user_type) }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
         @endif
     </div>
 
@@ -34,6 +69,7 @@
         <span class="status-text">{{ $isOpen ? 'Online' : 'Offline' }}</span>
     </div>
 
+    {{-- Coupon Box (same as before) --}}
     @if($selectedVendor && $selectedVendor->coupons && count($selectedVendor->coupons) > 0)
         @php $coupon = $selectedVendor->coupons->first(); @endphp
         <div class="coupon-boxde">
@@ -52,7 +88,6 @@
             </div>
         </div>
     @else
-        <!-- Static coupon as fallback -->
         <div class="coupon-boxde">
             <div class="coupon-headerde">
                 <h4>20% OFF</h4>

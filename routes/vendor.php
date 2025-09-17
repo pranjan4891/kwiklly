@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Vendor\VendorController;
 use App\Http\Controllers\Vendor\VendorAuthController;
 use App\Http\Controllers\Vendor\VendorDashboardController;
-
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Vendor\CategoryController;
 use App\Http\Controllers\Vendor\SubCategoryController;
 use App\Http\Controllers\Vendor\ProductController;
@@ -12,6 +12,8 @@ use App\Http\Controllers\Vendor\CouponController;
 use App\Http\Controllers\Vendor\OrderController;
 use App\Http\Controllers\Vendor\VendorCartController;
 use App\Http\Controllers\Vendor\ProductImagesController;
+use Illuminate\Http\Request;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -24,8 +26,6 @@ use App\Http\Controllers\Vendor\ProductImagesController;
 |
 */
 
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Http\Request;
 
 // 👇 Place these outside vendor middleware (public)
 Route::get('/vendor/email/verify', function () {

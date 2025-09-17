@@ -23,7 +23,7 @@ class DashboardController extends Controller
         if (!$branch) {
             return redirect()->route('branch.login')->with('error', 'You are not authorized to access this page.');
         }
-        $title = 'Admin | Dashboard';
+        $title = 'Branch | Dashboard';
         $totalproduct = Product::where('is_deleted', 0)->where('vendor_id', $branch->id)->count();
         $orderComplete = VendorOrder::where('delivery_status', 'packed')->where('vendor_id', $branch->id)->count();
         $orderPending = VendorOrder::where('delivery_status', 'pending')->where('vendor_id', $branch->id)->count();

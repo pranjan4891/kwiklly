@@ -26,7 +26,7 @@ class ProductController extends Controller
     {
         $title = 'Product List';
         $vendor = Auth::id();
-        $products = Product::where('vendor_id',$vendor)->with(['category', 'subcategory', 'vendor', 'featureImage'])->get();
+        $products = Product::where('vendor_id',$vendor)->where('is_deleted',0)->with(['category', 'subcategory', 'vendor', 'featureImage'])->get();
         return view('vendorpanel.product.index', compact('products', 'title', 'vendor'));
     }
 
@@ -103,6 +103,15 @@ class ProductController extends Controller
         return view('vendorpanel.product.edit', compact('title', 'vendor', 'product', 'categories', 'images', 'attributes', 'subcategories'));
     }
 
+    //
+    public function destroy($id)
+    {
+        $product = Product::findOrFail($id);
+        $product->is_deleted = 1;
+        $product->save();
+        return redirect()->route('vendor.products')->with('success', 'Product deleted successfully.');
+    }
+
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -143,9 +152,9 @@ class ProductController extends Controller
     public function createVariant($productId)
     {
         $title = 'Add Product Variant';
-        $admin = Auth::id();
-        if (!$admin) {
-            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+        $vendor = Auth::id();
+        if (!$vendor) {
+            return redirect()->route('vendor.login')->with('error', 'You are not authorized to access this page.');
         }
         $product = Product::with('subcategory')->findOrFail($productId);
         $subcategoryId = $product->sub_category_id;
@@ -157,7 +166,7 @@ class ProductController extends Controller
                 ->where('subcategory_id', $subcategoryId);
         })->with('values')->get(); // Use the same name as in Blade
 
-        return view('vendorpanel.product.variants.create', compact('title', 'admin', 'product', 'attributes'));
+        return view('vendorpanel.product.variants.create', compact('title', 'vendor', 'product', 'attributes'));
     }
 
 
@@ -194,9 +203,9 @@ class ProductController extends Controller
     public function editVariant($id)
     {
         $title = 'Edit Product Variant';
-        $admin = Auth::id();
-        if (!$admin) {
-            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+        $vendor = Auth::id();
+        if (!$vendor) {
+            return redirect()->route('vendor.login')->with('error', 'You are not authorized to access this page.');
         }
         $variant = ProductVariant::findOrFail($id);
         $product = Product::findOrFail($variant->product_id);
@@ -208,7 +217,7 @@ class ProductController extends Controller
               ->where('subcategory_id', $subcategoryId);
         })->with('values')->get();
 
-        return view('vendorpanel.product.variants.edit', compact('title', 'admin', 'variant', 'product', 'attributes'));
+        return view('vendorpanel.product.variants.edit', compact('title', 'vendor', 'variant', 'product', 'attributes'));
     }
 
     public function updateVariant(Request $request, $id)
@@ -329,12 +338,12 @@ class ProductController extends Controller
     public function importProductsCsv()
     {
         $title = 'Product List';
-        $admin = Auth::guard('vendor')->user();
-        if (!$admin) {
-            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+        $vendor = Auth::guard('vendor')->user();
+        if (!$vendor) {
+            return redirect()->route('vendor.login')->with('error', 'You are not authorized to access this page.');
         }
 
-        return view('admin.product.import', compact('title', 'admin'));
+        return view('vendorpanel.product.import', compact('title', 'vendor'));
     }
     public function importProducts(Request $request)
     {

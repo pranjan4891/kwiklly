@@ -106,7 +106,11 @@
                 heading.textContent = "Register Today";
                 container.innerHTML = `
                     <div id="map_canvas" class="map-container mb-3" style="height: 300px;"></div>
-
+                    <button type="button" id="current-location-btn" class="btn btn-primary btn-sm mt-2">
+                        Use Current Location
+                    </button>
+                    or
+                    <hr>
                     <div class="form-group row">
                         <label class="col-lg-2 col-form-label">Pincode <span class="text-danger">*</span></label>
                         <div class="col-lg-4">
@@ -414,8 +418,6 @@
             });
         }
 
-
-
         function initializeMap() {
             map = new google.maps.Map(document.getElementById("map_canvas"), {
                 center: { lat: 22.9734, lng: 78.6569 },
@@ -451,7 +453,7 @@
                 map: map,
                 title: "Branch Location",
                 draggable: true,
-                icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                icon: "{{ asset('public/marker.png') }}"
             });
 
             formDataObj.latitude = position.lat();
@@ -499,75 +501,167 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            updateForm();
+            updateForm(); // initial render
 
-            document.addEventListener('input', function(e) {
-                if (e.target.id === 'postal_code') {
-                    const pin = e.target.value.trim();
-                    if (pin.length === 6 && /^\d+$/.test(pin)) {
-                        fetch("{{ route('admin.get.area') }}?pincode=" + pin)
-                            .then(res => res.json())
-                            .then(data => {
-                                const placeDropdown = document.getElementById('place');
-                                const errorMsg = document.getElementById('postal_error'); // Assume an error container exists
-                                placeDropdown.innerHTML = '<option value="">Select Place</option>';
-                                placeDropdown.disabled = true;
-                                errorMsg.textContent = ''; // Clear previous error
+            // ===== delegate click for the "Use Current Location" button =====
+            document.body.addEventListener("click", function (e) {
+                if (!e.target) return;
+                if (e.target.id !== "current-location-btn") return;
 
-                                const places = data.places || data;
-                                if (Array.isArray(places) && places.length > 0) {
-                                    places.forEach(loc => {
-                                        if (loc.place && loc.lat_long) {
-                                            try {
-                                                JSON.parse(loc.lat_long);
-                                                const option = document.createElement('option');
-                                                option.value = loc.lat_long;
-                                                option.text = loc.place;
-                                                option.setAttribute('data-place-name', loc.place);
-                                                placeDropdown.appendChild(option);
-                                            } catch (e) {}
-                                        }
-                                    });
-                                    placeDropdown.disabled = false;
-                                } else {
-                                    // Show error if no valid places found
-                                    errorMsg.textContent = "Sorry, currently we are not providing service here.";
-                                }
-                            })
-                            .catch(err => {
-                                console.error('Fetch error:', err);
-                                document.getElementById('postal_error').textContent = "An error occurred. Please try again.";
-                            });
-                    }
+                if (!navigator.geolocation) {
+                    Swal.fire("Error", "Geolocation not supported by browser.", "error");
+                    return;
                 }
-            });
 
+                Swal.fire({ title: "Detecting location...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-            document.addEventListener('change', function(e) {
-                if (e.target.id === 'place') {
-                    const selectedOption = e.target.options[e.target.selectedIndex];
-                    if (!selectedOption.value) return;
-
-                    const placeName = selectedOption.getAttribute('data-place-name') || '';
-                    document.getElementById('place_name').value = placeName;
-                    formDataObj.place_name = placeName;
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    Swal.close();
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
 
                     try {
-                        const latLong = JSON.parse(selectedOption.value);
-                        if (Array.isArray(latLong)) {
-                            drawPolygonBoundary(latLong);
-                            if (marker) marker.setMap(null);
-                            marker = null;
-                            document.getElementById("latitude").value = '';
-                            document.getElementById("longitude").value = '';
-                            delete formDataObj.latitude;
-                            delete formDataObj.longitude;
+                        const url = "{{ route('admin.check.lat.lon') }}?lat=" + encodeURIComponent(lat) + "&lng=" + encodeURIComponent(lng);
+                        const res = await fetch(url);
+
+                        if (!res.ok) {
+                            // try to parse JSON error, otherwise show generic
+                            let errObj = null;
+                            try { errObj = await res.json(); } catch (_){ }
+                            throw new Error(errObj && errObj.message ? errObj.message : ("Server returned " + res.status));
                         }
-                    } catch (e) {}
+
+                        const data = await res.json();
+
+                        if (data.success) {
+                            // Fill pincode and place
+                            const postalInput = document.getElementById("postal_code");
+                            if (postalInput) postalInput.value = data.pincode || "";
+
+                            document.getElementById('place_name').value = data.place || "";
+                            formDataObj.postal_code = data.pincode || "";
+                            formDataObj.place_name = data.place || "";
+                            formDataObj.lat_long = JSON.stringify(data.lat_long || []);
+
+                            const placeDropdown = document.getElementById('place');
+                            if (placeDropdown) {
+                                placeDropdown.innerHTML = '<option value="">Select Place</option>';
+                                const option = document.createElement('option');
+                                option.value = JSON.stringify(data.lat_long || []);
+                                option.text = data.place || "Selected Place";
+                                option.selected = true;
+                                option.setAttribute('data-place-name', data.place || "");
+                                placeDropdown.appendChild(option);
+                                placeDropdown.disabled = false;
+                            }
+
+                            // Draw polygon & place marker
+                            if (Array.isArray(data.lat_long)) {
+                                drawPolygonBoundary(data.lat_long);
+                            }
+                            const latLng = new google.maps.LatLng(lat, lng);
+                            placeMarker(latLng);
+                        } else {
+                            Swal.fire("Sorry!", data.message || "No service in your area.", "warning");
+                        }
+                    } catch (err) {
+                        console.error("Check-lat-lon error:", err);
+                        Swal.fire("Error", err.message || "Unable to check current location.", "error");
+                    }
+
+                }, (err) => {
+                    Swal.close();
+                    console.error("Geolocation error:", err);
+                    Swal.fire("Error", "Location access denied or unavailable. Please allow location.", "error");
+                }, { enableHighAccuracy: true, timeout: 10000 });
+            });
+
+
+            // ===== pincode input (manual entry) =====
+            document.body.addEventListener("input", function (e) {
+                if (!e.target) return;
+                if (e.target.id !== 'postal_code') return;
+
+                const pin = e.target.value.trim();
+                if (pin.length === 6 && /^\d+$/.test(pin)) {
+                    const url = "{{ route('admin.get.area') }}?pincode=" + encodeURIComponent(pin);
+
+                    fetch(url)
+                        .then(async res => {
+                            if (!res.ok) {
+                                let txt = "";
+                                try { txt = await res.text(); } catch (_) {}
+                                throw new Error("Server error: " + (txt || res.status));
+                            }
+                            return res.json();
+                        })
+                        .then(data => {
+                            const placeDropdown = document.getElementById('place');
+                            const errorMsg = document.getElementById('postal_error');
+                            placeDropdown.innerHTML = '<option value="">Select Place</option>';
+                            placeDropdown.disabled = true;
+                            if (errorMsg) errorMsg.textContent = '';
+
+                            const places = data.places || data;
+                            if (Array.isArray(places) && places.length > 0) {
+                                places.forEach(loc => {
+                                    let latLong = loc.lat_long;
+                                    if (typeof latLong === 'string') {
+                                        try { latLong = JSON.parse(latLong); } catch (_) { latLong = null; }
+                                    }
+                                    if (Array.isArray(latLong)) {
+                                        const option = document.createElement('option');
+                                        option.value = JSON.stringify(latLong);
+                                        option.text = loc.place || "";
+                                        option.setAttribute('data-place-name', loc.place || "");
+                                        placeDropdown.appendChild(option);
+                                    }
+                                });
+                                placeDropdown.disabled = false;
+                            } else {
+                                if (errorMsg) errorMsg.textContent = "Sorry, currently we are not providing service here.";
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Fetch error (get-area):', err);
+                            const postalErr = document.getElementById('postal_error');
+                            if (postalErr) postalErr.textContent = "An error occurred. Please try again.";
+                        });
                 }
             });
-        });
+
+
+            // ===== place select change (draw polygon from selected option) =====
+            document.body.addEventListener("change", function (e) {
+                if (!e.target) return;
+                if (e.target.id !== 'place') return;
+
+                const selectedOption = e.target.options[e.target.selectedIndex];
+                if (!selectedOption || !selectedOption.value) return;
+
+                const placeName = selectedOption.getAttribute('data-place-name') || '';
+                document.getElementById('place_name').value = placeName;
+                formDataObj.place_name = placeName;
+
+                try {
+                    const latLong = JSON.parse(selectedOption.value);
+                    if (Array.isArray(latLong)) {
+                        drawPolygonBoundary(latLong);
+                        if (marker) marker.setMap(null);
+                        marker = null;
+                        document.getElementById("latitude").value = '';
+                        document.getElementById("longitude").value = '';
+                        delete formDataObj.latitude;
+                        delete formDataObj.longitude;
+                    }
+                } catch (err) {
+                    console.warn("Could not parse lat_long from option value", err);
+                }
+            });
+
+        }); // DOMContentLoaded
     </script>
+
     <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=geometry,places"></script>
 </body>
 </html>

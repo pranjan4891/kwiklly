@@ -195,32 +195,50 @@
                      <span>{{ $vendor->business_address ?? 'Address not available' }}</span>
                   </div>
 
-                  @php
-                     $storeTime = [];
-                     $currentTimeData = null;
-                     $currentDay = date('l');
+                   @php
+                        $tz = config('app.timezone'); // now "Asia/Kolkata"
+                        $now = \Carbon\Carbon::now($tz);
+                        $currentDay = $now->format('l');
 
-                     if ($vendor && $vendor->store_time) {
-                         $decoded = json_decode($vendor->store_time, true);
-                         if (is_array($decoded)) {
-                             $storeTime = $decoded;
-                             foreach ($storeTime as $time) {
-                                 if (($time['day_name'] ?? '') === $currentDay) {
-                                     $currentTimeData = $time;
-                                     break;
-                                 }
-                             }
-                         }
-                     }
-                  @endphp
+                        $currentTimeData = null;
+                        if ($vendor && $vendor->store_time) {
+                            $decoded = json_decode($vendor->store_time, true);
+                            if (is_array($decoded)) {
+                                foreach ($decoded as $time) {
+                                    if (($time['day_name'] ?? '') === $currentDay) {
+                                        $currentTimeData = $time;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    @endphp
 
-                  <div class="xyz-time-box">
-                     @if($currentTimeData && ($currentTimeData['status'] ?? "0") === "1")
-                        {{ $currentDay }} {{ $currentTimeData['startTime'] ?? '' }} - {{ $currentTimeData['endTime'] ?? '' }}
-                     @else
-                        {{ $currentDay }} Closed
-                     @endif
-                  </div>
+                    <div class="xyz-time-box">
+                        @if ($currentTimeData && ($currentTimeData['status'] ?? '0') === '1')
+                            @php
+                                $start = \Carbon\Carbon::parse($currentTimeData['startTime'], $tz)->setDate($now->year, $now->month, $now->day);
+                                $end   = \Carbon\Carbon::parse($currentTimeData['endTime'], $tz)->setDate($now->year, $now->month, $now->day);
+
+                                if ($end->lessThanOrEqualTo($start)) {
+                                    $end->addDay(); // handle overnight
+                                }
+
+                                $isOpen = $now->between($start, $end);
+                            @endphp
+
+                            @if ($isOpen)
+                                {{ $currentDay }} {{ $currentTimeData['startTime'] ?? '' }} - {{ $currentTimeData['endTime'] ?? '' }}
+                            @else
+                                {{ $currentDay }} Closed
+                            @endif
+                        @else
+                            {{ $currentDay }} Closed
+                        @endif
+                    </div>
+
+
+
                </div>
 
                <!-- Right column -->
@@ -330,28 +348,55 @@
                                     </span>
                                  @endif
                                  <div class="qty-box"
-                                        data-product-id="{{ $product->id }}"
-                                        data-variant-id="{{ $firstVariant->id }}"
-                                        data-key="{{ $key }}">
+                                    data-product-id="{{ $product->id }}"
+                                    data-variant-id="{{ $firstVariant->id ?? '' }}"
+                                    data-key="{{ $key }}">
+
+                                    @php
+
+                                        $isOpen = \App\Helpers\StoreHelper::isStoreOpen($product->vendor->store_time);
+                                    @endphp
+
+                                    @if ($isOpen)
+                                        {{-- ✅ Store is open --}}
                                         @if ($hasMultipleVariants)
-                                            <button class="add-btn d-flex position-relative" onclick="openPopup({{ $product->id }})">
-                                                Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                            <button class="add-btn d-flex flex-column align-items-center position-relative"
+                                                    onclick="openPopup({{ $product->id }})">
+                                                <div class="d-flex align-items-center">
+                                                    Add
+                                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                                </div>
                                                 <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
                                             </button>
                                         @else
-                                            @if (!$inCart)
-                                                <button class="add-btn" data-product-id="{{ $product->id }}" data-variant-id="{{ $firstVariant->id }}">
-                                                    Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
-                                                </button>
+                                            @if (!$defaultVariant)
+                                                <button class="add-btn" disabled>Unavailable</button>
                                             @else
-                                                <div class="qty-container">
-                                                    <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
-                                                    <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
-                                                    <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
-                                                </div>
+                                                @if (!$inCart)
+                                                    <button class="add-btn"
+                                                            data-product-id="{{ $product->id }}"
+                                                            data-variant-id="{{ $firstVariant->id }}"
+                                                            onclick="addToCart(this)">
+                                                        Add
+                                                        <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                                    </button>
+                                                @else
+                                                    <div class="qty-container">
+                                                        <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
+                                                        <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
+                                                        <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
+                                                    </div>
+                                                @endif
                                             @endif
                                         @endif
-                                    </div>
+                                    @else
+                                        {{-- ❌ Store is closed --}}
+                                        <button class="add-btn disabled" disabled>
+                                            Store Closed
+                                        </button>
+                                    @endif
+                                </div>
+
                               </div>
                                <div class="store-info">
                                     <span>Ad </span>

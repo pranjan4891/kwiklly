@@ -12,6 +12,7 @@ use App\Models\City;
 use App\Models\DeliveryLocation;
 use App\Models\MasterLocation;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
@@ -277,15 +278,73 @@ class AdminController extends Controller
     {
         $pincode = $request->input('pincode');
 
+        if (!$pincode) {
+            return response()->json(['places' => []]);
+        }
+
         $locations = MasterLocation::where('pincode', $pincode)
             ->where('is_active', 1)
             ->where('is_deleted', 0)
-            ->get(['place', 'lat_long']);
+            ->get(['place', 'lat_long', 'pincode']);
 
         return response()->json([
             'places' => $locations
         ]);
     }
+
+   public function pointInPolygon(Request $request)
+{
+    $lat = (float) $request->query('lat');
+    $lng = (float) $request->query('lng');
+
+    $locations = MasterLocation::where('is_active', 1)
+        ->where('is_deleted', 0)
+        ->get();
+
+    foreach ($locations as $location) {
+        $polygon = json_decode($location->lat_long, true); // decode JSON from DB
+        if ($this->isPointInPolygon($lat, $lng, $polygon)) {
+            return response()->json([
+                'success' => true,
+                'pincode' => $location->pincode,
+                'place'   => $location->place,
+                'lat_long'=> $polygon,
+            ]);
+        }
+    }
+
+    return response()->json([
+        'success' => false,
+        'message' => 'No service available in your current location.'
+    ], 404);
+}
+
+private function isPointInPolygon($lat, $lng, $polygon)
+{
+    $inside = false;
+    $x = $lng;
+    $y = $lat;
+    $points = count($polygon);
+    $j = $points - 1;
+
+    for ($i = 0; $i < $points; $i++) {
+        $xi = $polygon[$i]['lng'];
+        $yi = $polygon[$i]['lat'];
+        $xj = $polygon[$j]['lng'];
+        $yj = $polygon[$j]['lat'];
+
+        $intersect = (($yi > $y) != ($yj > $y)) &&
+            ($x < ($xj - $xi) * ($y - $yi) / ($yj - $yi + 0.0) + $xi);
+
+        if ($intersect) {
+            $inside = !$inside;
+        }
+        $j = $i;
+    }
+
+    return $inside;
+}
+
 
     // Function to deleted branches
     public function deleteBranch(Request $request, $id)

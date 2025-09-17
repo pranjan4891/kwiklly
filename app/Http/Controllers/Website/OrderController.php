@@ -26,8 +26,6 @@ class OrderController extends Controller
 {
     public function storeOrder(Request $request)
     {
-        Log::info('OrderController: storeOrder method started', ['user_id' => Auth::id(), 'request_data' => $request->all()]);
-
         // Validate the request
         $request->validate([
             'vendors' => 'required|array',
@@ -50,7 +48,7 @@ class OrderController extends Controller
                 ->where('user_id', $user->id)
                 ->get();
 
-            Log::info('Cart items retrieved', ['count' => $cartItems->count()]);
+          //  Log::info('Cart items retrieved', ['count' => $cartItems->count()]);
 
             if ($cartItems->isEmpty()) {
                 return response()->json([
@@ -59,28 +57,11 @@ class OrderController extends Controller
                 ], 400);
             }
 
-            // Debug: Check cart item prices
-            foreach ($cartItems as $cartItem) {
-                Log::info('Cart item details', [
-                    'id' => $cartItem->id,
-                    'product_id' => $cartItem->product_id,
-                    'variant_id' => $cartItem->variant_id,
-                    'quantity' => $cartItem->quantity,
-                    'price' => $cartItem->price,
-                    'product_price' => $cartItem->product->price ?? 'N/A',
-                    'variant_price' => $cartItem->variant->price ?? 'N/A'
-                ]);
-            }
 
             // Group cart items by vendor ID from the product relationship
             $groupedCart = $cartItems->groupBy(function($item) {
                 return $item->product->vendor_id ?? 0;
             });
-
-            Log::info('Cart items grouped by vendor', [
-                'vendor_count' => $groupedCart->count(),
-                'vendor_ids' => $groupedCart->keys()->toArray()
-            ]);
 
             // Generate unique order number
             $orderNumber = 'ORD' . date('YmdHis') . rand(100, 999);
@@ -88,7 +69,6 @@ class OrderController extends Controller
             // Calculate totals - USE THE PRICE FROM CART ITEM, not from product/variant
             $totals = $this->calculateOrderTotals($groupedCart, $user);
 
-            Log::info('Order totals calculated', $totals);
 
             // Check wallet balance if used
             $walletUsed = $totals['wallet_used'] ?? 0;
@@ -116,12 +96,12 @@ class OrderController extends Controller
                 'updated_at' => now(),
             ]);
 
-            Log::info('Main order created', ['order_id' => $order->id]);
+
 
             // Process wallet transaction if used
             if ($walletUsed > 0) {
                 $this->processWalletTransaction($user->id, $walletUsed, $order->id);
-                Log::info('Wallet transaction processed', ['amount' => $walletUsed]);
+
             }
 
             // Track used coupons to update usage counts
@@ -129,17 +109,14 @@ class OrderController extends Controller
 
             // Process each vendor's items
             foreach ($groupedCart as $vendorId => $items) {
-                Log::info('Processing vendor order', ['vendor_id' => $vendorId, 'item_count' => $items->count()]);
 
                 // Check if vendor exists
                 $vendor = VendorAdmin::find($vendorId);
                 if (!$vendor) {
-                    Log::warning('Vendor not found', ['vendor_id' => $vendorId]);
                     continue;
                 }
 
                 $vendorTotals = $this->calculateVendorTotals($items, $vendorId, $user);
-                Log::info('Vendor totals calculated', ['vendor_id' => $vendorId, 'totals' => $vendorTotals]);
 
                 // Handle delivery slot
                 $deliverySlotId = null;
@@ -160,7 +137,7 @@ class OrderController extends Controller
                         ]);
 
                         $deliverySlotId = $deliverySlot->id;
-                        Log::info('Custom delivery slot created', ['slot_id' => $deliverySlotId]);
+
 
                     } elseif ($vendorData['delivery_type'] === 'express') {
                         // For express delivery, find or create a slot for the next 20 minutes
@@ -180,7 +157,7 @@ class OrderController extends Controller
                         ]);
 
                         $deliverySlotId = $deliverySlot->id;
-                        Log::info('Express delivery slot created/used', ['slot_id' => $deliverySlotId]);
+
 
                     } else {
                         // Standard delivery - find or create a slot for the next 30 minutes
@@ -200,7 +177,7 @@ class OrderController extends Controller
                         ]);
 
                         $deliverySlotId = $deliverySlot->id;
-                        Log::info('Standard delivery slot created/used', ['slot_id' => $deliverySlotId]);
+
                     }
                 }
 
@@ -219,23 +196,12 @@ class OrderController extends Controller
                     'updated_at' => now(),
                 ]);
 
-                Log::info('Vendor order created', [
-                    'vendor_order_id' => $vendorOrder->id,
-                    'vendor_id' => $vendorId,
-                    'delivery_slot_id' => $deliverySlotId
-                ]);
-
                 // Track vendor coupon usage
                 if ($vendorTotals['coupon_id']) {
                     $usedCoupons[] = [
                         'coupon_id' => $vendorTotals['coupon_id'],
                         'vendor_id' => $vendorId
                     ];
-
-                    Log::info('Vendor coupon tracked', [
-                        'coupon_id' => $vendorTotals['coupon_id'],
-                        'vendor_id' => $vendorId
-                    ]);
                 }
 
                 // Create order items - USE THE PRICE FROM CART ITEM
@@ -255,14 +221,6 @@ class OrderController extends Controller
 
                     $orderItem = OrderItem::create($orderItemData);
 
-                    Log::info('Order item created', [
-                        'order_item_id' => $orderItem->id,
-                        'product_id' => $cartItem->product_id,
-                        'variant_id' => $cartItem->variant_id,
-                        'quantity' => $cartItem->quantity,
-                        'price' => $price,
-                        'total_price' => $cartItem->quantity * $price
-                    ]);
                 }
             }
 
@@ -273,18 +231,16 @@ class OrderController extends Controller
                     'vendor_id' => null // Global coupon
                 ];
 
-                Log::info('Global coupon tracked', ['coupon_id' => $totals['coupon_id']]);
             }
 
             // Update coupon usage counts
             if (!empty($usedCoupons)) {
                 $this->updateCouponUsages($usedCoupons, $user->id);
-                Log::info('Coupon usages updated', ['count' => count($usedCoupons)]);
             }
 
             // Clear the cart
-            // $deletedCartItems = CartItem::where('user_id', $user->id)->delete();
-            // Log::info('Cart cleared', ['deleted_items' => $deletedCartItems]);
+            //$deletedCartItems = CartItem::where('user_id', $user->id)->delete();
+            //  Log::info('Cart cleared', ['deleted_items' => $deletedCartItems]);
 
             // Clear session coupons and wallet settings
             session()->forget('global_coupon');
@@ -294,11 +250,7 @@ class OrderController extends Controller
                 session()->forget("vendor_{$vendorId}_coupon");
             }
 
-            Log::info('Session coupons cleared');
-
             DB::commit();
-
-            Log::info('Order processed successfully', ['order_id' => $order->id]);
 
             return response()->json([
                 'success' => true,
@@ -308,11 +260,6 @@ class OrderController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-
-            Log::error('Order processing failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
 
             return response()->json([
                 'success' => false,
@@ -345,15 +292,7 @@ class OrderController extends Controller
             $user->save();
         }
 
-        Log::info('Wallet transaction processed', [
-            'user_id' => $userId,
-            'amount' => $amount,
-            'order_id' => $orderId,
-            'previous_balance' => $currentBalance,
-            'new_balance' => $newBalance
-        ]);
     }
-
 
     /**
      * Update coupon usage counts for all used coupons
@@ -375,11 +314,11 @@ class OrderController extends Controller
                     'updated_at' => now()
                 ]);
 
-                Log::info('Coupon usage incremented', [
-                    'coupon_id' => $couponId,
-                    'user_id' => $userId,
-                    'new_count' => $usage->usage_count
-                ]);
+                // Log::info('Coupon usage incremented', [
+                //     'coupon_id' => $couponId,
+                //     'user_id' => $userId,
+                //     'new_count' => $usage->usage_count
+                // ]);
             } else {
                 // Create new usage record
                 $newUsage = CouponUsage::create([
@@ -390,11 +329,11 @@ class OrderController extends Controller
                     'updated_at' => now()
                 ]);
 
-                Log::info('New coupon usage created', [
-                    'coupon_usage_id' => $newUsage->id,
-                    'coupon_id' => $couponId,
-                    'user_id' => $userId
-                ]);
+                // Log::info('New coupon usage created', [
+                //     'coupon_usage_id' => $newUsage->id,
+                //     'coupon_id' => $couponId,
+                //     'user_id' => $userId
+                // ]);
             }
         }
     }
@@ -412,22 +351,22 @@ class OrderController extends Controller
                 $price = $item->price; // Use the price stored in cart item
                 $subtotal += $item->quantity * $price;
 
-                Log::info('Price calculation', [
-                    'item_id' => $item->id,
-                    'cart_price' => $item->price,
-                    'quantity' => $item->quantity,
-                    'item_total' => $item->quantity * $price
-                ]);
+                // Log::info('Price calculation', [
+                //     'item_id' => $item->id,
+                //     'cart_price' => $item->price,
+                //     'quantity' => $item->quantity,
+                //     'item_total' => $item->quantity * $price
+                // ]);
             }
         }
 
-        Log::info('Total subtotal', ['subtotal' => $subtotal]);
+     //   Log::info('Total subtotal', ['subtotal' => $subtotal]);
 
         // Apply global coupon if any
         $globalCoupon = session()->get('global_coupon');
         if ($globalCoupon && $this->isCouponValid($globalCoupon, $user, $groupedCart)) {
             $couponDiscount = $this->calculateCouponDiscount($globalCoupon, $subtotal, $groupedCart);
-            Log::info('Global coupon applied', ['discount' => $couponDiscount]);
+          //  Log::info('Global coupon applied', ['discount' => $couponDiscount]);
         }
 
         // Apply wallet balance if used
@@ -437,7 +376,7 @@ class OrderController extends Controller
 
         if ($useWallet && $walletBalance > 0) {
             $walletUsed = min($walletBalance, $walletAmount, $subtotal - $couponDiscount);
-            Log::info('Wallet used', ['amount' => $walletUsed]);
+          //  Log::info('Wallet used', ['amount' => $walletUsed]);
         }
 
         // Calculate delivery fees
@@ -445,13 +384,13 @@ class OrderController extends Controller
 
         $finalAmount = $subtotal + $deliveryFee - $couponDiscount - $walletUsed;
 
-        Log::info('Final amount calculation', [
-            'subtotal' => $subtotal,
-            'delivery_fee' => $deliveryFee,
-            'coupon_discount' => $couponDiscount,
-            'wallet_used' => $walletUsed,
-            'final_amount' => $finalAmount
-        ]);
+        // Log::info('Final amount calculation', [
+        //     'subtotal' => $subtotal,
+        //     'delivery_fee' => $deliveryFee,
+        //     'coupon_discount' => $couponDiscount,
+        //     'wallet_used' => $walletUsed,
+        //     'final_amount' => $finalAmount
+        // ]);
 
         return [
             'subtotal' => $subtotal,
@@ -472,7 +411,7 @@ class OrderController extends Controller
             $subtotal += $item->quantity * $price;
         }
 
-        Log::info('Vendor subtotal', ['vendor_id' => $vendorId, 'subtotal' => $subtotal]);
+       // Log::info('Vendor subtotal', ['vendor_id' => $vendorId, 'subtotal' => $subtotal]);
 
         // Apply vendor-specific coupon if any
         $vendorCoupon = session()->get("vendor_{$vendorId}_coupon");
@@ -482,7 +421,7 @@ class OrderController extends Controller
         if ($vendorCoupon && $this->isCouponValid($vendorCoupon, $user, [$vendorId => $items])) {
             $couponDiscount = $this->calculateCouponDiscount($vendorCoupon, $subtotal, [$vendorId => $items]);
             $couponId = $vendorCoupon->id;
-            Log::info('Vendor coupon applied', ['vendor_id' => $vendorId, 'discount' => $couponDiscount]);
+           // Log::info('Vendor coupon applied', ['vendor_id' => $vendorId, 'discount' => $couponDiscount]);
         }
 
         // Calculate vendor delivery fee
@@ -506,25 +445,25 @@ class OrderController extends Controller
     {
         // Use the coupon's built-in validation
         if (!$coupon->isValidForUser($user)) {
-            Log::info('Coupon invalid for user', ['coupon_id' => $coupon->id]);
+           // Log::info('Coupon invalid for user', ['coupon_id' => $coupon->id]);
             return false;
         }
 
         // Check minimum order amount
         $subtotal = $this->calculateCartSubtotal($cartItems);
         if ($coupon->min_order_amount && $subtotal < $coupon->min_order_amount) {
-            Log::info('Coupon minimum order not met', [
-                'coupon_id' => $coupon->id,
-                'min_order' => $coupon->min_order_amount,
-                'subtotal' => $subtotal
-            ]);
+            // Log::info('Coupon minimum order not met', [
+            //     'coupon_id' => $coupon->id,
+            //     'min_order' => $coupon->min_order_amount,
+            //     'subtotal' => $subtotal
+            // ]);
             return false;
         }
 
         // Check if coupon applies to specific products/categories
         if ($coupon->applies_to !== 'all') {
             if (!$this->isCouponApplicableToCart($coupon, $cartItems)) {
-                Log::info('Coupon not applicable to cart items', ['coupon_id' => $coupon->id]);
+             //   Log::info('Coupon not applicable to cart items', ['coupon_id' => $coupon->id]);
                 return false;
             }
         }
@@ -533,16 +472,16 @@ class OrderController extends Controller
         if ($coupon->created_by_type === 'vendor') {
             $vendorIds = array_keys($cartItems);
             if (count($vendorIds) > 1 || $vendorIds[0] != $coupon->created_by_id) {
-                Log::info('Coupon vendor restriction failed', [
-                    'coupon_id' => $coupon->id,
-                    'coupon_vendor' => $coupon->created_by_id,
-                    'cart_vendors' => $vendorIds
-                ]);
+                // Log::info('Coupon vendor restriction failed', [
+                //     'coupon_id' => $coupon->id,
+                //     'coupon_vendor' => $coupon->created_by_id,
+                //     'cart_vendors' => $vendorIds
+                // ]);
                 return false;
             }
         }
 
-        Log::info('Coupon is valid', ['coupon_id' => $coupon->id]);
+      //  Log::info('Coupon is valid', ['coupon_id' => $coupon->id]);
         return true;
     }
 
@@ -585,12 +524,12 @@ class OrderController extends Controller
         }
 
         $isApplicable = count($applicableItems) > 0;
-        Log::info('Coupon applicability check', [
-            'coupon_id' => $coupon->id,
-            'applies_to' => $coupon->applies_to,
-            'applicable_items' => count($applicableItems),
-            'is_applicable' => $isApplicable
-        ]);
+        // Log::info('Coupon applicability check', [
+        //     'coupon_id' => $coupon->id,
+        //     'applies_to' => $coupon->applies_to,
+        //     'applicable_items' => count($applicableItems),
+        //     'is_applicable' => $isApplicable
+        // ]);
 
         return $isApplicable;
     }
@@ -616,12 +555,12 @@ class OrderController extends Controller
             }
         }
 
-        Log::info('Coupon discount calculation', [
-            'coupon_id' => $coupon->id,
-            'discount_type' => $coupon->discount_type,
-            'discount_value' => $coupon->discount_value,
-            'applicable_amount' => $applicableAmount
-        ]);
+        // Log::info('Coupon discount calculation', [
+        //     'coupon_id' => $coupon->id,
+        //     'discount_type' => $coupon->discount_type,
+        //     'discount_value' => $coupon->discount_value,
+        //     'applicable_amount' => $applicableAmount
+        // ]);
 
         if ($coupon->discount_type === 'percentage') {
             $discount = ($coupon->discount_value / 100) * $applicableAmount;
@@ -764,6 +703,9 @@ class OrderController extends Controller
             'amount' => $order->final_amount,
             'currency' => 'INR'
         ]);
+
+        // clear cart
+        CartItem::where('user_id', Auth::id())->delete();
 
         return response()->json([
             'success' => true,

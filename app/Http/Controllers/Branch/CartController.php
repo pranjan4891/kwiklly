@@ -17,11 +17,11 @@ class CartController extends Controller
     {
         $branch = Auth::guard('branch')->user();
         if (!$branch) {
-            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+            return redirect()->route('Branch.login')->with('error', 'You are not authorized to access this page.');
         }
-        $title = 'Admin | Cart';
+        $title = 'Branch | Cart';
         $cartItems = CartItem::where('vendor_id', $branch->id)->with('user','featureImage')->get();
-        return view('branch.cart', compact('cartItems','admin','title'));
+        return view('branch.cart', compact('cartItems','branch','title'));
     }
 
     // Update quantity or remove cart item

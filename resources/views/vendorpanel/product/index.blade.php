@@ -70,7 +70,7 @@
                                             </a>
                                             <form action="{{ route('vendor.product.destroy', $product->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure to delete permanently?');">
                                                 @csrf
-                                                @method('DELETE')
+                                                @method('POST')
                                                 <button class="btn btn-danger btn-sm" title="Delete">
                                                     <i class="fa fa-trash"></i>
                                                 </button>

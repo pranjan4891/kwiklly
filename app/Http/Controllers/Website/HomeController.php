@@ -30,8 +30,8 @@ class HomeController extends Controller
 
     public function locationProducts(Request $request)
     {
-        $lat = $request->latitude;
-        $lng = $request->longitude;
+        $lat = $request->input('latitude');
+        $lng = $request->input('longitude');
 
         // 1. ✅ Find which master polygon user belongs to
         $insideLocation = MasterLocation::where('is_active', 1)
@@ -88,7 +88,7 @@ class HomeController extends Controller
 
         $categorywiseproducts = Category::where('is_deleted', '0')
             ->where('is_home', '1')
-            ->limit(3)
+            //->limit(3)
             ->get()
             ->map(function ($category) use ($vendorIds) {
                 $category->products = Product::with('variants', 'vendor')

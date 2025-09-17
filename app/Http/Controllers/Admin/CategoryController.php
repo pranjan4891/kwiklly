@@ -221,8 +221,6 @@ class CategoryController extends Controller
         return redirect()->route('admin.subcategories')->with('success', 'Subcategory updated successfully.');
     }
 
-
-
     public function softDeleteSubcategory($id)
     {
         $subcategory = Subcategory::findOrFail($id);
