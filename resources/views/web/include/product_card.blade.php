@@ -60,30 +60,40 @@
                      data-product-id="{{ $product->id }}"
                      data-variant-id="{{ $variantId }}"
                      data-key="{{ $key }}">
+                    @php
+                        $isOpen = \App\Helpers\StoreHelper::isStoreOpen($product->vendor->store_time);
+                    @endphp
 
-                    {{-- If multiple variants → Open Popup --}}
-                    @if ($hasMultipleVariants)
-                        <button class="add-btn d-flex position-relative"
-                                onclick="openPopup({{ $product->id }})">
-                            Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
-                            <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
-                        </button>
-                    @else
-                        {{-- If not in cart → Show Add button --}}
-                        @if (!$inCart)
-                            <button class="add-btn"
-                                    data-product-id="{{ $product->id }}"
-                                    data-variant-id="{{ $variantId }}">
+                    @if ($isOpen)
+                        {{-- If multiple variants → Open Popup --}}
+                        @if ($hasMultipleVariants)
+                            <button class="add-btn d-flex position-relative"
+                                    onclick="openPopup({{ $product->id }})">
                                 Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
                             </button>
                         @else
-                            {{-- If already in cart → Show Qty Controls --}}
-                            <div class="qty-container">
-                                <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
-                                <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
-                                <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
-                            </div>
+                            {{-- If not in cart → Show Add button --}}
+                            @if (!$inCart)
+                                <button class="add-btn"
+                                        data-product-id="{{ $product->id }}"
+                                        data-variant-id="{{ $variantId }}">
+                                    Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                </button>
+                            @else
+                                {{-- If already in cart → Show Qty Controls --}}
+                                <div class="qty-container">
+                                    <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
+                                    <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
+                                    <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
+                                </div>
+                            @endif
                         @endif
+                    @else
+                         {{-- ❌ Store is closed --}}
+                        <button class="add-btn disabled" disabled>
+                            Store Closed
+                        </button>
                     @endif
                 </div>
             </div>
@@ -91,7 +101,7 @@
             {{-- 🔹 Store Info --}}
             <div class="store-info">
                 <span>Ad</span>
-                <span>{{ $product->vendor->business_name ?? '' }}</span>
+                <span><a href="{{ route('explorestore', ['vendor_id' => $product->vendor_id,'cat_id'=>$product->category_id]) }}" onclick="return redirectWithLocation(this.href)">{{ $product->vendor->business_name ?? '' }}</a></span>
                 <span>5 min</span>
             </div>
         </div>

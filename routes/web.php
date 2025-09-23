@@ -59,6 +59,7 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
     /*Website-------------------------------*/
 
     Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::get('/about-us', [HomeController::class, 'aboutUs'])->name('aboutus');
     // routes/web.php
     Route::post('/location-products', [HomeController::class, 'locationProducts'])->name('location.products');
 
@@ -180,5 +181,8 @@ Route::match(['get','post'],'/phonepe/callback',[PhonePeController::class,'callb
 // Success/Failure UI pages (you can customize with Blade)
 Route::view('/success', 'web.phonepe.success')->name('phonepe.success');
 Route::view('/failure', 'web.phonepe.failure')->name('phonepe.failure');
+
+// Frontend routes
+Route::get('/policy/{slug}', [HomeController::class, 'show'])->name('policy.show');
 
 

@@ -8,10 +8,11 @@
 
   /*Customer Section-------------------------------*/
 
-    Route::get("/loginbyphone", [
-        CustomerController::class,
-        "loginbyphone",
-    ])->name("loginbyphone");
+    Route::get("/loginbyphone", [CustomerController::class, "loginbyphone"])->name("loginbyphone");
+    Route::post("/otpsent", [CustomerController::class, "otpsent"])->name("otpsent");
+    Route::post("/otpcheck", [CustomerController::class, "otpcheck"])->name("otpcheck");
+    //resend otp
+    Route::post("/resendotp", [CustomerController::class, "resendotp"])->name("resendotp");
 
     Route::get("/myaccount", [CustomerController::class, "myaccount"])->name(
         "myaccount"

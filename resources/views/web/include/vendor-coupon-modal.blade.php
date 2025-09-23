@@ -1,4 +1,4 @@
-<div class="xyz-modal-overlay" id="couponModalxyz" style="display: flex;">
+<div class="xyz-modal-overlay" id="couponModalxyz" style="display: none;">
     <div class="xyz-modal">
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -20,7 +20,7 @@
                     </h6>
                     <div style="color: green;">Min Order: ₹{{ $coupon->min_order_amount ?? 0 }}</div>
                     <small>Use Code: <b>{{ $coupon->code }}</b></small>
-                    <div>
+                    {{-- <div>
                         <a href="#" class="apply-coupon-btn"
                             data-code="{{ $coupon->code }}"
                             data-vendor-id="{{ $coupon->created_by_id }}"
@@ -28,7 +28,7 @@
                             Apply
                         </a>
 
-                    </div>
+                    </div> --}}
                 </div>
                 <div class="col-6 text-end">
                     <img src="{{ asset('public/assets/website/images/logo.png')}}" alt="logo" class="xyz-coupon-logo">
@@ -44,3 +44,12 @@
         @endforelse
     </div>
 </div>
+<script>
+    function showModal() {
+      document.getElementById('couponModalxyz').style.display = 'flex';
+    }
+
+    function hideModal() {
+      document.getElementById('couponModalxyz').style.display = 'none';
+    }
+  </script>

@@ -34,9 +34,9 @@
                     <div class="col-md-4 col-6 footer-links">
                         <h5>Company</h5>
                         <ul>
-                            <li><a href="javascript:void(0)">Privacy Policy</a></li>
-                            <li><a href="javascript:void(0)">Terms & Condition</a></li>
-                            <li><a href="javascript:void(0)">Return Policy</a></li>
+                            <li><a href="{{ route('policy.show', 'privacy-policy') }}">Privacy Policy</a></li>
+                            <li><a href="{{ route('policy.show', 'terms-condition') }}">Terms & Condition</a></li>
+                            <li><a href="{{ route('policy.show', 'return-policy') }}">Return Policy</a></li>
                         </ul>
                     </div>
 
@@ -44,7 +44,7 @@
                     <div class="col-md-4 col-12 footer-links">
                         <h5>About</h5>
                         <ul>
-                            <li><a href="javascript:void(0)">About Us</a></li>
+                            <li><a href="{{route('aboutus')}}">About Us</a></li>
                             <li><a href="javascript:void(0)">Contact Us</a></li>
                         </ul>
                     </div>
@@ -285,8 +285,6 @@
                 });
             });
 
-
-
         });
 
         // Render cart items in sidebar
@@ -350,9 +348,6 @@
             updateBillSummary(total);
         }
 
-
-
-
         function updateBillSummary(total) {
             // Static values for demonstration
             let deliveryCharge = 0;
@@ -384,7 +379,6 @@
             // ✅ Update top rupee symbol box also
             $('#rupee-symbol-sidecart').text(`₹ ${grandTotal}/-`);
         }
-
 
         // Sidebar Controls
         function openCart() {

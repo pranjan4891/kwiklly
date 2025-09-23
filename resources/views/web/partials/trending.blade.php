@@ -1,6 +1,6 @@
 @if ($trending_products->isNotEmpty())
 
-
+{{-- {{dd($trending_products)}} --}}
 <div class="container mt-4">
       <h4 class="pb-3 pt-4 headingclass">Trending Products</h4>
       <div class="owl-carousel owl-theme mb-4">
@@ -108,7 +108,7 @@
 
                      <div class="store-info">
                         <span>Ad </span>
-                        <span>{{ $product->vendor->business_name ?? '' }}</span>
+                        <span><a href="{{ route('explorestore', ['vendor_id' => $product->vendor_id,'cat_id'=>$product->category_id]) }}" onclick="return redirectWithLocation(this.href)">{{ $product->vendor->business_name ?? '' }}</a></span>
                         <span>5 min</span>
                      </div>
                   </div>

@@ -107,10 +107,10 @@
                         </div>
 
                         {{-- Vendor Info --}}
-                        <div class="store-info">
-                            <span>{{ $product->vendor->business_name ?? 'Vendor' }}</span>
-                            <span> • </span>
-                            <span>Near You</span>
+                       <div class="store-info">
+                            <span>Ad</span>
+                            <span><a href="{{ route('explorestore', ['vendor_id' => $product->vendor_id,'cat_id'=>$product->category_id]) }}" onclick="return redirectWithLocation(this.href)">{{ $product->vendor->business_name ?? '' }}</a></span>
+                            <span>5 min</span>
                         </div>
                     </div>
                 </div>

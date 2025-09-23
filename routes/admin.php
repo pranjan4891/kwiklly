@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\MasterLocationController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CartController;
+use App\Http\Controllers\Admin\PageController;
 use App\Models\City;
 use App\Models\MasterLocation;
 use Illuminate\Http\Request;
@@ -190,6 +191,39 @@ Route::group(['prefix' => 'admin'], function () {
 
     // Social Links Management
     Route::get('social-links', [AdminController::class, 'socialLinks'])->name('admin.social.links');
+
+    // Dynamic Pages Management
+    Route::get('/policies', [PageController::class, 'index'])->name('admin.policies.index');
+    Route::get('/policies/create', [PageController::class, 'create'])->name('admin.policies.create');
+    Route::post('/policies', [PageController::class, 'store'])->name('admin.policies.store');
+    Route::get('/policies/{id}/edit', [PageController::class, 'edit'])->name('admin.policies.edit');
+    Route::post('/policies/{id}', [PageController::class, 'update'])->name('admin.policies.update');
+
+    // --- About Us ---
+    Route::get('/about-us', [PageController::class, 'aboutIndex'])->name('admin.about.index');
+    Route::post('/about-us/update', [PageController::class, 'aboutUpdate'])->name('admin.about.update');
+
+    // --- Mission & Vision ---
+    Route::get('/mission-vision', [PageController::class, 'missionIndex'])->name('admin.mission.index');
+    Route::post('/mission-vision/update', [PageController::class, 'missionUpdate'])->name('admin.mission.update');
+
+    // --- Stats ---
+    Route::get('/stats', [PageController::class, 'statsIndex'])->name('admin.stats.index');
+    Route::post('/stats/store', [PageController::class, 'statsStore'])->name('admin.stats.store');
+    Route::post('/stats/{id}/update', [PageController::class, 'statsUpdate'])->name('admin.stats.update');
+    Route::delete('/stats/{id}', [PageController::class, 'statsDestroy'])->name('admin.stats.destroy');
+
+    // --- Features ---
+    Route::get('/features', [PageController::class, 'featuresIndex'])->name('admin.features.index');
+    Route::post('/features/store', [PageController::class, 'featuresStore'])->name('admin.features.store');
+    Route::post('/features/{id}/update', [PageController::class, 'featuresUpdate'])->name('admin.features.update');
+    Route::delete('/features/{id}', [PageController::class, 'featuresDestroy'])->name('admin.features.destroy');
+
+    // --- FAQs ---
+    Route::get('/faqs', [PageController::class, 'faqsIndex'])->name('admin.faqs.index');
+    Route::post('/faqs/store', [PageController::class, 'faqsStore'])->name('admin.faqs.store');
+    Route::post('/faqs/{id}/update', [PageController::class, 'faqsUpdate'])->name('admin.faqs.update');
+    Route::delete('/faqs/{id}', [PageController::class, 'faqsDestroy'])->name('admin.faqs.destroy');
 
 
 });

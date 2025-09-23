@@ -33,9 +33,9 @@
                     <div class="col-md-4 col-6 footer-links">
                         <h5>Company</h5>
                         <ul>
-                            <li><a href="javascript:void(0)">Privacy Policy</a></li>
-                            <li><a href="javascript:void(0)">Terms & Condition</a></li>
-                            <li><a href="javascript:void(0)">Return Policy</a></li>
+                            <li><a href="{{ route('policy.show', 'privacy-policy') }}">Privacy Policy</a></li>
+                            <li><a href="{{ route('policy.show', 'terms-condition') }}">Terms & Condition</a></li>
+                            <li><a href="{{ route('policy.show', 'return-policy') }}">Return Policy</a></li>
                         </ul>
                     </div>
 
@@ -43,7 +43,7 @@
                     <div class="col-md-4 col-12 footer-links">
                         <h5>About</h5>
                         <ul>
-                            <li><a href="javascript:void(0)">About Us</a></li>
+                            <li><a href="{{route('aboutus')}}">About Us</a></li>
                             <li><a href="javascript:void(0)">Contact Us</a></li>
                         </ul>
                     </div>
@@ -106,11 +106,16 @@
                 heading.textContent = "Register Today";
                 container.innerHTML = `
                     <div id="map_canvas" class="map-container mb-3" style="height: 300px;"></div>
-                    <button type="button" id="current-location-btn" class="btn btn-primary btn-sm mt-2">
-                        Use Current Location
-                    </button>
-                    or
                     <hr>
+                    <div class="form-group row">
+                        <button type="button" id="current-location-btn" class="btn btn-primary btn-lg btn-block" style="border-radius: 25px;">
+                            <i class="fas fa-location-arrow"></i> Use Current Location
+                        </button>
+                    </div>
+
+                    <div class="log-in-divider">or</div>
+
+
                     <div class="form-group row">
                         <label class="col-lg-2 col-form-label">Pincode <span class="text-danger">*</span></label>
                         <div class="col-lg-4">
@@ -453,7 +458,12 @@
                 map: map,
                 title: "Branch Location",
                 draggable: true,
-                icon: "{{ asset('public/marker.png') }}"
+                icon: {
+                    url: "{{ asset('public/marker.png') }}", // custom marker image
+                    scaledSize: new google.maps.Size(40, 40), // resize if needed
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(20, 40) // adjust anchor so tip points correctly
+                }
             });
 
             formDataObj.latitude = position.lat();

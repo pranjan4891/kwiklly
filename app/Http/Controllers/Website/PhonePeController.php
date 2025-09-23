@@ -70,9 +70,6 @@ class PhonePeController extends Controller
                     'success' => true,
                     'redirectUrl' => $result['redirectUrl']
                 ]);
-
-                // Clear cart
-                CartItem::where('user_id', Auth::id())->delete();
             }
 
             // If failed, update payment status
@@ -134,6 +131,9 @@ class PhonePeController extends Controller
                 $payment->order->update([
                     'status' => 'confirmed'
                 ]);
+
+                 // Clear cart
+                CartItem::where('user_id', Auth::id())->delete();
 
                 return redirect()->route('phonepe.success')->with([
                     'success' => 'Payment completed successfully',

@@ -122,7 +122,7 @@
 
                     <div class="store-info">
                         <span>Ad</span>
-                        <span>{{ $selectedVendor->business_name ?? 'Chandrash Grocery' }}</span>
+                        {{-- <span>{{ $selectedVendor->business_name ?? 'Chandrash Grocery' }}</span> --}}
                         <span>5 min away</span>
                     </div>
                 </div>

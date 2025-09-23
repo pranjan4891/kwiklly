@@ -8,9 +8,15 @@ use App\Models\Subcategory;
 use App\Models\VendorAdmin;
 use App\Models\Product;
 use App\Models\MasterLocation;
+use App\Models\Page;
+use App\Models\AboutUs;
+use App\Models\Faq;
+use App\Models\Feature;
+use App\Models\MissionVision;
+use App\Models\Stat;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-
+use App\Models\Coupon;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 
@@ -443,8 +449,11 @@ class HomeController extends Controller
                 ->where('is_deleted', 0)
                 ->get();
         }
+        // ✅ Coupons
+        $coupons = Coupon::where('created_by_id', $vendor->id)->where('is_active', 1)->where('is_deleted', 0)->get();
 
-        return view('web.explorestore', compact('vendor', 'category', 'subcategories', 'products'));
+
+        return view('web.explorestore', compact('vendor', 'category', 'subcategories', 'products', 'coupons'));
     }
 
     public function subcategoryProducts(Request $request, $vendor_id, $category_id, $subcategory_id)
@@ -506,7 +515,10 @@ class HomeController extends Controller
             ->where('is_active', '1')
             ->get();
 
-        return view('web.explorestore', compact('vendor', 'category', 'subcategory', 'subcategories', 'products'));
+        //vendor wise coupons
+        $coupons = Coupon::where('created_by_id', $vendor->id)->where('is_active', 1)->where('is_deleted', 0)->get();
+
+        return view('web.explorestore', compact('vendor', 'category', 'subcategory', 'subcategories', 'products', 'coupons'));
     }
 
 
@@ -688,6 +700,21 @@ class HomeController extends Controller
         return view('web.productdetails');
     }
 
+    public function aboutUs(){
+        $about = AboutUs::first();
+        $mission = MissionVision::first();
+        $stats = Stat::all();
+        $features = Feature::all();
+        $stats = Stat::all();
+        $faqs = Faq::all();
+        return view('web.about', compact('about', 'mission', 'stats', 'features', 'faqs'));
+    }
+
+    // Frontend - show policy
+    public function show($slug) {
+        $policy = Page::where('slug', $slug)->firstOrFail();
+        return view('web.pages.policy', compact('policy'));
+    }
 
 
 

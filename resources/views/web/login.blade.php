@@ -44,7 +44,7 @@
 
     <button type="submit" class="btn log-in-btn w-100 py-2 mb-3">Log In</button>
 
-    {{-- <a href="{{ route('loginbyphone') }}" class="log-in-phone-login d-block mb-3">Log in using phone number</a> --}}
+    <a href="{{ route('loginbyphone') }}" class="log-in-phone-login d-block mb-3">Log in using phone number</a>
 
     <p class="mb-0">Don't have an account? <a href="{{ route('signup') }}" class="log-in-signup-link">Sign Up</a></p>
 </form>

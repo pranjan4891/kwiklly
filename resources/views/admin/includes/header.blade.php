@@ -186,6 +186,24 @@
                     </ul>
                 </li> --}}
                 <li class="has-submenu">
+                    <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">About Page</span></a>
+                    <ul class="list-unstyled">
+                        <li><a href="{{route('admin.about.index')}}">About Section</a></li>
+                        <li><a href="{{route('admin.mission.index')}}">Mission & Vision</a></li>
+                        <li><a href="{{route('admin.stats.index')}}">Stats</a></li>
+                        <li><a href="{{route('admin.features.index')}}">Features</a></li>
+                        <li><a href="{{route('admin.faqs.index')}}">Faqs</a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Pages</span></a>
+                    <ul class="list-unstyled">
+                        <li><a href="{{route('admin.policies.index')}}">Display Pages</a></li>
+                        <li><a href="{{route('admin.policies.create')}}">Create Page</a></li>
+
+                    </ul>
+                </li>
+                <li class="has-submenu">
                     <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Setting</span></a>
                     <ul class="list-unstyled">
                         <li><a href="{{route('admin.profile')}}">Profile</a></li>

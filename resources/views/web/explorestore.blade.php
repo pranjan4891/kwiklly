@@ -400,7 +400,7 @@
                               </div>
                                <div class="store-info">
                                     <span>Ad </span>
-                                    <span>{{ $product->vendor->business_name ?? '' }}</span>
+                                    {{-- <span>{{ $product->vendor->business_name ?? '' }}</span> --}}
                                     <span>5 min</span>
                                 </div>
                            </div>
@@ -417,6 +417,6 @@
       </div>
    </div>
 </section>
-
+@include('web.include.vendor-coupon-modal')
 <!-- second section end  -->
 @endsection

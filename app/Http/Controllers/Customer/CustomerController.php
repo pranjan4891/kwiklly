@@ -64,10 +64,58 @@ class CustomerController extends Controller
         ]);
     }
 
+
+
+    //otp sent
+    public function otpsent(Request $request)
+    {
+        $request->validate([
+            'phone_number' => 'required|exists:users,phone_number',
+        ]);
+        $otp = rand(100000, 999999);
+        $user = User::where('phone_number', $request->phone_number)->first();
+
+        if ($user) {
+            $user->update(['otp' => $otp]);
+            // Pass OTP along with user
+            return view('web.loginotp', compact('user'))->with('otp', strval($otp));
+        }
+
+        return back()->with('error', 'Phone number not registered');
+    }
+
+    public function resendotp(Request $request)
+    {
+        $user = User::where('phone_number', $request->phone_number)->first();
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        $otp = rand(100000, 999999);
+        $user->update(['otp' => $otp]);
+
+        return response()->json(['success' => true, 'otp' => $otp]);
+    }
+
     public function loginbyphone()
     {
         return view('web.loginphone');
     }
+
+    public function otpcheck(Request $request)
+    {
+        $otp = $request->otp;
+        $user = User::where('phone_number', $request->phone_number)->first();
+
+        if ($user && $user->otp == $otp) {
+            auth()->login($user);
+            return redirect()->route('customer.dashboard');
+        }
+
+        return back()->with('error', 'Invalid OTP');
+    }
+
+
    // Show Forgot Password form
     public function showForgotPasswordForm()
     {
