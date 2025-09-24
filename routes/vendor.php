@@ -65,7 +65,7 @@ Route::prefix('vendor')->name('vendor.')->middleware(['auth:vendor', 'verified',
     Route::get('profile', [VendorDashboardController::class, 'profile'])->name('profile');
     Route::post('update-profile', [VendorDashboardController::class, 'updateProfile'])->name('update.profile');
     Route::post('update-image', [VendorController::class, 'updateImage'])->name('updateImage');
-
+    Route::post('update-delivery-charges', [VendorDashboardController::class, 'updateDeliveryCharges'])->name('delivery-charges.update');
 
     Route::post('/store-time', [VendorDashboardController::class, 'storeTime'])->name('update.store.time');
 

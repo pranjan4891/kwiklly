@@ -99,8 +99,10 @@
                   <a href="{{route('stores', ['slug' => $cat->slug])}}" class="text-decoration-none text-dark"  onclick="return redirectWithLocation(this.href)">
                      <div class="product-carded">
                         <img src="{{ asset('public/' . $cat->image) }}" alt="{{ $cat['name'] }}">
+                        
+                         <div class="py-2 text-center catename "><b>{{ $cat['name'] }}</b></div>
                      </div>
-                     <div class="py-2 text-center catename"><b>{{ $cat['name'] }}</b></div>
+                    
                   </a>
                   @endforeach
                </div>

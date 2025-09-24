@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use App\Models\VendorAdmin;
 use App\Models\Category;
+use App\Models\DeliveryCharge;
 use App\Models\TimeSlot;
 use Illuminate\Support\Facades\Log;
 
@@ -26,6 +27,7 @@ class VendorDashboardController extends Controller
         $data['vendor'] = $vendor;
         $data['categories'] = Category::where('is_active', '1')->get();
         $data['timeSlots'] = TimeSlot::orderBy('id')->get();
+        $data['deliveryCharge'] = DeliveryCharge::where('vendor_id', $vendor->id)->first();
 
         $storeTimeRaw = $vendor->store_time;
 
@@ -104,32 +106,66 @@ class VendorDashboardController extends Controller
         return back()->with('success', 'Profile updated successfully.');
     }
 
-  public function storeTime(Request $request)
-{
-//\Log::info('Store time request received', $request->all());
-    $storeSchedule = [];
+    public function storeTime(Request $request)
+    {
+        //\Log::info('Store time request received', $request->all());
+        $storeSchedule = [];
 
-    for ($i = 1; $i <= 7; $i++) {
-        $storeSchedule[] = [
-            'day_id'     => $request->input("day_id_$i") ?? null,
-            'day_name'   => $request->input("day_name_$i"),
-            'status'     => $request->input("day_oc_$i"),
-            'startTime'  => $request->input("open_time_$i"),
-            'endTime'    => $request->input("closed_time_$i")
-        ];
+        for ($i = 1; $i <= 7; $i++) {
+            $storeSchedule[] = [
+                'day_id'     => $request->input("day_id_$i") ?? null,
+                'day_name'   => $request->input("day_name_$i"),
+                'status'     => $request->input("day_oc_$i"),
+                'startTime'  => $request->input("open_time_$i"),
+                'endTime'    => $request->input("closed_time_$i")
+            ];
+        }
+
+        $vendor = VendorAdmin::find(Auth::id());
+
+        if (!$vendor) {
+            return redirect()->back()->with('error', 'Vendor not found');
+        }
+
+        $vendor->store_time = json_encode($storeSchedule);
+        $vendor->store_time_status = 1;
+        $vendor->save();
+
+        return redirect()->back()->with('success', 'Store timings updated successfully.');
     }
 
-    $vendor = VendorAdmin::find(Auth::id());
+    public function updateDeliveryCharges(Request $request)
+    {
+        $vendor = auth()->user();
 
-    if (!$vendor) {
-        return redirect()->back()->with('error', 'Vendor not found');
+        $request->validate([
+            'delivery_charge' => 'required|numeric|min:0',
+            'delivery_range'  => 'required|numeric|min:1',
+        ]);
+
+        $delivery_charge = DeliveryCharge::updateOrCreate(
+            ['vendor_id' => $vendor->id],
+            [
+                'delivery_charge' => $request->delivery_charge,
+                'delivery_range'  => $request->delivery_range,
+                'status' => 0, // reset to pending on update
+            ]
+        );
+
+        // reload to make sure we have latest DB data
+        $delivery_charge->refresh();
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Delivery charges updated successfully',
+            'data'    => [
+                'delivery_charge' => $delivery_charge->delivery_charge,
+                'delivery_range'  => $delivery_charge->delivery_range,
+                'status'          => $delivery_charge->status,
+                'status_text'     => $delivery_charge->status == 1 ? 'Approved' : ($delivery_charge->status == 2 ? 'Rejected' : 'Pending')
+            ]
+        ]);
     }
 
-    $vendor->store_time = json_encode($storeSchedule);
-    $vendor->store_time_status = 1;
-    $vendor->save();
-
-    return redirect()->back()->with('success', 'Store timings updated successfully.');
-}
 
 }

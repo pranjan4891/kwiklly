@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\MasterLocationController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CartController;
+use App\Http\Controllers\Admin\DeliveryChargesController;
 use App\Http\Controllers\Admin\PageController;
 use App\Models\City;
 use App\Models\MasterLocation;
@@ -147,6 +148,9 @@ Route::group(['prefix' => 'admin'], function () {
         Route::post('branch/restore/{id}', [AdminController::class, 'restoreBranch'])->name('admin.branch.restore');
         Route::delete('branch/destroy/{id}', [AdminController::class, 'destroyBranch'])->name('admin.branch.destroy');
 
+        // Delivery Charges Management
+        Route::get('delivery-charges', [DeliveryChargesController::class, 'index'])->name('admin.delivery.charges.index');
+        Route::put('/delivery-charges/{id}', [DeliveryChargesController::class, 'update'])->name('admin.delivery-charges.update');
 
         // Change Password
         Route::get('change-password', [AdminController::class, 'showChangePasswordForm'])->name('admin.password.change');
@@ -224,6 +228,11 @@ Route::group(['prefix' => 'admin'], function () {
     Route::post('/faqs/store', [PageController::class, 'faqsStore'])->name('admin.faqs.store');
     Route::post('/faqs/{id}/update', [PageController::class, 'faqsUpdate'])->name('admin.faqs.update');
     Route::delete('/faqs/{id}', [PageController::class, 'faqsDestroy'])->name('admin.faqs.destroy');
+
+    // --Contact Us--
+    Route::get('/contact-us', [PageController::class, 'contactIndex'])->name('admin.contact.index');
+    Route::post('/contactus/reply/{id}', [PageController::class, 'replyMessage'])->name('admin.contactus.reply');
+
 
 
 });

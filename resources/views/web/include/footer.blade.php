@@ -45,7 +45,7 @@
                         <h5>About</h5>
                         <ul>
                             <li><a href="{{route('aboutus')}}">About Us</a></li>
-                            <li><a href="javascript:void(0)">Contact Us</a></li>
+                            <li><a href="#" id="newconPopup">Contact Us</a></li>
                         </ul>
                     </div>
                     </div>
@@ -159,7 +159,157 @@
             </div>
         </section>
     </footer>
+ <!-- Popup -->
+    <div class="newcon-overlay" id="newconPopup" style="display:none;">
+        <div class="newcon-popup">
+            <span class="newcon-close" id="newconClose">&times;</span>
+            <h2>Contact Us</h2>
+            <hr>
+            <form id="newconForm" method="POST" action="{{ route('send.enquiry') }}">
+                @csrf
+                <input type="text" id="newconName" name="name" placeholder="Name" required>
+                <input type="email" id="newconEmail" name="email" placeholder="Email id" required>
+                <input type="text" id="newconSubject" name="subject" placeholder="Subject" required>
+                <textarea id="newconMessage" name="message" placeholder="Message" required></textarea>
+                <button type="submit" class="newcon-submit">Submit</button>
+                <button type="button" class="newcon-cancel" id="newconCancel">Cancel</button>
+            </form>
+        </div>
+    </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const openBtn   = document.getElementById('newconOpen'); // make sure you add a trigger button with this ID
+            const popup     = document.getElementById('newconPopup');
+            const closeBtn  = document.getElementById('newconClose');
+            const cancelBtn = document.getElementById('newconCancel');
+            const form      = document.getElementById('newconForm');
+
+            if (!popup || !form) return;
+
+            function openPopup(e) {
+                if (e) e.preventDefault();
+                popup.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closePopup() {
+                popup.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+
+            openBtn && openBtn.addEventListener('click', openPopup);
+            closeBtn && closeBtn.addEventListener('click', closePopup);
+            cancelBtn && cancelBtn.addEventListener('click', closePopup);
+
+            popup.addEventListener('click', function (ev) {
+                if (ev.target === popup) closePopup();
+            });
+
+            document.addEventListener('keydown', function (ev) {
+                if (ev.key === 'Escape' && popup.style.display === 'flex') closePopup();
+            });
+        });
+    </script>
+
+    <style>
+        /* Overlay */
+        .newcon-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 999999 !important;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Popup box */
+        .newcon-popup {
+            background: linear-gradient(135deg, #e8f8ee, #fdfdfd);
+            padding: 25px;
+            border-radius: 10px;
+            width: 350px;
+            max-width: 90%;
+            position: relative;
+            text-align: center;
+            border: 2px solid #c9a9f1;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            animation: newconFadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes newconFadeIn {
+            from {opacity: 0; transform: scale(0.9);}
+            to {opacity: 1; transform: scale(1);}
+        }
+
+        /* Heading */
+        .newcon-popup h2 {
+            margin-bottom: 15px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .newcon-popup hr {
+            margin: 10px 0 20px;
+            border: 0;
+            height: 1px;
+            background: #bbb;
+        }
+
+        /* Inputs */
+        .newcon-popup input,
+        .newcon-popup textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .newcon-popup textarea {
+            resize: none;
+            height: 80px;
+        }
+
+        /* Buttons */
+        .newcon-submit {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 30px;
+            background: #e63912;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .newcon-cancel {
+            margin-top: 10px;
+            display: block;
+            background: none;
+            border: none;
+            color: #e63912;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        /* Close button (top right) */
+        .newcon-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            color: #555;
+            cursor: pointer;
+        }
+    </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -168,6 +318,32 @@
     <script src="{{ asset('public/assets/website/JS/custom.js')}}"></script>
     <!--------------- CUSTOM JAVASCRIPT END ----------------->
 
+    @if(session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '{{ session('success') }}',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            });
+        </script>
+    @endif
+
+    @if($errors->any())
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    html: `{!! implode('<br>', $errors->all()) !!}`,
+                    confirmButtonColor: '#d33',
+                });
+            });
+        </script>
+    @endif
     <script>
         document.querySelectorAll('.shopmore').forEach(function(select) {
             select.addEventListener('change', function() {
@@ -373,7 +549,7 @@
                 </ul>
             `);
 
-            $('.proceed-btn').html(`Proceed To Checkout`);
+            $('.proceed-btn').html(`Login to Proceed`);
             $('.grand-total-box strong').html(`₹${grandTotal}`);
 
             // ✅ Update top rupee symbol box also

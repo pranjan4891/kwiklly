@@ -9,7 +9,7 @@
 <section>
 <div class="container log-in-container form-section">
     <div class="log-in-box">
-      <h4 class="mb-4 fw-bold">Log In</h4>
+      <h4 class="mb-4 fw-bold">Login</h4>
 
       {{-- <div class="d-flex justify-content-center gap-3 mb-3">
         <button class="btn log-in-social-btn bg-transparent">
@@ -20,7 +20,7 @@
         </button>
       </div> --}}
 
-      <div class="log-in-divider">or</div>
+      <!--<div class="log-in-divider">or</div>-->
 
       <form action="{{ route('login.store') }}" method="POST">
     @csrf
@@ -42,9 +42,9 @@
 
     <a href="{{ route('forgot.password.form') }}" class="log-in-forgot-pass">Forgot Password?</a>
 
-    <button type="submit" class="btn log-in-btn w-100 py-2 mb-3">Log In</button>
+    <button type="submit" class="btn log-in-btn w-100 py-2 mb-3">LOGIN</button>
 
-    <a href="{{ route('loginbyphone') }}" class="log-in-phone-login d-block mb-3">Log in using phone number</a>
+    <a href="{{ route('loginbyphone') }}" class="log-in-phone-login d-block mb-3">Login using phone number</a>
 
     <p class="mb-0">Don't have an account? <a href="{{ route('signup') }}" class="log-in-signup-link">Sign Up</a></p>
 </form>

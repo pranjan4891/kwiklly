@@ -89,10 +89,10 @@
             </div>
          </form>
       </div>
-      <div class="col-md-4 col-sm-6 col-xs-12">
+      {{-- <div class="col-md-4 col-sm-6 col-xs-12">
          <div class="panel panel-default">
             <div class="panel-body">
-               <h3><span class="fa fa-cog"></span> Payments</h3>
+               <h3><span class="fa fa-cog"></span> Delivery Charges</h3>
                <p>Please choose payment type</p>
                <div id="result"></div>
             </div>
@@ -149,7 +149,64 @@
                </div>
             </div>
          </div>
-      </div>
+      </div> --}}
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <h3><span class="fa fa-cog"></span> Delivery Charges</h3>
+                    <p>Please enter delivery charge</p>
+                </div>
+
+                <form id="deliveryChargesForm" class="form-horizontal form-group-separated">
+                    @csrf
+
+                    <div class="panel-body">
+                        <!-- Delivery Charges -->
+                        <div class="form-group">
+                            <label class="col-md-6 col-xs-6 control-label paymod">Charge (Rs.)</label>
+                            <div class="col-md-6 col-xs-6">
+                                <input type="number" name="delivery_charge" value="{{ $deliveryCharge->delivery_charge ?? '' }}" class="form-control" placeholder="Enter charges" required>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Range -->
+                        <div class="form-group">
+                            <label class="col-md-6 col-xs-6 control-label paymod">Range (km)</label>
+                            <div class="col-md-6 col-xs-6">
+                                <input type="number" name="delivery_range" value="{{ $deliveryCharge->delivery_range ?? '' }}" class="form-control" placeholder="Enter range" required>
+                            </div>
+                        </div>
+
+                        <!-- Status (Readonly) -->
+                        <div class="form-group">
+                            <label class="col-md-6 col-xs-6 control-label paymod">Status</label>
+                            <div class="col-md-6 col-xs-6">
+                                @php
+                                    $statusText = 'Pending';
+                                    if(isset($deliveryCharge->status)) {
+                                        switch ($deliveryCharge->status) {
+                                            case 1: $statusText = 'Approved'; break;
+                                            case 2: $statusText = 'Rejected'; break;
+                                            default: $statusText = 'Pending';
+                                        }
+                                    }
+                                @endphp
+                                <input type="text" class="form-control {{ $deliveryCharge->status == 1 ? 'text-success' : ($deliveryCharge->status == 2 ? 'text-danger' : 'text-warning')}}" value="{{ $statusText }}" readonly style="font-weight: bold;">
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form-group">
+                            <div class="col-md-12 text-right">
+                                <button type="submit" class="btn btn-primary">Update</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
    </div>
    <!--------------------------------------------------------------------------------  -->
    <div class="row">
@@ -307,21 +364,31 @@
                         </div>
                      </div>
                      <div class="row">
-                        {{-- Maximum Order Value --}}
                         <div class="col-3">
                            <label for="delivery_charge">Delivery Charge (Rs.)</label>
                         </div>
                         <div class="col-6">
-                           <input type="number" name="delivery_charge" id="delivery_charge" class="form-control" value="{{ old('delivery_charge', $vendor->delivery_charge) }}">
+                           <input type="number" class="form-control" value="{{  $vendor->delivery_charge }}" readonly>
                         </div>
                      </div>
                      <div class="row">
-                        {{-- Delivery Time --}}
                         <div class="col-3">
                            <label for="delivery_range">Delivery Range (KM)</label>
                         </div>
                         <div class="col-6">
-                           <input type="number" name="delivery_range" id="delivery_range" class="form-control" value="{{ old('delivery_range', $vendor->delivery_range) }}">
+                           <input type="number" class="form-control" value="{{  $vendor->delivery_range }}" readonly>
+                        </div>
+                     </div>
+                     <div class="row">
+                        <div class="col-3">
+                           <label for="delivery_time">Delivery Charge Status</label>
+                        </div>
+                        <div class="col-6">
+                           @if ($vendor->delivery_charge_status == 1)
+                                <input type="text" class="form-control" value="Active" readonly>
+                           @else
+                                <input type="text" class="form-control" value="Inactive" readonly>
+                           @endif
                         </div>
                      </div>
                      <div class="row">
@@ -629,4 +696,54 @@
     });
 });
 </script>
+<script>
+    $(document).ready(function () {
+        $('#deliveryChargesForm').on('submit', function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                url: "{{ route('vendor.delivery-charges.update') }}",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function (response) {
+                    if (response.status) {
+                        alert(response.message);
+
+                        // Update form fields with latest DB values
+                        $('input[name="delivery_charge"]').val(response.data.delivery_charge);
+                        $('input[name="delivery_range"]').val(response.data.delivery_range);
+
+                        // Update status text + color
+                        let statusField = $('#statusField'); // make sure input has id="statusField"
+                        statusField.val(response.data.status_text);
+
+                        // Remove old classes
+                        statusField.removeClass('text-success text-danger text-warning');
+
+                        // Add new class based on status
+                        if (response.data.status == 1) {
+                            statusField.addClass('text-success');
+                        } else if (response.data.status == 2) {
+                            statusField.addClass('text-danger');
+                        } else {
+                            statusField.addClass('text-warning');
+                        }
+                    } else {
+                        alert('Something went wrong!');
+                    }
+                },
+                error: function (xhr) {
+                    let errors = xhr.responseJSON.errors;
+                    let errorMsg = '';
+                    for (let key in errors) {
+                        errorMsg += errors[key][0] + '\n';
+                    }
+                    alert(errorMsg);
+                }
+            });
+        });
+    });
+</script>
+
+
 @endsection

@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\MasterLocation;
 use App\Models\Page;
 use App\Models\AboutUs;
+use App\Models\ContactUs;
 use App\Models\Faq;
 use App\Models\Feature;
 use App\Models\MissionVision;
@@ -716,6 +717,24 @@ class HomeController extends Controller
         return view('web.pages.policy', compact('policy'));
     }
 
+    public function sendEnquiry(Request $request){
+
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email',
+            'subject' => 'required',
+            'message' => 'required',
+        ]);
+
+        $enquiry = new ContactUs();
+        $enquiry->name = $request->name;
+        $enquiry->email = $request->email;
+        $enquiry->subject = $request->subject;
+        $enquiry->message = $request->message;
+        $enquiry->save();
+
+        return redirect()->back()->with('success', 'Enquiry sent successfully');
+    }
 
 
 }

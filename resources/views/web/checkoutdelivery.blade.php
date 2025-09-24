@@ -206,7 +206,7 @@
                         <div class="ordersummary-row grandtotal-row">
                             <span><strong>Grand Total</strong></span>
                             <div class="text-end">
-                            <strong>₹<span class="final-price">0</span></strong><br>
+                            <strong><span class="final-price">0</span></strong><br>
                             <span class="save-box">Saved <span id="saved-amount">0</span></span>
                             </div>
                         </div>

@@ -158,6 +158,9 @@
                         <li><a href="{{ route('admin.coupons.deleted') }}">Deleted Coupons</a></li>
                     </ul>
                 </li>
+                <li class="has-submenu">
+                    <a href="{{route('admin.contact.index')}}"><i class="ion-navicon-round"></i> <span class="nav-label">Contact Us</span></a>
+                </li>
                 {{-- <li class="has-submenu">
                     <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Exclusive Deals</span></a>
                 </li>
@@ -185,6 +188,12 @@
                         <li><a href="#">Charge By Vendor</a></li>
                     </ul>
                 </li> --}}
+                <li class="has-submenu">
+                    <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Delivery Charge</span></a>
+                    <ul class="list-unstyled">
+                        <li><a href="{{route('admin.delivery.charges.index')}}">Charge By Vendor</a></li>
+                    </ul>
+                </li>
                 <li class="has-submenu">
                     <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">About Page</span></a>
                     <ul class="list-unstyled">

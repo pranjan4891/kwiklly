@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AboutUs;
+use App\Models\ContactUs;
+use App\Models\ContactUsReply;
 use App\Models\Faq;
 use App\Models\Feature;
 use App\Models\MissionVision;
@@ -223,4 +225,35 @@ class PageController extends Controller
         Faq::destroy($id);
         return back()->with('success', 'FAQ deleted');
     }
+
+    // ---Contact Us---
+    public function contactIndex()
+    {
+        $title = 'Admin | Contact Us';
+        $admin = Auth::guard('admin')->user();
+        if (!$admin) return redirect()->route('admin.login')->with('error', 'Unauthorized');
+        $contacts = ContactUs::all();
+        return view('admin.pages.contact', compact('title', 'admin', 'contacts'));
+    }
+
+
+    public function replyMessage(Request $request, $id)
+    {
+        $request->validate([
+            'reply' => 'required|string',
+        ]);
+
+        $contact = ContactUs::findOrFail($id);
+
+        ContactUsReply::create([
+            'contact_us_id' => $contact->id,
+            'reply_message' => $request->reply,
+        ]);
+
+        // If you also want to send email:
+        // Mail::to($contact->email)->send(new ContactReplyMail($contact, $request->reply));
+
+        return redirect()->back()->with('success', 'Reply sent successfully!');
+    }
+
 }

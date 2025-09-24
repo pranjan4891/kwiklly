@@ -2,6 +2,11 @@
 body {
     font-family: 'Helvetica', sans-serif;
 }
+a {
+    color: #000000;
+    text-decoration: none;
+}
+
 .bannerimg .img-fluid {
     width: 100% !important;
     height: auto;
@@ -199,6 +204,7 @@ body {
     margin: 0px -80px 0px 0px;
 }
 .original-price {
+    padding-left:30px;
     text-decoration: line-through;
     color: #53433F;
     font-size: 16px;
@@ -595,6 +601,7 @@ body {
     margin-bottom:0px;
 }
 .product-carded {
+  margin-bottom: 30px;
     background: #FFF8F6; /* Light pink background */
     border-radius: 12px;
     padding: 15px;
@@ -1013,6 +1020,7 @@ body {
     font-weight:400;
 }
 .online-statusde {
+    width:7%;
     position: absolute;
     top: 280px;
     right: 9%;
@@ -1028,8 +1036,8 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 .online-statusde span {
-    width: 10px;
-    height: 10px;
+    width: 20px;
+    height: 20px;
     background: #4CAF50;
     border-radius: 50%;
     display: inline-block;
@@ -1823,7 +1831,7 @@ body {
   }
 
   .bottom-bar {
-    position: sticky;
+    position: absolute;
     padding-bottom:5px;
     bottom:0px;
     left: 0;
@@ -2896,6 +2904,7 @@ body {
     }
 
     .addpop-popup.addpop-desktop-active {
+        position:fixed;
       display: block;
     }
   }

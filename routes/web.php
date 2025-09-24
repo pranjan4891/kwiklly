@@ -157,6 +157,8 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
 
     });
 
+    Route::post('/send/enquiery', [HomeController::class, 'sendEnquiry'])->name('send.enquiry');
+
     /*End Website-------------------------------*/
 
     // Route::get('/phonepe/pay', [PaymentController::class, 'pay']);
