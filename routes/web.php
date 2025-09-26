@@ -57,41 +57,42 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
 
 
     /*Website-------------------------------*/
+    // Protected "store intended" middleware group (✅ applied here)
+    Route::middleware('store.intended')->group(function () {
+        Route::get('/', [HomeController::class, 'index'])->name('home');
+        Route::get('/about-us', [HomeController::class, 'aboutUs'])->name('aboutus');
+        // routes/web.php
+        Route::post('/location-products', [HomeController::class, 'locationProducts'])->name('location.products');
 
-    Route::get('/', [HomeController::class, 'index'])->name('home');
-    Route::get('/about-us', [HomeController::class, 'aboutUs'])->name('aboutus');
-    // routes/web.php
-    Route::post('/location-products', [HomeController::class, 'locationProducts'])->name('location.products');
+        Route::get('/department', [HomeController::class, 'department'])->name('department');
+        Route::get('/department/products', [HomeController::class, 'getProducts'])->name('department.products');
+        Route::get('/stores/{slug}', [HomeController::class, 'stores'])->name('stores');
+        Route::get('/categorywiseproducts/{category_id}', [HomeController::class, 'allCategoryProducts'])->name('allcategorywiseproduct');
+        Route::get('/categorywiseproduct/{category_id}/{subcategory_id}', [HomeController::class, 'CategoryProducts'])->name('categorywiseproduct');
+        Route::get('/productdetails', [HomeController::class, 'productdetails'])->name('productdetails');
+        Route::get('/explorestore/{vendor_id}/{cat_id}', [HomeController::class, 'explorestore'])->name('explorestore');
+        Route::get('/explorestore/{vendor_id}/{category_id}/{subcategory_id}', [HomeController::class, 'subcategoryProducts'])->name('subcategory.products');
+        Route::get('/product/{id}/variants', function ($id) {
+            $product = Product::with('variants')->findOrFail($id);
+            return response()->json($product->variants);
+        });
 
-    Route::get('/department', [HomeController::class, 'department'])->name('department');
-    Route::get('/department/products', [HomeController::class, 'getProducts'])->name('department.products');
-    Route::get('/stores/{slug}', [HomeController::class, 'stores'])->name('stores');
-    Route::get('/categorywiseproducts/{category_id}', [HomeController::class, 'allCategoryProducts'])->name('allcategorywiseproduct');
-    Route::get('/categorywiseproduct/{category_id}/{subcategory_id}', [HomeController::class, 'CategoryProducts'])->name('categorywiseproduct');
-    Route::get('/productdetails', [HomeController::class, 'productdetails'])->name('productdetails');
-    Route::get('/explorestore/{vendor_id}/{cat_id}', [HomeController::class, 'explorestore'])->name('explorestore');
-    Route::get('/explorestore/{vendor_id}/{category_id}/{subcategory_id}', [HomeController::class, 'subcategoryProducts'])->name('subcategory.products');
-    Route::get('/product/{id}/variants', function ($id) {
-        $product = Product::with('variants')->findOrFail($id);
-        return response()->json($product->variants);
+        Route::get('/s', [SearchController::class, 'index'])->name('searchresults');
+        Route::get('/get-product-variants/{id}', [HomeController::class, 'getProductVariants'])->name('get.product.variants');
+
+        // web.php
+        Route::post('/add-to-cart', [CartController::class, 'addToCart'])->name('cart.add');
+        Route::post('/cart/increment', [CartController::class, 'incrementQty'])->name('cart.increment');
+        Route::post('/cart/decrement', [CartController::class, 'decrementQty'])->name('cart.decrement');
+        Route::get('/cart-data', [CartController::class, 'getCartData'])->name('cart.data');
+        Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+
+
+
+        Route::get('/auth-status', function () {
+            return response()->json(['logged_in' => auth()->check()]);
+        })->name('check.auth.status');
     });
-
-    Route::get('/s', [SearchController::class, 'index'])->name('searchresults');
-    Route::get('/get-product-variants/{id}', [HomeController::class, 'getProductVariants'])->name('get.product.variants');
-
-    // web.php
-    Route::post('/add-to-cart', [CartController::class, 'addToCart'])->name('cart.add');
-    Route::post('/cart/increment', [CartController::class, 'incrementQty'])->name('cart.increment');
-    Route::post('/cart/decrement', [CartController::class, 'decrementQty'])->name('cart.decrement');
-    Route::get('/cart-data', [CartController::class, 'getCartData'])->name('cart.data');
-    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
-
-
-
-    Route::get('/auth-status', function () {
-        return response()->json(['logged_in' => auth()->check()]);
-    })->name('check.auth.status');
-
 
     Route::middleware('auth')->group(function () {
 

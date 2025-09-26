@@ -22,11 +22,43 @@ use Illuminate\Support\Facades\Mail;
 
 class CustomerController extends Controller
 {
-    public function login()
+    public function login(Request $request)
     {
+        // Store the previous URL (except login/signup) so we can redirect back after login
+        if ($request->method() === 'GET' &&
+            ! in_array($request->path(), ['login', 'signup', 'loginphone']) &&
+            ! $request->is('logout'))
+        {
+            session(['url.intended' => url()->previous()]);
+        }
+
         return view('web.login');
     }
 
+    public function loginbyphone(Request $request)
+    {
+        // Same logic for phone login page
+        if ($request->method() === 'GET' &&
+            ! in_array($request->path(), ['login', 'signup', 'loginphone']) &&
+            ! $request->is('logout'))
+        {
+            session(['url.intended' => url()->previous()]);
+        }
+
+        return view('web.loginphone');
+    }
+
+    public function signup(Request $request)
+    {
+         // Same logic for phone login page
+        if ($request->method() === 'GET' &&
+            ! in_array($request->path(), ['login', 'signup', 'loginphone']) &&
+            ! $request->is('logout'))
+        {
+            session(['url.intended' => url()->previous()]);
+        }
+        return view('web.signup');
+    }
     public function loginStore(Request $request)
     {
         $credentials = $request->validate([
@@ -39,7 +71,6 @@ class CustomerController extends Controller
 
             // Migrate session cart
             $sessionCart = session('cart', []);
-
             foreach ($sessionCart as $item) {
                 CartItem::updateOrCreate(
                     [
@@ -53,36 +84,92 @@ class CustomerController extends Controller
                     ]
                 );
             }
-
             session()->forget('cart');
 
-            return redirect()->route('customer.dashboard');
+            if (!empty($sessionCart)) {
+                return redirect()->route('cart.view');
+            }
+
+            // ✅ Proper redirect
+            return redirect()->intended('/');
         }
 
         return back()->withErrors([
             'email' => 'Invalid email or password.',
         ]);
     }
+    public function otpcheck(Request $request)
+    {
+        $request->validate([
+            'phone_number' => 'required|digits:10',
+            'otp' => 'required|digits:6',
+        ]);
 
+        $user = User::where('phone_number', $request->phone_number)->first();
 
+        if ($user && $user->otp == $request->otp) {
+            auth()->login($user);
+            $request->session()->regenerate();
+
+            // If guest (missing name/email), redirect to profile update
+            if (empty($user->name) || empty($user->email)) {
+                return redirect()->route('update.profile')->with('info', 'Please update your details');
+            }
+
+            // ✅ Migrate session cart if exists
+            $sessionCart = session('cart', []);
+            foreach ($sessionCart as $item) {
+                CartItem::updateOrCreate(
+                    [
+                        'user_id' => auth()->id(),
+                        'product_id' => $item['product_id'],
+                        'variant_id' => $item['variant_id'],
+                    ],
+                    [
+                        'quantity' => DB::raw("quantity + {$item['quantity']}"),
+                        'price' => $item['price']
+                    ]
+                );
+            }
+            session()->forget('cart');
+
+            if (!empty($sessionCart)) {
+                return redirect()->route('cart.view');
+            }
+
+            // ✅ Proper redirect
+            return redirect()->intended('/');
+        }
+
+        return back()->with('error', 'Invalid OTP');
+    }
 
     //otp sent
     public function otpsent(Request $request)
     {
         $request->validate([
-            'phone_number' => 'required|exists:users,phone_number',
+            'phone_number' => 'required|digits:10',
         ]);
+
         $otp = rand(100000, 999999);
+
+        // Try to find existing user
         $user = User::where('phone_number', $request->phone_number)->first();
 
-        if ($user) {
+        if (!$user) {
+            // If not found, create a guest user
+            $user = User::create([
+                'phone_number' => $request->phone_number,
+                'otp'          => $otp,
+
+            ]);
+        } else {
             $user->update(['otp' => $otp]);
-            // Pass OTP along with user
-            return view('web.loginotp', compact('user'))->with('otp', strval($otp));
         }
 
-        return back()->with('error', 'Phone number not registered');
+        return view('web.loginotp', compact('user'))->with('otp', strval($otp));
     }
+
 
     public function resendotp(Request $request)
     {
@@ -97,22 +184,31 @@ class CustomerController extends Controller
         return response()->json(['success' => true, 'otp' => $otp]);
     }
 
-    public function loginbyphone()
+
+
+
+    //
+    public function showUpdateProfile()
     {
-        return view('web.loginphone');
+        return view('web.updateprofile');
     }
 
-    public function otpcheck(Request $request)
+    public function saveUpdateProfile(Request $request)
     {
-        $otp = $request->otp;
-        $user = User::where('phone_number', $request->phone_number)->first();
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . auth()->id(),
+        ]);
 
-        if ($user && $user->otp == $otp) {
-            auth()->login($user);
-            return redirect()->route('customer.dashboard');
-        }
+        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user->update([
+            'name'  => $request->name,
+            'email' => $request->email,
+            'status'=> 'active', // upgrade from guest
+        ]);
 
-        return back()->with('error', 'Invalid OTP');
+        return redirect()->route('cart.view')->with('success', 'Profile updated successfully!');
     }
 
 
@@ -188,10 +284,7 @@ class CustomerController extends Controller
         return redirect('/login')->with('success', 'Your password has been reset!');
     }
 
-    public function signup()
-    {
-        return view('web.signup');
-    }
+
 
     public function signupStore(Request $request)
     {

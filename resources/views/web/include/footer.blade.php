@@ -45,7 +45,7 @@
                         <h5>About</h5>
                         <ul>
                             <li><a href="{{route('aboutus')}}">About Us</a></li>
-                            <li><a href="#" id="newconPopup">Contact Us</a></li>
+                           <li><a href="#" id="newconOpen">Contact Us</a></li>
                         </ul>
                     </div>
                     </div>
@@ -159,59 +159,9 @@
             </div>
         </section>
     </footer>
- <!-- Popup -->
-    <div class="newcon-overlay" id="newconPopup" style="display:none;">
-        <div class="newcon-popup">
-            <span class="newcon-close" id="newconClose">&times;</span>
-            <h2>Contact Us</h2>
-            <hr>
-            <form id="newconForm" method="POST" action="{{ route('send.enquiry') }}">
-                @csrf
-                <input type="text" id="newconName" name="name" placeholder="Name" required>
-                <input type="email" id="newconEmail" name="email" placeholder="Email id" required>
-                <input type="text" id="newconSubject" name="subject" placeholder="Subject" required>
-                <textarea id="newconMessage" name="message" placeholder="Message" required></textarea>
-                <button type="submit" class="newcon-submit">Submit</button>
-                <button type="button" class="newcon-cancel" id="newconCancel">Cancel</button>
-            </form>
-        </div>
-    </div>
+     <!-- Trigger link -->
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const openBtn   = document.getElementById('newconOpen'); // make sure you add a trigger button with this ID
-            const popup     = document.getElementById('newconPopup');
-            const closeBtn  = document.getElementById('newconClose');
-            const cancelBtn = document.getElementById('newconCancel');
-            const form      = document.getElementById('newconForm');
-
-            if (!popup || !form) return;
-
-            function openPopup(e) {
-                if (e) e.preventDefault();
-                popup.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            }
-
-            function closePopup() {
-                popup.style.display = 'none';
-                document.body.style.overflow = '';
-            }
-
-            openBtn && openBtn.addEventListener('click', openPopup);
-            closeBtn && closeBtn.addEventListener('click', closePopup);
-            cancelBtn && cancelBtn.addEventListener('click', closePopup);
-
-            popup.addEventListener('click', function (ev) {
-                if (ev.target === popup) closePopup();
-            });
-
-            document.addEventListener('keydown', function (ev) {
-                if (ev.key === 'Escape' && popup.style.display === 'flex') closePopup();
-            });
-        });
-    </script>
-
+    <!-- Popup START-->
     <style>
         /* Overlay */
         .newcon-overlay {
@@ -310,6 +260,60 @@
             cursor: pointer;
         }
     </style>
+
+    <div class="newcon-overlay" id="newconPopup">
+        <div class="newcon-popup">
+            <span class="newcon-close" id="newconClose">&times;</span>
+            <h2>Contact Us</h2>
+            <hr>
+            <form id="newconForm" method="POST" action="{{ route('send.enquiry') }}">
+                @csrf
+                <input type="text" id="newconName" name="name" placeholder="Name" required>
+                <input type="email" id="newconEmail" name="email" placeholder="Email id" required>
+                <input type="text" id="newconSubject" name="subject" placeholder="Subject" required>
+                <textarea id="newconMessage" name="message" placeholder="Message" required></textarea>
+                <button type="submit" class="newcon-submit">Submit</button>
+                <button type="button" class="newcon-cancel" id="newconCancel">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const openBtn   = document.getElementById('newconOpen');
+            const popup     = document.getElementById('newconPopup');
+            const closeBtn  = document.getElementById('newconClose');
+            const cancelBtn = document.getElementById('newconCancel');
+
+            function openPopup(e) {
+                e.preventDefault();
+                popup.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closePopup() {
+                popup.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+
+            openBtn.addEventListener('click', openPopup);
+            closeBtn.addEventListener('click', closePopup);
+            cancelBtn.addEventListener('click', closePopup);
+
+            popup.addEventListener('click', function (ev) {
+                if (ev.target === popup) closePopup();
+            });
+
+            document.addEventListener('keydown', function (ev) {
+                if (ev.key === 'Escape' && popup.style.display === 'flex') {
+                    closePopup();
+                }
+            });
+        });
+    </script>
+    <!-- Popup END-->
+
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

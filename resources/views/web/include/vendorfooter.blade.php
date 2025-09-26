@@ -44,7 +44,7 @@
                         <h5>About</h5>
                         <ul>
                             <li><a href="{{route('aboutus')}}">About Us</a></li>
-                            <li><a href="javascript:void(0)">Contact Us</a></li>
+                            <li><a href="#" id="newconOpen">Contact Us</a></li>
                         </ul>
                     </div>
                     </div>
@@ -671,7 +671,223 @@
 
         }); // DOMContentLoaded
     </script>
+     @if(session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '{{ session('success') }}',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            });
+        </script>
+    @endif
 
+    @if($errors->any())
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    html: `{!! implode('<br>', $errors->all()) !!}`,
+                    confirmButtonColor: '#d33',
+                });
+            });
+        </script>
+    @endif
     <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=geometry,places"></script>
+    <!-- Popup -->
+    <div class="newcon-overlay" id="newconPopup" style="display:none;">
+        <div class="newcon-popup">
+            <span class="newcon-close" id="newconClose">&times;</span>
+            <h2>Contact Us</h2>
+            <hr>
+            <form id="newconForm" method="POST" action="{{ route('send.enquiry') }}">
+                @csrf
+                <input type="text" id="newconName" name="name" placeholder="Name" required>
+                <input type="email" id="newconEmail" name="email" placeholder="Email id" required>
+                <input type="text" id="newconSubject" name="subject" placeholder="Subject" required>
+                <textarea id="newconMessage" name="message" placeholder="Message" required></textarea>
+                <button type="submit" class="newcon-submit">Submit</button>
+                <button type="button" class="newcon-cancel" id="newconCancel">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+   <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // grab elements
+      const openBtn = document.getElementById('newconOpen');
+      const popup = document.getElementById('newconPopup');
+      const closeBtn = document.getElementById('newconClose');
+      const cancelBtn = document.getElementById('newconCancel');
+      const form = document.getElementById('newconForm');
+
+      // safety checks
+      if (!openBtn) { console.warn('newcon: open button #newconOpen not found'); return; }
+      if (!popup)     { console.warn('newcon: popup container #newconPopup not found'); return; }
+
+      // open function
+      function openPopup(e) {
+        if (e) e.preventDefault();
+        popup.style.display = 'flex';
+        popup.setAttribute('aria-hidden', 'false');
+        // prevent background scroll
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+        // focus first field for accessibility
+        const first = popup.querySelector('.newcon-input, .newcon-textarea');
+        if (first) first.focus();
+        console.log('newcon: opened');
+      }
+
+      // close function
+      function closePopup() {
+        popup.style.display = 'none';
+        popup.setAttribute('aria-hidden', 'true');
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+        openBtn.focus(); // return focus
+        console.log('newcon: closed');
+      }
+
+      // bind events (use addEventListener)
+      openBtn.addEventListener('click', openPopup);
+      closeBtn && closeBtn.addEventListener('click', closePopup);
+      cancelBtn && cancelBtn.addEventListener('click', closePopup);
+
+      // close when clicking outside dialog
+      popup.addEventListener('click', function (ev) {
+        if (ev.target === popup) closePopup();
+      });
+
+      // keyboard: ESC to close
+      document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' && popup.style.display === 'flex') closePopup();
+      });
+
+      // sample form submit handler (replace with AJAX or normal submit)
+      form.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        // small validation example
+        const email = document.getElementById('newconEmail');
+        const name = document.getElementById('newconName');
+        if (!name.value.trim() || !email.value.trim()) {
+          alert('Please fill at least name and email.');
+          return;
+        }
+        console.log('newcon: form submitted', {
+          name: name.value,
+          email: email.value,
+          subject: document.getElementById('newconSubject').value,
+          message: document.getElementById('newconMessage').value
+        });
+        // simulate success then close
+        alert('Message sent (demo).');
+        closePopup();
+      });
+    });
+  </script>
+
+    <style>
+        /* Overlay */
+        .newcon-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 999999 !important;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Popup box */
+        .newcon-popup {
+            background: linear-gradient(135deg, #e8f8ee, #fdfdfd);
+            padding: 25px;
+            border-radius: 10px;
+            width: 350px;
+            max-width: 90%;
+            position: relative;
+            text-align: center;
+            border: 2px solid #c9a9f1;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            animation: newconFadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes newconFadeIn {
+            from {opacity: 0; transform: scale(0.9);}
+            to {opacity: 1; transform: scale(1);}
+        }
+
+        /* Heading */
+        .newcon-popup h2 {
+            margin-bottom: 15px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .newcon-popup hr {
+            margin: 10px 0 20px;
+            border: 0;
+            height: 1px;
+            background: #bbb;
+        }
+
+        /* Inputs */
+        .newcon-popup input,
+        .newcon-popup textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .newcon-popup textarea {
+            resize: none;
+            height: 80px;
+        }
+
+        /* Buttons */
+        .newcon-submit {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 30px;
+            background: #e63912;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .newcon-cancel {
+            margin-top: 10px;
+            display: block;
+            background: none;
+            border: none;
+            color: #e63912;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        /* Close button (top right) */
+        .newcon-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            color: #555;
+            cursor: pointer;
+        }
+    </style>
 </body>
 </html>

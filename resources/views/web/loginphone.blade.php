@@ -7,7 +7,7 @@
     <div class="log-in-box">
       <h4 class="mb-4 fw-bold">Log In</h4>
 
-      {{-- <div class="d-flex justify-content-center gap-3 mb-3">
+      <div class="d-flex justify-content-center gap-3 mb-3">
         <button class="btn log-in-social-btn bg-transparent">
           <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google">
         </button>
@@ -16,7 +16,7 @@
         </button>
       </div>
 
-      <div class="log-in-divider">or</div> --}}
+      <div class="log-in-divider">or</div>
 
       <form action="{{ route('otpsent') }}" method="POST">
         @csrf
