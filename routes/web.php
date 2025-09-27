@@ -78,6 +78,8 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         });
 
         Route::get('/s', [SearchController::class, 'index'])->name('searchresults');
+        Route::get('/search-suggestions', [SearchController::class, 'suggestions'])->name('search.suggestions');
+
         Route::get('/get-product-variants/{id}', [HomeController::class, 'getProductVariants'])->name('get.product.variants');
 
         // web.php

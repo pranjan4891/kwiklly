@@ -43,5 +43,35 @@ class SearchController extends Controller
         return view('web.searchresults', compact('products', 'query', 'storeCount'));
     }
 
+    public function suggestions(Request $request)
+    {
+        $query = $request->input('q');
+
+        if (!$query) {
+            return response()->json([]);
+        }
+
+        $products = Product::with('featureImage')
+            ->where('is_active', 1)
+            ->where('is_deleted', 0)
+            ->where(function ($q) use ($query) {
+                $q->where('title', 'LIKE', "%{$query}%")
+                ->orWhere('sub_title', 'LIKE', "%{$query}%");
+            })
+            ->limit(5)
+            ->get()
+            ->map(function ($product) {
+                return [
+                    'id'    => $product->id,
+                    'title' => $product->title,
+                    'image' => $product->featureImage ? asset('public/' . optional($product->featureImage)->feature_image) : asset('public/marker.png'),
+                ];
+            });
+
+        return response()->json($products);
+    }
+
+
+
 
 }

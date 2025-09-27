@@ -349,7 +349,7 @@
       </div>
       <!--Desktop side cart html end  -->
       <!-- Sidebar -->
-      <div class="pata-sidebar-overlay" id="pataSidebar">
+      {{-- <div class="pata-sidebar-overlay" id="pataSidebar">
          <div class="pata-sidebar">
             <!-- Header -->
             <div class="pata-sidebar-header">
@@ -371,7 +371,7 @@
                <!-- Form Start -->
             </div>
          </div>
-      </div>
+      </div> --}}
       <!-- mobile side cart html start  -->
       <div class="cart-sidebar position-fixed top-0 end-0 bg-white shadow" style="width: fit-content; height: 100vh;  -index: 1050; overflow-y: auto;" id="cartSidebar2">
          <div class="d-flex justify-content-between align-items-center p-3" style="box-shadow: 0 2px 2px rgb(0 0 0 / 25%);position: sticky;top: 0;background-color: white;z-index: 999;">
@@ -406,12 +406,20 @@
                   <i class="fas fa-chevron-down dropdown-icon"></i>
                </div>
                <div class="search-container ms-3">
-                  <form action="{{ route('searchresults') }}" method="GET" class="d-flex w-100">
-                     <input type="text" name="q" class="form-control search-box " placeholder='Search "Banana"' required />
-                     <button type="submit" class="search-btn my-1">
-                     <i class="fas fa-search"></i>
-                     </button>
-                  </form>
+                    <form action="{{ route('searchresults') }}" method="GET" class="d-flex w-100 position-relative" id="search-form">
+                        <input type="text" name="q" id="search-box"
+                            class="form-control search-box"
+                            placeholder='Search "Banana"' autocomplete="off" required />
+
+                        <button type="submit" class="search-btn my-1">
+                            <i class="fas fa-search"></i>
+                        </button>
+
+                        <!-- Suggestions Dropdown -->
+                        <ul id="suggestions-box"
+                            class="list-group position-absolute w-100 d-none"
+                            style="top: 100%; z-index: 1000;"></ul>
+                    </form>
                </div>
             </div>
             <!-- Desktop Menu (Hidden in Mobile) -->

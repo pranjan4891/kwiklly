@@ -1048,6 +1048,102 @@
     <input type="hidden" id="longitude" name="longitude">
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places&callback=initAutocomplete" async defer></script>
+   <script>
+        const searchSuggestionsUrl = "{{ route('search.suggestions') }}";
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let searchBox = document.getElementById("search-box");
+            let suggestionsBox = document.getElementById("suggestions-box");
+            let form = document.getElementById("search-form");
+
+            // Load last searches from localStorage
+            function showLastSearches() {
+                let lastSearches = JSON.parse(localStorage.getItem("lastSearches")) || [];
+                suggestionsBox.innerHTML = "";
+                if (lastSearches.length > 0) {
+                    lastSearches.forEach(item => {
+                        let li = document.createElement("li");
+                        li.classList.add("list-group-item", "d-flex", "align-items-center");
+                        li.innerHTML = `<img src="{{ asset('public/marker.png') }}"
+                                            class="me-2" style="width:30px; height:30px; object-fit:cover; border-radius:5px;">
+                                        <span>${item}</span>`;
+                        li.addEventListener("click", () => {
+                            searchBox.value = item;
+                            suggestionsBox.classList.add("d-none");
+                        });
+                        suggestionsBox.appendChild(li);
+                    });
+                    suggestionsBox.classList.remove("d-none");
+                } else {
+                    suggestionsBox.classList.add("d-none");
+                }
+            }
+
+            // On focus show last searches
+            searchBox.addEventListener("focus", showLastSearches);
+
+            // On keyup fetch suggestions
+            searchBox.addEventListener("keyup", function() {
+                let query = this.value.trim();
+                if (query.length < 2) {
+                    showLastSearches();
+                    return;
+                }
+
+                fetch(`${searchSuggestionsUrl}?q=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        suggestionsBox.innerHTML = "";
+                        if (data.length > 0) {
+                            data.forEach(item => {
+                                let li = document.createElement("li");
+                                li.classList.add("list-group-item", "d-flex", "align-items-center");
+                                li.style.cursor = "pointer";
+                                li.innerHTML = `
+                                    <img src="${item.image}"
+                                        class="me-2" style="width:40px; height:40px; object-fit:cover; border-radius:5px;">
+                                    <span>${item.title}</span>
+                                `;
+                                li.addEventListener("click", () => {
+                                    searchBox.value = item.title;
+                                    suggestionsBox.classList.add("d-none");
+                                });
+                                suggestionsBox.appendChild(li);
+                            });
+                            suggestionsBox.classList.remove("d-none");
+                        } else {
+                            suggestionsBox.classList.add("d-none");
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Search error:", err);
+                        suggestionsBox.classList.add("d-none");
+                    });
+            });
+
+            // Save searches on form submit
+            form.addEventListener("submit", function() {
+                let query = searchBox.value.trim();
+                if (query) {
+                    let lastSearches = JSON.parse(localStorage.getItem("lastSearches")) || [];
+                    if (!lastSearches.includes(query)) {
+                        lastSearches.unshift(query); // add to top
+                        if (lastSearches.length > 5) lastSearches.pop(); // keep max 5
+                        localStorage.setItem("lastSearches", JSON.stringify(lastSearches));
+                    }
+                }
+            });
+
+            // Hide suggestions when clicking outside
+            document.addEventListener("click", function(e) {
+                if (!form.contains(e.target)) {
+                    suggestionsBox.classList.add("d-none");
+                }
+            });
+        });
+    </script>
 
     @stack('scripts')
 </body>
