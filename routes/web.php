@@ -11,6 +11,7 @@ use App\Http\Controllers\Website\OrderController;
 use App\Http\Controllers\Website\SearchController;
 use App\Http\Controllers\Website\PaymentController;
 use App\Http\Controllers\Website\PhonePeController;
+use App\Models\CartItem;
 use Illuminate\Support\Facades\Log;
 use App\Models\Order;
 use App\Models\VendorAdmin;
@@ -44,16 +45,6 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
     require __DIR__ . '/branch.php';
     require __DIR__ . '/vendor.php';
     require __DIR__ . '/customer.php';
-    // Route::get('/', function () {
-    //     return view('welcome');
-    // });
-
-    // Route::get('delivery-address/', function () {
-    //     return view('web.checkoutaddress');
-    // });
-    // Route::get('checkout-delivery-page/', function () {
-    //     return view('web.checkoutdelivery');
-    // });
 
 
     /*Website-------------------------------*/
@@ -89,8 +80,6 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         Route::get('/cart-data', [CartController::class, 'getCartData'])->name('cart.data');
         Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
-
-
         Route::get('/auth-status', function () {
             return response()->json(['logged_in' => auth()->check()]);
         })->name('check.auth.status');
@@ -98,10 +87,8 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
 
     Route::middleware('auth')->group(function () {
 
-
         // New Update
         Route::get('/cart/view', [CartController::class, 'viewCart'])->name('cart.view');
-
 
         // Coupon
         Route::post('/coupon/apply', [CartController::class, 'applyCoupon'])->name('coupon.apply');
@@ -113,17 +100,15 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         Route::post('/cart/apply-wallet', [CartController::class, 'applyWallet'])->name('cart.apply.wallet');
         Route::get('/cart/wallet-balance', [CartController::class, 'getWalletBalance'])->name('cart.wallet.balance');
 
-
         // minimum order amount
         Route::get('/minimum-order-amount', [CartController::class, 'getMinimumOrderAmount'])->name('minimum.order.amount');
 
-          Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.page');
+        Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.page');
         Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place');
-      //      Route::get('/order-success', fn () => view('web.order_success'))->name('order.success');
+          //      Route::get('/order-success', fn () => view('web.order_success'))->name('order.success');
         // Order
         Route::post('/checkout/process-order', [OrderController::class, 'storeOrder'])->name('checkout.process.order');
         Route::get('/delivery-address', [OrderController::class, 'deliveryAddress'])->name('delivery.address');
-
 
         // Update order address
         Route::post('/order/update-address', [OrderController::class, 'updateAddress'])->name('order.updateAddress');
@@ -131,7 +116,6 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         // Payment details page
         Route::get('/payment/details/{orderId}', [OrderController::class, 'paymentDetails'])->name('payment.details');
         Route::post('/process-cod', [OrderController::class, 'processCOD'])->name('order.process.cod');
-
 
         // Customer Address Routes
         Route::post('/address/store', [AddressController::class, 'store'])->name('address.store');
@@ -150,7 +134,7 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
             $user = Auth::user();
             if (!$user) return response()->json(['error' => 'Not authenticated']);
 
-            $cartItems = App\Models\CartItem::with('product.business')
+            $cartItems = CartItem::with('product.business')
                 ->where('user_id', $user->id)
                 ->get()
                 ->groupBy('product.business_id');
@@ -163,31 +147,19 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
     Route::post('/send/enquiery', [HomeController::class, 'sendEnquiry'])->name('send.enquiry');
 
     /*End Website-------------------------------*/
+    Route::prefix('phonepe')->group(function () {
+        Route::match(['get', 'post'], '/pay', [PhonePeController::class, 'pay'])->name('phonepe.pay');
+        Route::get('/redirect/{orderId}', [PhonePeController::class, 'redirect'])->name('phonepe.redirect');
+        Route::get('/status', [PhonePeController::class, 'status'])->name('phonepe.status');
+    });
+    // routes/web.php
+    Route::match(['get','post'],'/phonepe/callback',[PhonePeController::class,'callback']);
 
-    // Route::get('/phonepe/pay', [PaymentController::class, 'pay']);
-    // Route::any('/api/phonepe/callback', [PaymentController::class, 'callback']);
-    // Route::match(['get', 'post'], '/phonepe/pay', [PaymentController::class, 'pay'])->name('phonepe.pay');
+    // Success/Failure UI pages (you can customize with Blade)
+    Route::view('/success', 'web.phonepe.success')->name('phonepe.success');
+    Route::view('/failure', 'web.phonepe.failure')->name('phonepe.failure');
 
-    // //  Route::post('/phonepe/pay', [PaymentController::class, 'pay'])->name('phonepe.pay');
-    // Route::any('/api/phonepe/callback', [PaymentController::class, 'callback'])->name('phonepe.callback');
-    // Route::get('/phonepe/status/{txnId}', [PaymentController::class, 'status'])->name('phonepe.status');
-
-
-
-Route::prefix('phonepe')->group(function () {
-    Route::match(['get', 'post'], '/pay', [PhonePeController::class, 'pay'])->name('phonepe.pay');
-    Route::get('/redirect/{orderId}', [PhonePeController::class, 'redirect'])->name('phonepe.redirect');
-    Route::get('/status', [PhonePeController::class, 'status'])->name('phonepe.status');
-});
-// routes/web.php
-Route::match(['get','post'],'/phonepe/callback',[PhonePeController::class,'callback']);
-
-
-// Success/Failure UI pages (you can customize with Blade)
-Route::view('/success', 'web.phonepe.success')->name('phonepe.success');
-Route::view('/failure', 'web.phonepe.failure')->name('phonepe.failure');
-
-// Frontend routes
-Route::get('/policy/{slug}', [HomeController::class, 'show'])->name('policy.show');
+    // Frontend routes
+    Route::get('/policy/{slug}', [HomeController::class, 'show'])->name('policy.show');
 
 

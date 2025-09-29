@@ -1097,7 +1097,7 @@
                     .then(data => {
                         suggestionsBox.innerHTML = "";
                         if (data.length > 0) {
-                            data.forEach(item => {
+                           data.forEach(item => {
                                 let li = document.createElement("li");
                                 li.classList.add("list-group-item", "d-flex", "align-items-center");
                                 li.style.cursor = "pointer";
@@ -1108,10 +1108,12 @@
                                 `;
                                 li.addEventListener("click", () => {
                                     searchBox.value = item.title;
+                                    form.submit(); // ✅ redirect to searchresults with ?q=item.title
                                     suggestionsBox.classList.add("d-none");
                                 });
                                 suggestionsBox.appendChild(li);
                             });
+
                             suggestionsBox.classList.remove("d-none");
                         } else {
                             suggestionsBox.classList.add("d-none");
