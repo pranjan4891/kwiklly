@@ -24,6 +24,8 @@ class User extends Authenticatable
         'phone_number',
         'otp',
         'referral_code',
+        'google_id',
+        'avatar',
     ];
 
     /**

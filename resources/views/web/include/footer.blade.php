@@ -915,6 +915,11 @@
             // Hidden inputs
             document.getElementById("latitude").value = lat || "";
             document.getElementById("longitude").value = lng || "";
+            // Set search form hidden fields
+            document.getElementById("search-latitude").value = lat || "";
+            document.getElementById("search-longitude").value = lng || "";
+            document.getElementById("mobile-search-latitude").value = lat || "";
+            document.getElementById("mobile-search-longitude").value = lng || "";
 
             // Show full in popup
             if (selectedLocationEl) {
@@ -964,7 +969,7 @@
             }
         }
 
-       // --- On Page Load ---
+        // --- On Page Load ---
         window.addEventListener("DOMContentLoaded", () => {
             let savedLocation = localStorage.getItem("userLocation");
 
@@ -974,6 +979,11 @@
 
                 document.getElementById("latitude").value = loc.lat || "";
                 document.getElementById("longitude").value = loc.lng || "";
+                // Set search form hidden fields
+                document.getElementById("search-latitude").value = loc.lat || "";
+                document.getElementById("search-longitude").value = loc.lng || "";
+                document.getElementById("mobile-search-latitude").value = loc.lat || "";
+                document.getElementById("mobile-search-longitude").value = loc.lng || "";
 
                 if (headerLocationDesktop) headerLocationDesktop.innerHTML = "Current Location <br>" + getShortAddress(loc.fullAddress);
                 if (headerLocationMobile) headerLocationMobile.innerHTML = "Current Location <br>" + getShortAddress(loc.fullAddress);
@@ -1048,8 +1058,18 @@
     <input type="hidden" id="longitude" name="longitude">
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places&callback=initAutocomplete" async defer></script>
-   <script>
+    <script>
         const searchSuggestionsUrl = "{{ route('search.suggestions') }}";
+
+        // Helper to get location params
+        function getSuggestionLocationParams() {
+            let params = '';
+            let lat = document.getElementById("search-latitude").value || document.getElementById("mobile-search-latitude").value;
+            let lng = document.getElementById("search-longitude").value || document.getElementById("mobile-search-longitude").value;
+            if (lat) params += `&latitude=${encodeURIComponent(lat)}`;
+            if (lng) params += `&longitude=${encodeURIComponent(lng)}`;
+            return params;
+        }
     </script>
 
     <script>
@@ -1092,7 +1112,7 @@
                     return;
                 }
 
-                fetch(`${searchSuggestionsUrl}?q=${encodeURIComponent(query)}`)
+                fetch(`${searchSuggestionsUrl}?q=${encodeURIComponent(query)}${getSuggestionLocationParams()}`)
                     .then(res => res.json())
                     .then(data => {
                         suggestionsBox.innerHTML = "";

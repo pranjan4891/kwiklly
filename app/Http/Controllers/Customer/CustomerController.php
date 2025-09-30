@@ -170,7 +170,6 @@ class CustomerController extends Controller
         return view('web.loginotp', compact('user'))->with('otp', strval($otp));
     }
 
-
     public function resendotp(Request $request)
     {
         $user = User::where('phone_number', $request->phone_number)->first();
@@ -183,9 +182,6 @@ class CustomerController extends Controller
 
         return response()->json(['success' => true, 'otp' => $otp]);
     }
-
-
-
 
     //
     public function showUpdateProfile()

@@ -11,14 +11,16 @@
     <div class="log-in-box">
       <h4 class="mb-4 fw-bold">Login</h4>
 
-      {{-- <div class="d-flex justify-content-center gap-3 mb-3">
+      <div class="d-flex justify-content-center gap-3 mb-3">
         <button class="btn log-in-social-btn bg-transparent">
-          <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google">
+            <a href="{{ route('auth.google.redirect') }}">
+                <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google">
+            </a>
         </button>
-        <button class="btn log-in-social-btn bg-transparent">
+        {{-- <button class="btn log-in-social-btn bg-transparent">
           <img src="https://img.icons8.com/fluency/48/000000/facebook-new.png" alt="Facebook">
-        </button>
-      </div> --}}
+        </button> --}}
+      </div>
 
       <!--<div class="log-in-divider">or</div>-->
 

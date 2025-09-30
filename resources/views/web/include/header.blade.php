@@ -407,6 +407,8 @@
                </div>
                <div class="search-container ms-3">
                     <form action="{{ route('searchresults') }}" method="GET" class="d-flex w-100 position-relative" id="search-form">
+                        <input type="hidden" id="search-latitude" name="latitude">
+                        <input type="hidden" id="search-longitude" name="longitude">
                         <input type="text" name="q" id="search-box"
                             class="form-control search-box"
                             placeholder='Search "Banana"' autocomplete="off" required />
@@ -450,6 +452,8 @@
             <!-- Mobile Search (Separate Row) -->
             <div class="search-container d-md-none">
                <form action="{{ route('searchresults') }}" method="GET" class="d-flex w-100">
+                  <input type="hidden" id="mobile-search-latitude" name="latitude">
+                  <input type="hidden" id="mobile-search-longitude" name="longitude">
                   <input type="text" name="q" class="form-control search-box " placeholder='Search "Banana"' required />
                   <button type="submit" class="search-btn my-1">
                   <i class="fas fa-search"></i>
@@ -486,6 +490,3 @@
          <img src="{{ asset('public/assets/website/images/joinicon.png')}}" alt="" style="height:25px; margin-bottom:6px;">&nbsp;&nbsp; Login&nbsp;&nbsp;
          </a>
       </div>
-
-
-
