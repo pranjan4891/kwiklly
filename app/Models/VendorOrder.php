@@ -38,4 +38,9 @@ class VendorOrder extends Model
     {
         return $this->belongsTo(VendorAdmin::class);
     }
+
+    public function deliverySlot()
+    {
+        return $this->belongsTo(DeliverySlot::class);
+    }
 }

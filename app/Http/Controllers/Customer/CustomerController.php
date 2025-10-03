@@ -14,6 +14,7 @@ use App\Models\VendorAdmin;
 use App\Models\OrderItem;
 use App\Models\CustomerAddress;
 use App\Models\Coupon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
@@ -144,7 +145,6 @@ class CustomerController extends Controller
         return back()->with('error', 'Invalid OTP');
     }
 
-    //otp sent
     public function otpsent(Request $request)
     {
         $request->validate([
@@ -191,29 +191,71 @@ class CustomerController extends Controller
 
     public function saveUpdateProfile(Request $request)
     {
-        $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . auth()->id(),
-        ]);
-
+        // @var User $user
         $user = auth()->user();
-        /** @var \App\Models\User $user */
-        $user->update([
-            'name'  => $request->name,
-            'email' => $request->email,
-            'status'=> 'active', // upgrade from guest
+
+        $validator = validator($request->all(), [
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone_number' => 'required|digits:10|unique:users,phone_number,' . $user->id,
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        return redirect()->route('cart.view')->with('success', 'Profile updated successfully!');
+        if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+            }
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $avatarPath = $user->profile_photo;
+
+        // Handle avatar upload
+        if ($request->hasFile('profile_photo')) {
+            // Delete old file if exists
+            if ($user->profile_photo && file_exists(public_path($user->profile_photo))) {
+                unlink(public_path($user->profile_photo));
+            }
+            // Upload new avatar
+            $avatarFile = $request->file('profile_photo');
+            $avatarName = time() . '.' . $avatarFile->getClientOriginalExtension();
+
+            // Ensure directory exists
+            $uploadPath = public_path('uploads/avatars');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+
+            $avatarFile->move($uploadPath, $avatarName);
+            $avatarPath = 'uploads/avatars/' . $avatarName;
+        } elseif ($request->delete_avatar == '1') {
+            // Delete avatar
+            if ($user->profile_photo && file_exists(public_path($user->profile_photo))) {
+                unlink(public_path($user->profile_photo));
+            }
+            $avatarPath = null;
+        }
+
+        /** @var User $user */
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone_number' => $request->phone_number,
+            'profile_photo' => $avatarPath,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Profile updated successfully!']);
+        }
+
+        return redirect()->route('customer.dashboard')->with('success', 'Profile updated successfully!');
     }
 
-
-   // Show Forgot Password form
+    // Show Forgot Password form
     public function showForgotPasswordForm()
     {
         return view('web.forgot-password');
     }
-
     // Send Reset Link
     public function sendResetLink(Request $request)
     {
@@ -243,14 +285,12 @@ class CustomerController extends Controller
 
         return back()->with('success', 'We have emailed your password reset link!');
     }
-
     // Show Reset Password form
     public function showResetPasswordForm(Request $request, $token)
     {
         $email = $request->query('email');
         return view('web.reset-password', compact('token', 'email'));
     }
-
     // Handle Reset Password
     public function resetPassword(Request $request)
     {
@@ -279,9 +319,7 @@ class CustomerController extends Controller
 
         return redirect('/login')->with('success', 'Your password has been reset!');
     }
-
-
-
+    // Signup Store
     public function signupStore(Request $request)
     {
         $request->validate([
@@ -304,8 +342,7 @@ class CustomerController extends Controller
 
         return redirect()->route('customer.dashboard');
     }
-
-
+    // Dashboard
     public function myaccount()
     {
         $user = auth()->user();
@@ -314,7 +351,7 @@ class CustomerController extends Controller
         $walletBalance = WalletTransaction::getBalance($user->id);
 
         // Get orders with proper relationships
-        $orders = Order::with(['vendorOrders.vendor', 'vendorOrders.orderItems.product', 'vendorOrders.orderItems.variant'])
+        $orders = Order::with(['vendorOrders.vendor', 'vendorOrders.orderItems.product', 'vendorOrders.orderItems.variant', 'vendorOrders.deliverySlot'])
             ->where('user_id', $user->id)
             ->latest()
             ->get();
@@ -353,10 +390,17 @@ class CustomerController extends Controller
                     $vendorTotal += $vendorOrder->delivery_fee;
                 }
 
+                $deliverySlot = $vendorOrder->deliverySlot;
+                $deliveryDate = null;
+                if ($deliverySlot) {
+                    $deliveryDate = $deliverySlot->formatted_date . ' ' . $deliverySlot->time_range;
+                }
+
                 $itemsByVendor[$vendorName] = [
                     'image' => $vendorLogo,
                     'items' => $vendorItems,
-                    'vendor_total' => $vendorTotal
+                    'vendor_total' => $vendorTotal,
+                    'delivery_date' => $deliveryDate
                 ];
             }
 
@@ -380,6 +424,7 @@ class CustomerController extends Controller
         return view('web.myaccount', compact('groupedOrders', 'walletBalance', 'addresses', 'coupons'));
     }
 
+
     public function orderDetails($order_id)
     {
         $order = Order::with(['vendorOrders.vendor', 'vendorOrders.orderItems.product', 'vendorOrders.orderItems.variant'])
@@ -389,7 +434,6 @@ class CustomerController extends Controller
 
         return view('web.orderdetails', compact('order'));
     }
-
 
     public function orderCancel($orderNumber)
     {
@@ -412,6 +456,42 @@ class CustomerController extends Controller
         $order->save();
 
         return redirect()->route('customer.dashboard')->with('success', 'Order cancelled successfully.');
+    }
+
+    public function showAddress(CustomerAddress $address): JsonResponse
+    {
+        if ($address->user_id !== auth()->id()) {
+            abort(403);
+        }
+        return response()->json($address);
+    }
+
+    public function updateAddress(Request $request, CustomerAddress $address): JsonResponse
+    {
+        if ($address->user_id !== auth()->id()) {
+            abort(403);
+        }
+        $validated = $request->validate([
+            'type' => 'required|string|max:255',
+            'area' => 'required|string|max:255',
+            'flat' => 'required|string|max:255',
+            'landmark' => 'nullable|string|max:255',
+            'pincode' => 'required|string|max:10',
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:15',
+            'alt_phone' => 'nullable|string|max:15',
+        ]);
+        $address->update($validated);
+        return response()->json(['success' => true, 'message' => 'Address updated successfully!']);
+    }
+
+    public function deleteAddress(CustomerAddress $address): JsonResponse
+    {
+        if ($address->user_id !== auth()->id()) {
+            abort(403);
+        }
+        $address->delete();
+        return response()->json(['success' => true, 'message' => 'Address deleted successfully!']);
     }
 
 }

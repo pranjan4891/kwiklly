@@ -28,7 +28,7 @@
             <div class="item">
                 <div class="product-card2 p-0">
                     @if ($defaultVariant && ($defaultVariant->variant_save_price_in_percent ?? 0) > 0)
-                        <span class="discount-label">{{ (int) $defaultVariant->variant_save_price_in_percent }}% Off</span>
+                        <span class="discount-label">{{ (int) round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
                     @endif
                     @if($product->is_physical)
                     <a href="{{ route('productdetails', $product->slug) }}">
@@ -60,12 +60,12 @@
 
                     <div class="price-container cardpadding">
                         <span class="price">
-                            ₹ {{ $defaultVariant->variant_selling_price ?? '--' }}
+                            ₹ {{ intval($defaultVariant->variant_selling_price) ?? '--' }}
                         </span>
 
                         @if ($defaultVariant && ($defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price))
                             <span class="original-price">
-                                ₹ {{ $defaultVariant->variant_actual_price }}
+                                ₹ {{ intval($defaultVariant->variant_actual_price) }}
                             </span>
                         @endif
 

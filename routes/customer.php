@@ -32,8 +32,6 @@
     Route::get('/reset-password/{token}', [CustomerController::class, 'showResetPasswordForm'])->name('password.reset.form');
     Route::post('/reset-password', [CustomerController::class, 'resetPassword'])->name('password.reset');
 
-    Route::get('/update-profile', [CustomerController::class, 'showUpdateProfile'])->name('update.profile');
-    Route::post('/update-profile', [CustomerController::class, 'saveUpdateProfile'])->name('update.profile.save');
 
     Route::post("/logout", function () {
         Auth::logout();
@@ -48,13 +46,16 @@
 
     Route::middleware("auth")->group(function () {
         Route::get("/dashboard", [CustomerController::class, "myaccount"])->name("customer.dashboard");
+        Route::get('/update-profile', [CustomerController::class, 'showUpdateProfile'])->name('update.profile');
+        Route::post('user/update-profile', [CustomerController::class, 'saveUpdateProfile'])->name('update.profile.save');
+        Route::get("/order-details/{order_id}", [CustomerController::class,"orderDetails"])->name("customer.orderDetails");
+        Route::get("/order-cancel/{orderNumber}", [CustomerController::class,"orderCancel"])->name("order.cancel");
+        Route::post("/order-cancel/{orderNumber}", [CustomerController::class,"processCancel"])->name("order.cancel.process");
+        Route::get('address/{address}', [CustomerController::class, 'showAddress'])->name('address.show');
+        Route::post('address/{address}', [CustomerController::class, 'updateAddress'])->name('address.update');
+        Route::delete('address/{address}', [CustomerController::class, 'deleteAddress'])->name('address.delete');
         Route::post("/logout", function () {
             auth()->logout();
             return redirect()->route("login");
         })->name("logout");
-
-        Route::get("/order-details/{order_id}", [CustomerController::class,"orderDetails"])->name("customer.orderDetails");
-        Route::get("/order-cancel/{orderNumber}", [CustomerController::class,"orderCancel"])->name("order.cancel");
-        Route::post("/order-cancel/{orderNumber}", [CustomerController::class,"processCancel"])->name("order.cancel.process");
     });
-

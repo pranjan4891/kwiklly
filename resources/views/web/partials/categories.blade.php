@@ -18,7 +18,7 @@
 
                                     {{-- 🔹 Discount Label --}}
                                     @if ($defaultVariant->variant_save_price_in_percent > 0)
-                                        <span class="discount-label">{{ $defaultVariant->variant_save_price_in_percent }}% Off</span>
+                                        <span class="discount-label">{{ round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
                                     @endif
 
                                     {{-- 🔹 Product Image --}}
@@ -41,9 +41,9 @@
 
                                     {{-- 🔹 Price & Cart --}}
                                     <div class="price-container cardpadding">
-                                        <span class="price"><span class="rupee-symbol">₹</span> {{ $defaultVariant->variant_selling_price }}</span>
+                                        <span class="price"><span class="rupee-symbol">₹</span> {{ intval($defaultVariant->variant_selling_price) }}</span>
                                         @if ($defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
-                                            <span class="original-price"><span class="rupee-symbol2">₹</span> {{ $defaultVariant->variant_actual_price }}</span>
+                                            <span class="original-price"><span class="rupee-symbol2">₹</span> {{ intval($defaultVariant->variant_actual_price) }}</span>
                                         @endif
 
                                         @php

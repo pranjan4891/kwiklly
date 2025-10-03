@@ -17,9 +17,9 @@
             <div class="store-name">{{ $store->business_name }}</div>
             @foreach($store->categories as $cat)
                 <a href="{{ route('stores', ['slug' => $cat->slug])}}"  onclick="return redirectWithLocation(this.href)">{{ $cat->name }}
-                </a>
+                </a><br>
             @endforeach
-            <div class="store-discount">Upto 28% Off</div>
+            {{-- <div class="store-discount">Upto 28% Off</div> --}}
          </div>
          @endforeach
          @endif

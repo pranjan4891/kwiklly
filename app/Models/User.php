@@ -26,6 +26,7 @@ class User extends Authenticatable
         'referral_code',
         'google_id',
         'avatar',
+        'profile_photo',
     ];
 
     /**
@@ -46,5 +47,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'profile_photo' => 'string',
+        'avatar' => 'string',
     ];
 }
