@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CartController;
 use App\Http\Controllers\Admin\DeliveryChargesController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Models\City;
 use App\Models\MasterLocation;
 use Illuminate\Http\Request;
@@ -49,6 +50,8 @@ Route::group(['prefix' => 'admin'], function () {
         Route::get('/vendor/{uuid}', [VendorController::class, 'show'])->name('admin.vendor.show');
         Route::put('/vendor/{uuid}/update-status', [VendorController::class, 'updateStatus'])->name('admin.vendor.updateStatus');
 
+        // vendor approved for the homepage
+        Route::get('/vendor/home-page/request', [VendorController::class, 'approvedHomepage'])->name('admin.vendor.approved');
 
 
         // Attribute Management
@@ -115,6 +118,13 @@ Route::group(['prefix' => 'admin'], function () {
         Route::post('product/{id}/edit', [ProductController::class, 'update'])->name('admin.product.update');
         Route::post('product/{id}/delete', [ProductController::class, 'destroy'])->name('admin.product.destroy');
 
+        // Admin approved
+        Route::get('trendings/products', [ProductController::class, 'trendingIndex'])->name('admin.trendings.request');
+        Route::get('best-offers/products', [ProductController::class, 'bestOffersIndex'])->name('admin.bestoffers.request');
+        Route::get('sponsers/products', [ProductController::class, 'sponcersProductIndex'])->name('admin.sponcers.request');
+        Route::post('product/trending-bestoffers/{id}', [ProductController::class, 'trendingBestoffers'])->name('admin.product.trending.bestoffers');
+
+
         // Product Inventory Management
         Route::prefix('product')->group(function () {
             Route::get('/variant/create/{productId}', [ProductController::class, 'createVariant'])->name('product.variant.create');
@@ -180,6 +190,11 @@ Route::group(['prefix' => 'admin'], function () {
     Route::post('/cart/update', [CartController::class, 'update'])->name('admin.cart.update');
     Route::get('/cart/remove/{id}', [CartController::class, 'remove'])->name('admin.cart.remove');
 
+    // Orders
+    Route::get('order/list', [OrderController::class, 'orderlist'])->name('admin.orderlist');
+    Route::get('order/{orderId}/details', [OrderController::class, 'orderDetails'])->name('admin.order.details');
+    Route::put('order/{orderId}/update-status', [OrderController::class, 'updateOrderStatus'])->name('admin.order.update.status');
+    Route::get('order/{orderId}/download-invoice', [OrderController::class, 'downloadInvoice'])->name('admin.order.download.invoice');
 
     // Coupon Management
     Route::get('coupons', [CouponController::class, 'index'])->name('admin.coupons.index');
@@ -201,7 +216,7 @@ Route::group(['prefix' => 'admin'], function () {
     Route::get('/policies/create', [PageController::class, 'create'])->name('admin.policies.create');
     Route::post('/policies', [PageController::class, 'store'])->name('admin.policies.store');
     Route::get('/policies/{id}/edit', [PageController::class, 'edit'])->name('admin.policies.edit');
-    Route::post('/policies/{id}', [PageController::class, 'update'])->name('admin.policies.update');
+    Route::put('/policies/{id}', [PageController::class, 'update'])->name('admin.policies.update');
 
     // --- About Us ---
     Route::get('/about-us', [PageController::class, 'aboutIndex'])->name('admin.about.index');
@@ -254,8 +269,3 @@ Route::get('download/sample-csv', function () {
         'Content-Type' => 'text/csv',
     ]);
 })->name('admin.sample.csv');
-
-
-
-
-

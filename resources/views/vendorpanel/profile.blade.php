@@ -173,7 +173,7 @@
                         <div class="form-group">
                             <label class="col-md-6 col-xs-6 control-label paymod">Range (km)</label>
                             <div class="col-md-6 col-xs-6">
-                                <input type="number" name="delivery_range" value="{{ $deliveryCharge->delivery_range ?? '' }}" class="form-control" placeholder="Enter range" required>
+                                <input type="number" name="delivery_range" value="1" class="form-control" placeholder="Enter range" readonly>
                             </div>
                         </div>
 
@@ -183,7 +183,7 @@
                             <div class="col-md-6 col-xs-6">
                                 @php
                                     $statusText = 'Pending';
-                                    if(isset($deliveryCharge->status)) {
+                                    if($deliveryCharge && isset($deliveryCharge->status)) {
                                         switch ($deliveryCharge->status) {
                                             case 1: $statusText = 'Approved'; break;
                                             case 2: $statusText = 'Rejected'; break;
@@ -191,7 +191,7 @@
                                         }
                                     }
                                 @endphp
-                                <input type="text" class="form-control {{ $deliveryCharge->status == 1 ? 'text-success' : ($deliveryCharge->status == 2 ? 'text-danger' : 'text-warning')}}" value="{{ $statusText }}" readonly style="font-weight: bold;">
+                                <input type="text" class="form-control {{ ($deliveryCharge && $deliveryCharge->status == 1) ? 'text-success' : (($deliveryCharge && $deliveryCharge->status == 2) ? 'text-danger' : 'text-warning') }}" value="{{ $statusText }}" readonly style="font-weight: bold;">
                             </div>
                         </div>
 
@@ -228,6 +228,7 @@
 
                <li><a href="#tab2" data-toggle="tab">Settings</a></li>
                <li><a href="#tab3" data-toggle="tab">Store Timing</a></li>
+               <li><a href="#tab4" data-toggle="tab">Location Share</a></li>
             </ul>
             <div class="tab-content">
                <div class="tab-pane panel-body active" id="tab1">
@@ -338,6 +339,16 @@
                         </div>
                      </div>
                      <div class="row">
+                        {{-- Display Name --}}
+                        <div class="col-3">
+                           <input type="checkbox" class="form-check-input" name="is_home_request" id="is_home_request" value="1" {{ $vendor->is_home_request == 1 ? 'checked' : '' }}>
+
+                           <label for="display_name">Request for Display Home Page</label>
+                        </div>
+                        <div class="col-6">
+                        </div>
+                     </div>
+                     <div class="row">
                         {{-- Business Categories --}}
                         <div class="col-3">
                            <label for="business_category">Business Categories</label>
@@ -357,10 +368,28 @@
                      <div class="row">
                         {{-- Minimum Order Value --}}
                         <div class="col-3">
-                           <label for="minimum_order_value">Minimum Order Value</label>
+                           <label for="minimum_order_value">Minimum Order Value Free Delivery</label>
                         </div>
                         <div class="col-6">
                            <input type="number" name="minimum_order_value" id="minimum_order_value" class="form-control" value="{{ old('minimum_order_value', $vendor->minimum_order_value) }}">
+                        </div>
+                     </div>
+                     <div class="row">
+                        {{-- Minimum Order For Free Cook --}}
+                        <div class="col-3">
+                           <label for="delivery_range">Minimum Order For Gift </label>
+                        </div>
+                        <div class="col-6">
+                           <input type="number" class="form-control" value="{{  $vendor->minimum_order_for_cook }}" name="minimum_order_for_cook" id="minimum_order_for_cook">
+                        </div>dy_text
+                     </div>
+                     <div class="row">
+                        {{-- Minimum Order For Free Cook --}}
+                        <div class="col-3">
+                           <label for="delivery_range">Dynamic Gift Text </label>
+                        </div>
+                        <div class="col-6">
+                           <input type="number" class="form-control" value="{{  $vendor->dy_text }}" name="dy_text" id="dy_text">
                         </div>
                      </div>
                      <div class="row">
@@ -624,6 +653,23 @@
                         </div>
                     </form>
                 </div>
+                <div class="tab-pane panel-body" id="tab4">
+                    <div class="alert alert-warning">
+                        <strong>Info!</strong> Share your location with delivery boy
+                        <button type="button" class="btn btn-info btn-rounded" onclick="openLocationShareModal()">Share Location</button>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Location Contact Information</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div id="locationContactsContainer">
+                                <p>Loading contacts...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
          </div>
       </div>
@@ -746,4 +792,149 @@
 </script>
 
 
+<!-- Location Share Modal -->
+<div class="modal fade" id="locationShareModal" tabindex="-1" aria-labelledby="locationShareModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="locationShareModalLabel">Set Location Share Contact</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="locationShareForm">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label">Contact Method</label>
+                        <select class="form-select" id="contactMethod" name="contact_method" required>
+                            <option value="">Select Contact Method</option>
+                            <option value="email">Email</option>
+                            <option value="sms">SMS</option>
+                            <option value="whatsapp">WhatsApp</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" id="contactLabel">Contact Details</label>
+                        <input type="text" class="form-control" id="contactDetail" name="contact_detail" placeholder="Enter email/mobile/WhatsApp number" required>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">This contact information will be used to share your location with delivery personnel.</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveLocationContact()">Save Contact</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openLocationShareModal() {
+        $('#locationShareModal').modal('show');
+    }
+
+    function saveLocationContact() {
+        const formData = new FormData(document.getElementById('locationShareForm'));
+
+        $.ajax({
+            url: '{{ route("vendor.save.location.contact") }}',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    alert('Contact saved successfully!');
+                    $('#locationShareModal').modal('hide');
+                    loadLocationContacts();
+                } else {
+                    alert('Failed to save contact: ' + response.message);
+                }
+            },
+            error: function(xhr) {
+                alert('Error saving contact: ' + xhr.responseText);
+            }
+        });
+    }
+
+    function loadLocationContacts() {
+        $.ajax({
+            url: '{{ route("vendor.get.location.contacts") }}',
+            method: 'GET',
+            success: function(response) {
+                let html = '';
+                if (response.contacts && response.contacts.length > 0) {
+                    html += '<div class="row">';
+                    response.contacts.forEach(function(contact) {
+                        html += `
+                            <div class="col-md-4 mb-3">
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                        <h5>${contact.contact_method.toUpperCase()}</h5>
+                                        <p>${contact.contact_detail}</p>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteLocationContact(${contact.id})">Delete</button>
+                                        <button class="btn btn-primary btn-sm" onclick="shareLocation(${contact.id})">Share Location</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                } else {
+                    html = '<p>No contacts added yet. Add a contact to share your location with delivery personnel.</p>';
+                }
+                $('#locationContactsContainer').html(html);
+            },
+            error: function(xhr) {
+                $('#locationContactsContainer').html('<p>Error loading contacts.</p>');
+            }
+        });
+    }
+
+    function deleteLocationContact(contactId) {
+        if (confirm('Are you sure you want to delete this contact?')) {
+            $.ajax({
+                url: `{{ url('vendor/location-contact') }}/${contactId}`,
+                method: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Contact deleted successfully!');
+                        loadLocationContacts();
+                    } else {
+                        alert('Failed to delete contact');
+                    }
+                },
+                error: function(xhr) {
+                    alert('Error deleting contact');
+                }
+            });
+        }
+    }
+
+    function shareLocation(contactId) {
+        // Create a hidden form and submit it to the controller
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `{{ url('vendor/share-location') }}/${contactId}`;
+
+        // Add CSRF token
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+
+        form.appendChild(csrfToken);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // Load contacts when page loads
+    $(document).ready(function() {
+        loadLocationContacts();
+    });
+</script>
 @endsection

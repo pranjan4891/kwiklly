@@ -38,8 +38,10 @@
                     </div>
                 </div>
                 <hr style="border: 1px solid #D8C2BC;">
+
                 <!-- LEFT SIDE: CART ITEMS, DELIVERY OPTIONS, COUPONS, BILL SUMMARY -->
                 <div class="col-md-7 main-content-box">
+                    {{-- Global Cook Progress (removed, now per vendor) --}}
                     <div class="cartItemsWrapper" id="cartItemsWrapper">
                         @foreach($groupedCart as $vendorKey => $vendorData)
                             @if(isset($vendorData['items']) && !empty($vendorData['items']))
@@ -107,17 +109,34 @@
                                 {{-- Rest of your vendor section content --}}
                                 <div class="my-3 p-3">
                                     <div class="xyz-info-box">
-                                        <div class="d-flex align-items-center mb-2">
+                                        <!--- Cook Progress --->
+                                        {{-- <div class="d-flex align-items-center mb-2">
                                             <img src="{{ asset('public/demo.png') }}" alt="Icon">
                                             <div class="ms-3 w-100">
-                                                <div>Add item worth ₹<b>5000</b> to get free cook</div>
+                                                <div id="cook-text-{{ $businessId }}">Checking free cook eligibility...</div>
                                                 <p class="text-danger p-0 m-0">Accept</p>
                                             </div>
                                         </div>
-                                        <div class="xyz-clickable-div">
-                                            <div>Add item worth ₹<b>60</b> more to get free delivery<i class="fa fa-angle-right" style="position: absolute; left: 50%;color:#4caf50;"></i></div>
+                                        <div>
+                                            <div id="cook-clickable-div-{{ $businessId }}" class="xyz-clickable-div">
+                                                <div id="cook-progress-text-{{ $businessId }}">Add item worth more to get free cook</div>
+                                                <div class="xyz-progress mt-1">
+                                                    <div class="xyz-progress-bar" id="cook-progress-bar-{{ $businessId }}" style="width: 0%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="xyz-right-text">*Progress Bar will reset in next order</div>
+                                        </div> --}}
+                                        <!--- Delivery Progress (per vendor) --->
+                                        <div class="d-flex align-items-center mb-2">
+                                            <img src="{{ asset('public/demo.png') }}" alt="Icon">
+                                            <div class="ms-3 w-100">
+                                                <div id="delivery-progress-title-{{ $businessId }}">Add item worth to get free delivery</div>
+                                            </div>
+                                        </div>
+                                        <div class="xyz-clickable-div progress-text-{{ $businessId }}">
+                                            <div id="delivery-progress-text-{{ $businessId }}">Add item worth ₹ more to get free delivery<i class="fa fa-angle-right" style="position: absolute; left: 50%;color:#4caf50;"></i></div>
                                             <div class="xyz-progress mt-1">
-                                                <div class="xyz-progress-bar" style="width: 80%"></div>
+                                                <div class="xyz-progress-bar" id="delivery-progress-bar-{{ $businessId }}" style="width: 0%"></div>
                                             </div>
                                         </div>
                                         <div class="xyz-right-text">*Progress Bar will reset in next order</div>
@@ -218,6 +237,7 @@
                             <p><strong>Congratulations!! You got free gift</strong></p>
                             <small>by Chandresh Grocery</small>
                         </div>
+
                         {{-- <button onclick="window.location.href='{{ route('delivery.address') }}'" class="delivery-btn">
                         Choose Delivery Address
                         </button> --}}
@@ -598,15 +618,16 @@
                             const $expressRadio = $(`#express20-${vendorId}`);
                             const $delivery30 = $(`#delivery30-${vendorId}`);
 
+                            // Always default to standard delivery (30 min)
+                            $delivery30.prop("checked", true).prop("disabled", false);
+
                             if (cartTotal >= minOrder && minOrder > 0) {
-                                // Free delivery, enable & auto-select express
-                                $expressRadio.prop("disabled", false).prop("checked", true);
-                                $delivery30.prop("checked", false);
+                                // Free delivery, enable express option but don't auto-select
+                                $expressRadio.prop("disabled", false).prop("checked", false);
                                 deliveryCharge = 0; // free delivery
                             } else {
-                                // keep express disabled, auto-select standard delivery
+                                // keep express disabled
                                 $expressRadio.prop("disabled", true).prop("checked", false);
-                                $delivery30.prop("checked", true);
                             }
 
                             // Store delivery charge for this vendor
@@ -621,8 +642,20 @@
                             const totalCharges = subtotal + deliveryCharge - coupon;
                             $(`#totalCharge-${vendorId}`).text(`₹${totalCharges.toFixed(2)}`);
 
-                            // Update the order summary with new delivery charges
-                            updateOrderSummary(window.currentCart || {}, vendorCoupons);
+                                    // Update the order summary with new delivery charges
+                                    updateOrderSummary(window.currentCart || {}, vendorCoupons);
+
+                                    // Update cook progress
+                                    if (res.min_order_for_cook) {
+                                        const cartTotal = parseFloat($(`#cartTotal-${vendorId}`).val()) || 0;
+                                        updateCookProgress(vendorId, cartTotal, parseFloat(res.min_order_for_cook), res.dy_text);
+                                    }
+
+                                    // Update cook progress
+                                    if (res.min_order_for_cook) {
+                                        const cartTotal = parseFloat($(`#cartTotal-${vendorId}`).val()) || 0;
+                                        updateCookProgress(vendorId, cartTotal, parseFloat(res.min_order_for_cook), res.dy_text);
+                                    }
                         }
                     },
                     error: function (xhr) {
@@ -649,7 +682,7 @@
                         const vendorId = items[firstKey]?.business_id;
 
                         html += `
-                            <div class="vendor-cart-block my-4 border rounded p-3">
+                            <div class="vendor-section my-4 border rounded p-3" data-vendor-id="${vendorId}">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="mb-0 fw-semibold">${businessName}</h6>
@@ -705,13 +738,35 @@
                                 </div>
                                 <div class="my-3" id="progress-section-${vendorId}">
                                     <div class="xyz-info-box">
-                                        <div class="xyz-clickable-div">
-                                            <div class="progress-text-${vendorId}">
-                                                Checking free delivery eligibility...
+                                        <!--- Cook Progress --->
+                                            <div class="d-flex align-items-center mb-2">
+                                                <img src="{{ asset('public/demo.png') }}" alt="Icon" style="width: 24px; height: 24px;">
+                                                <div class="ms-3 w-100">
+                                                    <div id="cook-text-${vendorId}">Checking eligibility for free Gift...</div>
+                                                </div>
                                             </div>
-                                            <div class="xyz-progress mt-1">
-                                                <div class="xyz-progress-bar progress-bar-${vendorId}" style="width: 0%"></div>
+
+                                            <div id="cook-clickable-div-${vendorId}" class="xyz-clickable-div">
+                                                <div id="cook-progress-text-${vendorId}">Add item worth more to get service</div>
+                                                <div class="xyz-progress mt-1">
+                                                    <div class="xyz-progress-bar" id="cook-progress-bar-${vendorId}" style="width: 0%"></div>
+                                                </div>
                                             </div>
+
+                                            <!--- Delivery Progress --->
+                                            <div class="d-flex align-items-center mb-2">
+                                                <img src="{{ asset('public/demo.png') }}" alt="Icon" style="width: 24px; height: 24px;">
+                                                <div class="ms-3 w-100">
+                                                    <div id="delivery-progress-title-${vendorId}">Add item worth to get free delivery</div>
+                                                </div>
+                                            </div>
+                                            <div class="xyz-clickable-div progress-text-${vendorId}">
+                                                <div id="delivery-progress-text-${vendorId}">Add item worth ₹ more to get free delivery<i class="fa fa-angle-right" style="position: absolute; left: 50%;color:#4caf50;"></i></div>
+                                                <div class="xyz-progress mt-1">
+                                                    <div class="xyz-progress-bar" id="delivery-progress-bar-${vendorId}" style="width: 0%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="xyz-right-text">*Progress Bar will reset in next order</div>
                                         </div>
                                     </div>
                                 </div>
@@ -782,8 +837,8 @@
                                         ? `Add items worth ₹<b>${remaining}</b> more to get free delivery`
                                         : `<span class="text-success fw-semibold">You unlocked FREE delivery 🎉</span>`;
 
-                                    $(`.progress-text-${vendorId}`).html(textHtml);
-                                    $(`.progress-bar-${vendorId}`).css("width", progressPercent + "%");
+                                    $(`#delivery-progress-text-${vendorId}`).html(textHtml);
+                                    $(`#delivery-progress-bar-${vendorId}`).css("width", progressPercent + "%");
 
                                     // update express label
                                     $(`.express-label-${vendorId}`).text(
@@ -980,6 +1035,23 @@
                 $('#summary-wallet').text('-₹' + walletDiscount.toFixed(2));
                 $('.final-price').text('₹' + grandTotal.toFixed(2));
                 $('#saved-amount').text(savedAmount > 0 ? `₹${savedAmount.toFixed(2)} (${savedPercent}%)` : '₹0');
+
+
+            }
+
+            function updateCookProgress(vendorId, subtotal, cookThreshold, dyText = 'free cook') {
+                const remaining = Math.max(cookThreshold - subtotal, 0);
+                const progressPercent = Math.min((subtotal / cookThreshold) * 100, 100);
+
+                let text = '';
+                if (remaining > 0) {
+                    text = `Add item worth <b>₹${remaining}</b> to get free ${dyText}`;
+                } else {
+                    text = `Congratulations! You have unlocked ${dyText} 🎉`;
+                }
+
+                $(`#cook-progress-text-${vendorId}`).html(text);
+                $(`#cook-progress-bar-${vendorId}`).css('width', progressPercent + '%');
             }
 
             function showModal(vendorId) {
@@ -1153,11 +1225,41 @@
 
                     if (vendorId && vendorId > 0) {
                         validVendorSections++;
-                        data.vendors[vendorId] = {
-                            delivery_slot: null,
-                            delivery_type: 'standard'
+                        const $vendorDiv = $(this);
+
+                        // Determine selected delivery option
+                        const selectedRadio = $vendorDiv.find(`input[name="deliveryOption-${vendorId}"]:checked`);
+                        let deliveryData = {
+                            delivery_type: 'standard' // default
                         };
-                        console.log("Added vendor:", vendorId);
+
+                        if (selectedRadio.length > 0) {
+                            const deliveryType = selectedRadio.val();
+                            if (deliveryType === 'express') {
+                                deliveryData.delivery_type = 'express';
+                            } else if (deliveryType === 'custom') {
+                                const customDate = $vendorDiv.find(`input[name="custom_date_${vendorId}"]`).val();
+                                const customStartTime = $vendorDiv.find(`select[name="custom_start_time_${vendorId}"]`).val();
+                                const customEndTime = $vendorDiv.find(`select[name="custom_end_time_${vendorId}"]`).val();
+
+                                if (customDate && customStartTime && customEndTime) {
+                                    deliveryData.delivery_type = 'custom';
+                                    deliveryData.custom_delivery = {
+                                        date: customDate,
+                                        start_time: customStartTime,
+                                        end_time: customEndTime
+                                    };
+                                } else {
+                                    // Invalid custom data, fallback to standard
+                                    deliveryData.delivery_type = 'standard';
+                                }
+                            } else {
+                                deliveryData.delivery_type = 'standard';
+                            }
+                        }
+
+                        data.vendors[vendorId] = deliveryData;
+                        console.log("Added vendor with delivery:", vendorId, deliveryData);
                     }
                 });
 
@@ -1260,6 +1362,7 @@
             }
         </script>
 
-   </body>
+
+    </body>
 
 </html>

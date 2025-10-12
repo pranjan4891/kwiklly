@@ -31,7 +31,7 @@
                         <span class="discount-label">{{ (int) round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
                     @endif
                     @if($product->is_physical)
-                    <a href="{{ route('productdetails', $product->slug) }}">
+                    <a href="{{ route('productdetails', $product->slug) }}"  onclick="return redirectWithLocation(this.href)">
                         @if($product->featureImage && $product->featureImage->feature_image)
                             <img src="{{ asset('public/' . $product->featureImage->feature_image) }}" class="product-image" alt="{{ $product->title }}">
                         @else
@@ -59,16 +59,19 @@
                     @endif
 
                     <div class="price-container cardpadding">
-                        <span class="price">
-                            ₹ {{ intval($defaultVariant->variant_selling_price) ?? '--' }}
-                        </span>
-
-                        @if ($defaultVariant && ($defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price))
-                            <span class="original-price">
-                                ₹ {{ intval($defaultVariant->variant_actual_price) }}
+                        @if ($defaultVariant)
+                            <span class="price">
+                                ₹ {{ intval($defaultVariant->variant_selling_price) ?? '--' }}
                             </span>
-                        @endif
 
+                            @if ($defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
+                                <span class="original-price">
+                                    ₹ {{ intval($defaultVariant->variant_actual_price) }}
+                                </span>
+                            @endif
+                        @else
+                            <span class="price">--</span>
+                        @endif
                         <div class="qty-box"
                             data-product-id="{{ $product->id }}"
                             data-variant-id="{{ $firstVariant->id ?? '' }}"
@@ -121,9 +124,9 @@
                     </div>
 
                     <div class="store-info">
-                        <span>Ad</span>
+                        {{-- <span>Ad</span> --}}
                         {{-- <span>{{ $selectedVendor->business_name ?? 'Chandrash Grocery' }}</span> --}}
-                        <span>5 min away</span>
+                        {{-- <span>5 min away</span> --}}
                     </div>
                 </div>
             </div>

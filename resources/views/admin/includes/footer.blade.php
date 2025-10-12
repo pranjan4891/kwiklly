@@ -60,7 +60,7 @@
         document.getElementById(form).reset();
     }
 </script>
-jquery.dataTables.min.js
+
 @stack('scripts')
 
 </body>

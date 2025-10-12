@@ -206,22 +206,27 @@
              fetch(url, {
                method: method,
                headers: {
-                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                 'Accept': 'application/json'
                },
                body: formData
              })
-             .then(res => {
-               if (!res.ok) return res.text().then(text => { throw new Error(text) });
-               return res.json();
-             })
+             .then(res => res.json())
              .then(data => {
-               alert(data.message);
-               resetForm();
-               loadSavedAddresses();
+               if (data.errors) {
+                 let errors = Object.values(data.errors).flat().join('\n');
+                 alert(`Validation errors:\n${errors}`);
+               } else if (data.success) {
+                 alert(data.message);
+                 resetForm();
+                 loadSavedAddresses();
+               } else {
+                 alert('Something went wrong: ' + (data.message || 'Unknown error'));
+               }
              })
              .catch(err => {
                console.error('Submission error:', err);
-               alert('Something went wrong!');
+               alert('Network error!');
              });
            });
 

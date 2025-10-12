@@ -84,7 +84,7 @@
                                     @endif
 
                                     {{-- Image --}}
-                                    <a href="{{ $product->is_physical ? route('productdetails', $product->slug) : 'javascript:void(0);' }}">
+                                    <a href="{{ $product->is_physical ? route('productdetails', $product->slug) : 'javascript:void(0);' }}"  onclick="return redirectWithLocation(this.href)">
                                         <img src="{{ $product->featureImage ? asset('public/' . $product->featureImage->feature_image) : asset('public/assets/website/images/no-image.png') }}"
                                             class="product-image"
                                             alt="{{ $product->title }}">

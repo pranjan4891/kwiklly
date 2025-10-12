@@ -1,6 +1,8 @@
    @include('web.include.variant_modal')
+   @include('web.include.vendor-coupon-modal')
 
-   <footer class="footer-section extramarginfooter" >
+    <!-- Footer Section -->
+    <footer class="footer-section extramarginfooter" >
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
@@ -34,9 +36,9 @@
                     <div class="col-md-4 col-6 footer-links">
                         <h5>Company</h5>
                         <ul>
-                            <li><a href="{{ route('policy.show', 'privacy-policy') }}">Privacy Policy</a></li>
-                            <li><a href="{{ route('policy.show', 'terms-condition') }}">Terms & Condition</a></li>
-                            <li><a href="{{ route('policy.show', 'return-policy') }}">Return Policy</a></li>
+                            <li><a href="{{ route('policy.show', 'privacy-policy') }}" onclick="return redirectWithLocation(this.href)">Privacy Policy</a></li>
+                            <li><a href="{{ route('policy.show', 'terms-condition') }}" onclick="return redirectWithLocation(this.href)">Terms & Condition</a></li>
+                            <li><a href="{{ route('policy.show', 'return-policy') }}" onclick="return redirectWithLocation(this.href)">Return Policy</a></li>
                         </ul>
                     </div>
 
@@ -44,7 +46,7 @@
                     <div class="col-md-4 col-12 footer-links">
                         <h5>About</h5>
                         <ul>
-                            <li><a href="{{route('aboutus')}}">About Us</a></li>
+                            <li><a href="{{route('aboutus')}}" onclick="return redirectWithLocation(this.href)">About Us</a></li>
                            <li><a href="#" id="newconOpen">Contact Us</a></li>
                         </ul>
                     </div>
@@ -52,16 +54,90 @@
                     <hr class="breakdown">
 
                     @php
-                        $totalCategories = $footerCategories->count();
+                        // Point in polygon function (same as HomeController)
+                        function pointInPolygon($lat, $lng, $polygon) {
+                            $inside = false;
+                            $x = $lng;
+                            $y = $lat;
+                            $points = collect(json_decode($polygon, true));
+                            $n = $points->count();
+
+                            for ($i = 0, $j = $n - 1; $i < $n; $j = $i++) {
+                                $xi = $points[$i]['lng'];
+                                $yi = $points[$i]['lat'];
+                                $xj = $points[$j]['lng'];
+                                $yj = $points[$j]['lat'];
+
+                                $intersect = (($yi > $y) != ($yj > $y))
+                                    && ($x < ($xj - $xi) * ($y - $yi) / (($yj - $yi) ?: 1e-10) + $xi);
+                                if ($intersect) $inside = !$inside;
+                            }
+                            return $inside;
+                        }
+
+                        // Location-based category filtering like index.blade.php
+                        // Get user's current location
+                        $lat = request()->input('latitude') ?? (isset($_GET['latitude']) ? $_GET['latitude'] : null);
+                        $lng = request()->input('longitude') ?? (isset($_GET['longitude']) ? $_GET['longitude'] : null);
+
+                        // Filter footer categories based on location-vendors with products
+                        $filteredFooterCategories = $footerCategories;
+
+                        if ($lat && $lng) {
+                            // Find vendors in user's location area
+                            $masterLocations = \App\Models\MasterLocation::where('is_active', 1)->where('is_deleted', 0)->get();
+
+                            $insideLocation = $masterLocations->first(function($location) use ($lat, $lng) {
+                                return pointInPolygon($lat, $lng, $location->lat_long);
+                            });
+
+                            if ($insideLocation) {
+                                // Get vendors inside polygon with active products
+                                $vendorsInArea = \App\Models\VendorAdmin::where('status', '1')
+                                    ->where('is_active', '1')
+                                    ->where('user_type', 'vendor')
+                                    ->whereNull('deleted_at')
+                                    ->get()
+                                    ->filter(function ($vendor) use ($insideLocation) {
+                                        return pointInPolygon($vendor->latitude, $vendor->longitude, $insideLocation->lat_long);
+                                    });
+
+                                $vendorIds = $vendorsInArea->pluck('id');
+
+                                if ($vendorIds->count() > 0) {
+                                    // Get category IDs that have active products from vendors in user's area
+                                    $categoryIdsWithProducts = \App\Models\Product::whereIn('vendor_id', $vendorIds)
+                                        ->where('is_active', 1)
+                                        ->where('is_deleted', 0)
+                                        ->pluck('category_id')
+                                        ->unique()
+                                        ->filter();
+
+                                    // Filter footer categories to only those with products in user's area
+                                    $filteredFooterCategories = $footerCategories->filter(function($category) use ($categoryIdsWithProducts) {
+                                        return $categoryIdsWithProducts->contains($category->id);
+                                    });
+                                }
+                            }
+                        }
+
+                        $totalCategories = $filteredFooterCategories->count();
+
+                        // Footer layout: same as index.blade.php with 3-row design
+                        // First 2 rows: 3 categories each (total 6)
+                        // Third row: 3 categories, remaining in dropdown
+                        $maxVisibleFirstTwoRows = 6; // 2 rows × 3 categories
+                        $maxVisibleThirdRow = 3;    // 3 more categories
+                        $maxVisible = $maxVisibleFirstTwoRows + $maxVisibleThirdRow; // 9 total
 
                         // If more than 9 categories:
-                        $visibleCategories = $totalCategories > 9
-                            ? $footerCategories->take(8)   // show only first 8
-                            : $footerCategories;           // else show all
+                        $visibleCategories = $totalCategories > $maxVisible
+                            ? $filteredFooterCategories->take($maxVisible - 1)   // show first 8
+                            : $filteredFooterCategories;           // else show all
 
                         // From 9th onward goes into dropdown
-                        $moreCategories = $totalCategories > 9
-                            ? $footerCategories->slice(8)
+                        $moreCategories = $totalCategories > $maxVisible
+                            ? $filteredFooterCategories->slice($maxVisible - 1)
                             : collect();
                     @endphp
 
@@ -399,6 +475,7 @@
                         `;
                         parent.html(qtyContainer);
                         openCart();
+                        if (window.updateProgress) window.updateProgress();
                     }
                 });
             });
@@ -423,6 +500,7 @@
 
                     if (updatedQty !== null) {
                         $(`[data-key="${key}"]`).find('.quantity-input').val(updatedQty);
+                        if (window.updateProgress) window.updateProgress();
                     }
                 });
             });
@@ -462,6 +540,8 @@
                             }
                         });
                     }
+
+                    if (window.updateProgress) window.updateProgress();
                 });
             });
 
@@ -474,21 +554,32 @@
 
             if (cartGroups && Object.keys(cartGroups).length > 0) {
                 console.log(cartGroups);
+
                 $.each(cartGroups, function (businessName, items) {
                     // ✅ Pick vendor_id from the first item of the group
                     let firstItemKey = Object.keys(items)[0];
                     let vendorId = items[firstItemKey].business_id || '#';
-                    console.log("Vendor ID:", vendorId);
 
-                    html += `<div class="cart-business-group mb-3">
-                                <h6 class="mb-1">${businessName}</h6>
-                                <a href="/explorestore/${vendorId}/0"
-                                class="small text-primary mb-2 d-block"
-                                onclick="return redirectWithLocation(this.href)">
-                                Go to store
-                                </a>
+                    // ✅ Blade route with placeholder replacement
+                    let exploreStoreUrl = "{{ route('explorestore', ['vendor_id' => ':vendor_id', 'cat_id' => 0]) }}"
+                        .replace(':vendor_id', vendorId);
+
+                    // ✅ Start business group
+                    html += `
+                            <div class="cart-business-group mb-3 d-flex justify-content-between align-items-center">
+                                <h6 class="mb-1">
+                                    <a href="${exploreStoreUrl}"
+                                    class="small text-primary my-2 d-block"
+                                    onclick="return redirectWithLocation(this.href)">
+                                        ${businessName}
+                                    </a>
+                                </h6>
+                                <h6 class="mb-1"><a class="small text-danger my-2 d-block" onclick="loadSideCartCoupons(${vendorId})">Coupons</a></h6>
+                               </div>
                             `;
 
+
+                    // ✅ Loop through each item under this business
                     $.each(items, function (key, item) {
                         let price = parseFloat(item.price);
                         let quantity = parseInt(item.quantity);
@@ -524,9 +615,10 @@
 
             $('.cartItemsWrapper').html(html);
 
-            // update grand total
+            // ✅ Update grand total
             updateBillSummary(total);
         }
+
 
         function updateBillSummary(total) {
             // Static values for demonstration
@@ -553,7 +645,13 @@
                 </ul>
             `);
 
-            $('.proceed-btn').html(`Login to Proceed`);
+            @auth
+                // ✅ User is logged in
+                $('.proceed-btn').html(`Proceed to Checkout`);
+            @else
+                // ❌ User is not logged in
+                $('.proceed-btn').html(`Login to Proceed`);
+            @endauth
             $('.grand-total-box strong').html(`₹${grandTotal}`);
 
             // ✅ Update top rupee symbol box also
@@ -697,6 +795,7 @@
                     }
 
                     currentCart = res.cart;
+                    if (window.updateProgress) window.updateProgress();
                 }
             });
         });
@@ -734,6 +833,7 @@
                     }
 
                     currentCart = res.cart;
+                    if (window.updateProgress) window.updateProgress();
                 }
             });
         });
@@ -787,7 +887,24 @@
         });
 
     </Script>
+    <style>
+        .cart-business-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
+        .cart-business-group h6 {
+            margin-bottom: 0;
+        }
+
+        .border12 {
+            border-radius: 12px;
+            padding: 4px 12px;
+            font-size: 13px;
+        }
+
+    </style>
 
     <!-- Google Maps API (for location autocomplete) -->
     <script type="text/javascript">
@@ -960,7 +1077,10 @@
                     },
                     success: function(res){
                         $('#trending-products-section').html(res.trending_html);
+                        $('#best-offers-products-section').html(res.best_offers_html);
+                        $('#sponsors-products-section').html(res.sponsors_html);
                         $('#stores-section').html(res.stores_html);
+
                         $('#categories-section').html(res.categories_html);
 
                         initializeOwlCarousels();
@@ -1001,6 +1121,8 @@
                         },
                         success: function(res){
                             $('#trending-products-section').html(res.trending_html);
+                            $('#best-offers-products-section').html(res.best_offers_html);
+                            $('#sponsors-products-section').html(res.sponsors_html);
                             $('#stores-section').html(res.stores_html);
                             $('#categories-section').html(res.categories_html);
 
@@ -1167,6 +1289,48 @@
         });
     </script>
 
+    <!-- Auto redirect APP_URL with location on page load -->
+    <script>
+        // Function to auto-redirect APP_URL with location parameters
+        function autoRedirectAppUrlWithLocation() {
+            const currentUrl = new URL(window.location.href);
+            const appUrl = '{{ env("APP_URL") }}';
+
+            // Check if we're on the main APP_URL (home route without query params)
+            if (currentUrl.href === appUrl || currentUrl.href === appUrl + '/' ||
+                (currentUrl.pathname === '/' && currentUrl.search === '')) {
+
+                // Create a temporary anchor element to use redirectWithLocation
+                const link = document.createElement('a');
+                link.href = appUrl;
+
+                // Call the existing redirectWithLocation function
+                if (typeof redirectWithLocation === 'function') {
+                    redirectWithLocation(link);
+                }
+            }
+        }
+
+        // Execute on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            // Add a small delay to let other page initialization finish
+            setTimeout(function() {
+                autoRedirectAppUrlWithLocation();
+            }, 100);
+        });
+    </script>
+
     @stack('scripts')
+    <script>
+if (window.location.hash && window.location.hash === '#_=_') {
+    if (window.history && history.replaceState) {
+        // Removes #_=_ without reloading the page
+        history.replaceState(null, null, window.location.href.split('#')[0]);
+    } else {
+        // Fallback for older browsers
+        window.location.hash = '';
+    }
+}
+</script>
 </body>
 </html>

@@ -33,7 +33,7 @@ class VendorAuthController extends Controller
             $vendor->store_time_status = 1;
             $vendor->save();
 
-            return redirect()->intended('/vendor/dashboard'); // Change this to your dashboard route
+            return redirect()->route('vendor.dashboard'); // Change this to your dashboard route
         }
 
         return back()->withErrors([
@@ -56,6 +56,20 @@ class VendorAuthController extends Controller
         Auth::guard('vendor')->logout();
 
         return redirect(route('vendor.login')); // Redirect to your vendor login route
+    }
+
+    public function checkStatus(Request $request)
+    {
+        $vendor = Auth::guard('vendor')->user();
+
+        if (!$vendor) {
+            return response()->json(['status' => 'unauthenticated'], 401);
+        }
+
+        return response()->json([
+            'status' => $vendor->status,
+            'email_verified_at' => $vendor->email_verified_at,
+        ]);
     }
 
 

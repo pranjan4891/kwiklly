@@ -4,6 +4,7 @@
     use App\Http\Controllers\Customer\GoogleController;
     use Illuminate\Support\Facades\Auth;
     use App\Http\Controllers\Website\AddressController;
+    use App\Http\Controllers\Customer\FacebookController;
 
     /*StartCustomer Section-------------------------------*/
     Route::get("/login", [CustomerController::class, "login"])->name("login");
@@ -17,14 +18,16 @@
     Route::get("/myaccount", [CustomerController::class, "myaccount"])->name("myaccount");
     /*EndCustomer Section-------------------------------*/
 
-
     Route::post("/signup", [CustomerController::class, "signupStore"])->name("signup.store");
     Route::post("/login", [CustomerController::class, "loginStore"])->name("login.store");
 
     // Google OAuth Routes
-    //Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');
     Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google.redirect');
     Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+
+    // Facebook OAuth Route
+    Route::get('/auth/facebook', [FacebookController::class, 'redirectToFacebook'])->name('auth.facebook.login');
+    Route::get('/auth/facebook/callback', [FacebookController::class, 'handleFacebookCallback']);
 
     Route::get('/forgot-password', [CustomerController::class, 'showForgotPasswordForm'])->name('forgot.password.form');
     Route::post('/forgot-password', [CustomerController::class, 'sendResetLink'])->name('forgot.password.send');

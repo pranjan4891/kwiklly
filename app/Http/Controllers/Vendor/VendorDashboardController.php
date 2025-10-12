@@ -10,7 +10,10 @@ use App\Models\VendorAdmin;
 use App\Models\Category;
 use App\Models\DeliveryCharge;
 use App\Models\TimeSlot;
+use App\Models\LocationContact;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\LocationSharingMail;
 
 
 class VendorDashboardController extends Controller
@@ -62,6 +65,9 @@ class VendorDashboardController extends Controller
 
         // Update fields
         $vendor->display_name = $request->display_name;
+        $vendor->is_home_request = $request->has('is_home_request') ? 1 : 0;
+        $vendor->minimum_order_for_cook = $request->minimum_order_for_cook;
+        $vendor->dy_text = $request->dy_text;
         $vendor->business_category = is_array($request->business_category) ? implode(',', $request->business_category) : null;
         $vendor->minimum_order_value = $request->minimum_order_value;
         $vendor->delivery_charge = $request->delivery_charge;
@@ -165,6 +171,121 @@ class VendorDashboardController extends Controller
                 'status_text'     => $delivery_charge->status == 1 ? 'Approved' : ($delivery_charge->status == 2 ? 'Rejected' : 'Pending')
             ]
         ]);
+    }
+
+    public function saveLocationContact(Request $request)
+    {
+        $request->validate([
+            'contact_method' => 'required|in:email,sms,whatsapp',
+            'contact_detail' => 'required|string|max:255'
+        ]);
+
+        $vendor = auth()->user();
+
+        // Create or update contact
+        LocationContact::updateOrCreate(
+            [
+                'vendor_id' => $vendor->id,
+                'contact_method' => $request->contact_method
+            ],
+            [
+                'contact_detail' => $request->contact_detail
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Contact saved successfully'
+        ]);
+    }
+
+    public function getLocationContacts()
+    {
+        $vendor = auth()->user();
+
+        $contacts = LocationContact::where('vendor_id', $vendor->id)
+            ->orderBy('created_at', 'desc')
+            ->get(['id', 'contact_method', 'contact_detail']);
+
+        return response()->json([
+            'contacts' => $contacts
+        ]);
+    }
+
+    public function getLocation()
+    {
+        $vendor = auth()->user();
+
+        return response()->json([
+            'location' => [
+                'latitude' => $vendor->latitude,
+                'longitude' => $vendor->longitude
+            ]
+        ]);
+    }
+
+    public function shareLocation($contactId)
+    {
+        $vendor = auth()->user();
+
+        $contact = LocationContact::where('vendor_id', $vendor->id)
+            ->where('id', $contactId)
+            ->first();
+
+        if (!$contact) {
+            return redirect()->back()->with('error', 'Contact not found');
+        }
+
+        if (!$vendor->latitude || !$vendor->longitude) {
+            return redirect()->back()->with('error', 'Vendor location not available');
+        }
+
+        $locationUrl = "https://www.google.com/maps?q={$vendor->latitude},{$vendor->longitude}";
+
+        switch ($contact->contact_method) {
+            case 'whatsapp':
+                $cleanContact = preg_replace('/[^0-9]/', '', $contact->contact_detail);
+                $url = "https://wa.me/{$cleanContact}?text=" . urlencode("Please collect order from this location: {$locationUrl}");
+                return redirect()->away($url);
+
+            case 'email':
+                try {
+                    Mail::to($contact->contact_detail)->send(new LocationSharingMail($locationUrl, $vendor->business_name));
+                    return redirect()->back()->with('success', 'Location shared via email successfully!');
+                } catch (\Exception $e) {
+                    Log::error('Failed to send location sharing email: ' . $e->getMessage());
+                    return redirect()->back()->with('error', 'Failed to send email. Please try again.');
+                }
+
+            case 'sms':
+                $url = "sms:{$contact->contact_detail}?body=" . urlencode("Delivery location: {$locationUrl}");
+                return redirect()->away($url);
+
+            default:
+                return redirect()->away($locationUrl);
+        }
+    }
+
+    public function deleteLocationContact($id)
+    {
+        $vendor = auth()->user();
+
+        $contact = LocationContact::where('vendor_id', $vendor->id)
+            ->where('id', $id)
+            ->first();
+
+        if ($contact) {
+            $contact->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Contact deleted successfully'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Contact not found'
+        ], 404);
     }
 
 

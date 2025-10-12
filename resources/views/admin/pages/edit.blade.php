@@ -10,11 +10,11 @@
                     </div>
 
                     <div class="panel-body">
-                        <form action="{{ route('admin.pages.update', $page->id) }}" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('admin.policies.update', $page->id) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
 
-                            <div class="col-md-6">
+                            <div class="col-md-6" >
                                 <div class="form-group">
                                     <label for="title">Page Title</label>
                                     <input type="text" name="title" id="title" class="form-control"

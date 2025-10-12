@@ -107,8 +107,8 @@
 
                             <div class="col-md-4" style="margin-top: 20px; margin-bottom: 20px;">
                                 <div class="form-check">
-                                    <input type="checkbox" name="best_offers" value="1" class="form-check-input"
-                                        id="bestOffers" {{ $product->best_offers ? 'checked' : '' }}>
+                                    <input type="checkbox" name="best_offers_request" value="1" class="form-check-input"
+                                        id="bestOffers" {{ $product->best_offers_request ? 'checked' : '' }}>
                                     <label class="form-check-label" for="bestOffers">Best Offers</label>
                                 </div>
                             </div>
@@ -118,6 +118,13 @@
                                     <input type="checkbox" name="top_selling" value="1" class="form-check-input"
                                         id="topSelling" {{ $product->top_selling ? 'checked' : '' }}>
                                     <label class="form-check-label" for="topSelling">Top Selling</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4" style="margin-top: 20px; margin-bottom: 20px;">
+                                <div class="form-check  ">
+                                    <input type="checkbox" name="spons_product_request" value="1" class="form-check-input"
+                                        id="sponsProduct" {{ $product->spons_product_request ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="sponsProduct">Sponsored Product Request</label>
                                 </div>
                             </div>
 

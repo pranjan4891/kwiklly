@@ -55,71 +55,66 @@ class AddressController extends Controller
         return response()->json(['success' => true, 'message' => 'Address deleted']);
     }
 
-  
-  
-public function getAddresses(Request $request)
-{
-    $query = CustomerAddress::where('user_id', auth()->id());
 
-    if ($request->has('id')) {
-        $address = $query->where('id', $request->id)->firstOrFail();
+
+    public function getAddresses(Request $request)
+    {
+        $query = CustomerAddress::where('user_id', auth()->id());
+
+        if ($request->has('id')) {
+            $address = $query->where('id', $request->id)->firstOrFail();
+            return response()->json(['address' => $address]);
+        }
+
+        $addresses = $query->whereNull('deleted_at')->latest()->get();
+        return response()->json($addresses);
+    }
+
+
+    public function getSingleAddress($id)
+    {
+        $address = CustomerAddress::where('user_id', auth()->id())
+            ->findOrFail($id);
+
         return response()->json(['address' => $address]);
     }
 
-    $addresses = $query->whereNull('deleted_at')->latest()->get();
-    return response()->json($addresses);
-}
 
-
-public function getSingleAddress($id)
-{
-    $address = CustomerAddress::where('user_id', auth()->id())
-        ->findOrFail($id);
-
-    return response()->json(['address' => $address]);
-}
-
-
-  
-  
-  
     public function list()
-{
-    $addresses = CustomerAddress::where('user_id', auth()->id())->latest()->get();
+    {
+        $addresses = CustomerAddress::where('user_id', auth()->id())->latest()->get();
 
-    $html = '';
+        $html = '';
 
-    foreach ($addresses as $address) {
-        $type = ucfirst($address->type);
-        $icon = $address->type === 'home'
-            ? 'https://cdn-icons-png.flaticon.com/128/69/69524.png'
-            : 'https://cdn-icons-png.flaticon.com/128/609/609803.png';
+        foreach ($addresses as $address) {
+            $type = ucfirst($address->type);
+            $icon = $address->type === 'home'
+                ? 'https://cdn-icons-png.flaticon.com/128/69/69524.png'
+                : 'https://cdn-icons-png.flaticon.com/128/609/609803.png';
 
-        $html .= '
-        <div class="address-card">
-            <div class="address-left">
-                <img src="' . $icon . '" alt="' . $type . '" class="icon">
-                <div>
-                    <strong>' . $type . '</strong>
-                    <p>' . $address->name . ', ' . $address->flat . ', ' . $address->area . ', ' . $address->landmark . ', ' . $address->pincode . '</p>
-                </div>
-            </div>
-            <div class="address-right">
-                <span class="check">&#x2714;</span>
-                <div class="dropdown-wrapper">
-                    <span class="options" onclick="toggleDropdown(this)">&#8942;</span>
-                    <div class="dropdown-menu">
-                        <div onclick="editAddress(' . $address->id . ')">Edit</div>
-                        <div onclick="deleteAddress(this, ' . $address->id . ')">Delete</div>
+            $html .= '
+            <div class="address-card">
+                <div class="address-left">
+                    <img src="' . $icon . '" alt="' . $type . '" class="icon">
+                    <div>
+                        <strong>' . $type . '</strong>
+                        <p>' . $address->name . ', ' . $address->flat . ', ' . $address->area . ', ' . $address->landmark . ', ' . $address->pincode . '</p>
                     </div>
                 </div>
-            </div>
-        </div>';
+                <div class="address-right">
+                    <span class="check">&#x2714;</span>
+                    <div class="dropdown-wrapper">
+                        <span class="options" onclick="toggleDropdown(this)">&#8942;</span>
+                        <div class="dropdown-menu">
+                            <div onclick="editAddress(' . $address->id . ')">Edit</div>
+                            <div onclick="deleteAddress(this, ' . $address->id . ')">Delete</div>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+        }
+
+        return response()->json(['html' => $html]);
     }
 
-    return response()->json(['html' => $html]);
 }
-
-}
-
-

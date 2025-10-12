@@ -57,24 +57,24 @@
                             <div class="col-md-12" style="margin-top: 20px; margin-bottom: 20px;">
                                 <div class="form-check">
                                     <input type="checkbox" name="is_physical" value="1" class="form-check-input"
-                                        id="is_physical" {{ $product->is_physical ? 'checked' : '' }} onchange="togglePhysicalFields()">
+                                        id="is_physical" {{ $product->is_physical == 1 ? 'checked' : '' }} onchange="togglePhysicalFields()">
                                     <label class="form-check-label" for="is_physical">Physical Product</label>
                                 </div>
                             </div>
                           <div class="col-md-12" id="physicalProductFields" style="display: none;">
                                 <div class="form-group">
                                     <label for="description">Product Description</label>
-                                    <textarea name="description" rows="3" class="form-control">{{ $product->description }}</textarea>
+                                    <textarea name="description" class="form-control ckeditor">{{ $product->description }}</textarea>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="disclaimer">Disclaimer</label>
-                                    <textarea name="disclaimer" rows="2" class="form-control">{{ $product->disclaimer }}</textarea>
+                                    <textarea name="disclaimer" class="form-control ckeditor">{{ $product->disclaimer }}</textarea>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="information">Additional Information</label>
-                                    <textarea name="information" rows="2" class="form-control">{{ $product->information }}</textarea>
+                                    <textarea name="information" class="form-control ckeditor">{{ $product->information }}</textarea>
                                 </div>
                             </div>
 
@@ -105,7 +105,7 @@
                                 </p>
                             </div>
 
-                            <div class="col-md-4" style="margin-top: 20px; margin-bottom: 20px;">
+                            <div class="col-md-3" style="margin-top: 20px; margin-bottom: 20px;">
                                 <div class="form-check">
                                     <input type="checkbox" name="best_offers" value="1" class="form-check-input"
                                         id="bestOffers" {{ $product->best_offers ? 'checked' : '' }}>
@@ -113,15 +113,22 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-4" style="margin-top: 20px; margin-bottom: 20px;">
+                            <div class="col-md-3" style="margin-top: 20px; margin-bottom: 20px;">
                                 <div class="form-check">
                                     <input type="checkbox" name="top_selling" value="1" class="form-check-input"
                                         id="topSelling" {{ $product->top_selling ? 'checked' : '' }}>
                                     <label class="form-check-label" for="topSelling">Top Selling</label>
                                 </div>
                             </div>
+                            <div class="col-md-3" style="margin-top: 20px; margin-bottom: 20px;">
+                                <div class="form-check">
+                                    <input type="checkbox" name="spons_product" value="1" class="form-check-input"
+                                        id="sponsProduct" {{ $product->spons_product ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="sponsProduct">Sponsored Product</label>
+                                </div>
+                            </div>
 
-                            <div class="col-md-4"   style="margin-top: 20px; margin-bottom: 20px;">
+                            <div class="col-md-3"   style="margin-top: 20px; margin-bottom: 20px;">
                                 <div class="form-check">
                                     <input type="checkbox" name="is_active" value="1" class="form-check-input"
                                         id="isActive" {{ $product->is_active ? 'checked' : '' }}>
@@ -144,6 +151,7 @@
 @endsection
 
 @push('scripts')
+<script src="//cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
 <script>
     $('#category_id').on('change', function () {
         let categoryId = $(this).val();

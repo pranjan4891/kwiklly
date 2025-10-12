@@ -8,9 +8,9 @@
     <title>Email Verification</title>
     <!-- Include Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body class="bg-light py-5">
-
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
@@ -19,7 +19,6 @@
                         <h4 class="mb-0">Verify Your Email</h4>
                     </div>
                     <div class="card-body">
-
                         @if (session('message'))
                             <div class="alert alert-success text-center">
                                 {{ session('message') }}
@@ -50,6 +49,17 @@
             </div>
         </div>
     </div>
+    <script>
+        $(document).ready(function(){
+            setInterval(function(){
+                $.get('{{ route("vendor.status") }}', function(data){
+                    if(data.email_verified_at !== null){
+                        window.location.href = '{{ route("vendor.dashboard") }}';
+                    }
+                });
+            }, 5000); // Check every 5 seconds
+        });
+    </script>
 
 </body>
 </html>

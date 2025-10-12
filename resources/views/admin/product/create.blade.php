@@ -68,17 +68,17 @@
                             <div class="col-md-12" id="physicalProductFields" style="display: none;">
                                 <div class="form-group">
                                     <label for="description">Product Description</label>
-                                    <textarea name="description" rows="3" class="form-control">{{ old('description') }}</textarea>
+                                    <textarea name="description" class="form-control ckeditor">{{ old('description') }}</textarea>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="disclaimer">Disclaimer</label>
-                                    <textarea name="disclaimer" rows="2" class="form-control">{{ old('disclaimer') }}</textarea>
+                                    <textarea name="disclaimer" class="form-control ckeditor">{{ old('disclaimer') }}</textarea>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="information">Additional Information</label>
-                                    <textarea name="information" rows="2" class="form-control">{{ old('information') }}</textarea>
+                                    <textarea name="information" class="form-control ckeditor">{{ old('information') }}</textarea>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -109,14 +109,14 @@
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
-                            <div class="col-md-4" style="margin-top: 20px; margin-bottom: 20px;">
+                            <div class="col-md-3" style="margin-top: 20px; margin-bottom: 20px;">
                                 <div class="form-check">
                                     <input type="checkbox" name="best_offers" value="1" class="form-check-input"
                                         id="bestOffers">
                                     <label class="form-check-label" for="bestOffers">Best Offers</label>
                                 </div>
                             </div>
-                            <div class="col-md-4" style="margin-top: 20px; margin-bottom: 20px;">
+                            <div class="col-md-3" style="margin-top: 20px; margin-bottom: 20px;">
 
                                 <div class="form-check">
                                     <input type="checkbox" name="top_selling" value="1" class="form-check-input"
@@ -124,7 +124,15 @@
                                     <label class="form-check-label" for="topSelling">Top Selling</label>
                                 </div>
                             </div>
-                            <div class="col-md-4" style="margin-top: 20px; margin-bottom: 20px;">
+                            <div class="col-md-3" style="margin-top: 20px; margin-bottom: 20px;">
+
+                                <div class="form-check">
+                                    <input type="checkbox" name="spons_product" value="1" class="form-check-input"
+                                        id="spons_product">
+                                    <label class="form-check-label" for="spons_product">Sponsers Product</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3" style="margin-top: 20px; margin-bottom: 20px;">
 
                                 <div class="form-check">
                                     <input type="checkbox" name="is_active" value="1" class="form-check-input"
@@ -148,6 +156,7 @@
     {{-- End Feature Image Modal --}}
 @endsection
 @push('scripts')
+<script src="//cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
 <script>
     // AJAX to load subcategories based on selected category
     $('#category_id').on('change', function () {

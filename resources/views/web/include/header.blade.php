@@ -397,7 +397,7 @@
          <div class="container-fluid">
             <!-- Desktop: Logo + Location & Search -->
             <div class="d-flex align-items-center w-100 d-none d-md-flex">
-               <a class="navbar-brand" href="{{route('home')}}" >
+               <a class="navbar-brand" href="{{route('home')}}" onclick="return redirectWithLocation(this.href)">
                <img src="{{ asset('public/assets/website/images/logo.png')}}" alt="Logo">
                </a>
                <div class="location-box mx-5"  onclick="toggleAddpop(event)">

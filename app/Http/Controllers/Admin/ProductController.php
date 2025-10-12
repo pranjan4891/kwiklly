@@ -63,6 +63,7 @@ class ProductController extends Controller
             'sgst' => 'nullable|numeric|min:0',
             'best_offers' => 'nullable|boolean',
             'top_selling' => 'nullable|boolean',
+            'spons_product' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
         ], [
             'category_id.required' => 'The category is required.',
@@ -87,6 +88,7 @@ class ProductController extends Controller
         $product->feature_image_id = $request->feature_image_id;
         $product->best_offers = $request->has('best_offers');
         $product->top_selling = $request->has('top_selling');
+        $product->spons_product = $request->has('spons_product');
         $product->is_active = $request->has('is_active');
         $product->is_deleted = 0;
 
@@ -126,6 +128,7 @@ class ProductController extends Controller
             'sgst' => 'nullable|numeric|min:0',
             'best_offers' => 'nullable|boolean',
             'top_selling' => 'nullable|boolean',
+            'spons_product' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
         ], [
             'category_id.exists' => 'The selected category does not exist.',
@@ -148,6 +151,7 @@ class ProductController extends Controller
         $product->feature_image_id = $request->feature_image_id;
         $product->best_offers = $request->has('best_offers');
         $product->top_selling = $request->has('top_selling');
+        $product->spons_product = $request->has('spons_product');
         $product->is_active = $request->has('is_active');
 
         $product->save();
@@ -183,7 +187,6 @@ class ProductController extends Controller
 
         return view('admin.product.variants.create', compact('title', 'admin', 'product', 'attributes'));
     }
-
 
     public function storeVariant(Request $request)
     {
@@ -264,7 +267,6 @@ class ProductController extends Controller
 
         return redirect()->route('product.variant.create', $variant->product_id)->with('success', 'Variant updated successfully.');
     }
-
 
     public function deleteVariant($id)
     {
@@ -350,6 +352,68 @@ class ProductController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
+    public function trendingIndex()
+    {
+        $title = 'Trending Products Request List';
+        $admin = Auth::guard('admin')->user();
+        if (!$admin) {
+            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+        }
+        $products = Product::where('top_selling_request','1')->with(['category', 'subcategory', 'vendor', 'featureImage'])->get();
+        return view('admin.product.product', compact('products', 'title', 'admin'));
+    }
+
+    public function bestOffersIndex()
+    {
+        $title = 'Best Offers Products Request List';
+        $admin = Auth::guard('admin')->user();
+        if (!$admin) {
+            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+        }
+        $products = Product::where('best_offers_request','1')->with(['category', 'subcategory', 'vendor', 'featureImage'])->get();
+        return view('admin.product.product', compact('products', 'title', 'admin'));
+    }
+
+    public function sponcersProductIndex()
+    {
+        $title = 'Sponsored Products Request List';
+        $admin = Auth::guard('admin')->user();
+        if (!$admin) {
+            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+        }
+        $products = Product::where('spons_product_request','1')->with(['category', 'subcategory', 'vendor', 'featureImage'])->get();
+        return view('admin.product.product', compact('products', 'title', 'admin'));
+    }
+
+    public function trendingBestoffers(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+        if($product->top_selling_request == 1 && $product->top_selling == 1){
+            $product->top_selling = 0;
+            $product->top_selling_request = 0;
+        }elseif($product->top_selling_request == 1 ){
+            $product->top_selling = 0;
+            $product->top_selling_request = 0;
+        }
+        if($product->best_offers_request == 1 && $product->best_offers == 1){
+            $product->best_offers = 0;
+            $product->best_offers_request = 0;
+        }elseif($product->best_offers_request == 1 ){
+            $product->best_offers = 0;
+            $product->best_offers_request = 0;
+        }
+       if($product->spons_product_request == 1 && $product->spons_product == 1){
+            $product->spons_product = 0;
+            $product->spons_product_request = 0;
+        }elseif($product->spons_product_request == 1 ){
+            $product->spons_product = 0;
+            $product->spons_product_request = 0;
+        }
+        $product->save();
+
+        return redirect()->back()->with('success', 'Product updated successfully.');
+    }
+
     public function importProductsCsv()
     {
         $title = 'Product List';
@@ -360,6 +424,7 @@ class ProductController extends Controller
 
         return view('admin.product.import', compact('title', 'admin'));
     }
+
     public function importProducts(Request $request)
     {
         $request->validate([

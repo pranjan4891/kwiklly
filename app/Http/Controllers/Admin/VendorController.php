@@ -58,20 +58,36 @@ class VendorController extends Controller
         return view('admin.vendor.show', compact('title', 'admin', 'vendor'));
     }
 
+    public function approvedHomepage()
+    {
+        $title = 'Admin | Approved Home Page Vendor';
+        $admin = Auth::guard('admin')->user();
+        if (!$admin) {
+            return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
+        }
+        $vendors = VendorAdmin::where('is_home_request', 1)->orWhere('is_home_request', 2)->where('parent_id',0)->with(['state', 'city'])->latest()->get();
+        return view('admin.vendor.approve_homepage', compact('title', 'admin', 'vendors'));
+    }
     // Update status and comment
-
-
     public function updateStatus(Request $request, $uuid)
     {
         $request->validate([
             'status' => 'required|in:0,1,2',
             'comment' => 'nullable|string|max:1000',
+            'is_home_request' => 'nullable|in:0,1,2',
+            'order_by' => 'nullable|integer',
         ]);
 
         $vendor = VendorAdmin::where('uuid', $uuid)->firstOrFail();
         $vendor->status = $request->status;
 
         $vendor->admin_comments = $request->comment;
+        if ($request->has('is_home_request')) {
+            $vendor->is_home_request = $request->is_home_request;
+        }
+        if ($request->has('order_by')) {
+            $vendor->order_by = $request->order_by;
+        }
 
         $vendor->save();
 

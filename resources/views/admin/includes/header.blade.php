@@ -86,6 +86,15 @@
                     </ul>
                 </li>
                 <li class="has-submenu">
+                    <a href="#"><i class="ion-navicon-round"></i><span class="nav-label">Home Page Request</span></a>
+                    <ul class="list-unstyled">
+                        <li><a href="{{route('admin.trendings.request')}}">Trending Products</a></li>
+                        <li><a href="{{route('admin.bestoffers.request')}}">Best Offers Products</a></li>
+                        <li><a href="{{route('admin.sponcers.request')}}">Sponcers Products</a></li>
+                        <li><a href="{{route('admin.vendor.approved')}}">Store Order Wise</a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
                     <a href="#"><i class="ion-navicon-round"></i><span class="nav-label">All Vendor</span></a>
                     <ul class="list-unstyled">
                         <li><a href="{{route('admin.vendor.pending')}}">Pending Vendor</a></li>
@@ -145,9 +154,9 @@
                 <li class="has-submenu">
                     <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Orders</span></a>
                     <ul class="list-unstyled">
-                        <li><a href="#">Store Orders</a></li>
-                        <li><a href="#">Department Orders</a></li>
-                        <li><a href="#">Orders Report</a></li>
+                        <li><a href="{{route('admin.orderlist')}}">Orders Lists</a></li>
+                        <li><a href="#"><i class="fa fa-search"></i> Orders</a></li>
+
                     </ul>
                 </li>
                  <li class="has-submenu">

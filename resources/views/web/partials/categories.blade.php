@@ -22,7 +22,7 @@
                                     @endif
 
                                     {{-- 🔹 Product Image --}}
-                                    <a href="{{ $product->is_physical ? route('productdetails', $product->slug) : 'javascript:void(0);' }}">
+                                    <a href="{{ $product->is_physical ? route('productdetails', $product->slug) : 'javascript:void(0);' }}" onclick="return redirectWithLocation(this.href)">
                                         <img src="{{ asset('public/' . optional($product->featureImage)->feature_image) }}"
                                              class="product-image"
                                              alt="{{ $product->title }}">
@@ -111,9 +111,9 @@
 
                                     {{-- 🔹 Store Info --}}
                                     <div class="store-info">
-                                        <span>Ad</span>
+                                        {{-- <span>Ad</span> --}}
                                         <span><a href="{{ route('explorestore', ['vendor_id' => $product->vendor_id,'cat_id'=>$product->category_id]) }}" onclick="return redirectWithLocation(this.href)">{{ $product->vendor->business_name ?? '' }}</a></span>
-                                        <span>5 min</span>
+                                        {{-- <span>5 min</span> --}}
                                     </div>
                                 </div>
                             </div>

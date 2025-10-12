@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\DeliverySlot;
+use App\Notifications\VendorEmailVerificationNotification;
 
 class VendorAdmin extends Authenticatable implements MustVerifyEmail
 {
@@ -44,6 +45,8 @@ class VendorAdmin extends Authenticatable implements MustVerifyEmail
         'city_id',
         'postal_code',
         'area',
+        'is_home_request',
+        'order_by',
         'latitude',
         'longitude',
         'bank_name',
@@ -57,6 +60,9 @@ class VendorAdmin extends Authenticatable implements MustVerifyEmail
         'store_time',
         'store_time_status',
         'minimum_order_value',
+        'minimum_order_for_cook',
+        'minimum_order_value_for_cook',
+        'dy_text',
         'delivery_range',
         'service_offered',
         'delivery_charge',
@@ -127,6 +133,14 @@ class VendorAdmin extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Product::class, 'vendor_id', 'id');
     }
 
-
+    /**
+     * Send the email verification notification.
+     *
+     * @return void
+     */
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new VendorEmailVerificationNotification);
+    }
 
 }

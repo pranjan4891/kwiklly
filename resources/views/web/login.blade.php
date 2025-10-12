@@ -17,9 +17,11 @@
                 <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google">
             </a>
         </button>
-        {{-- <button class="btn log-in-social-btn bg-transparent">
-          <img src="https://img.icons8.com/fluency/48/000000/facebook-new.png" alt="Facebook">
-        </button> --}}
+        <button class="btn log-in-social-btn bg-transparent">
+            <a href="{{ route('auth.facebook.login') }}">
+                <img src="https://img.icons8.com/fluency/48/000000/facebook-new.png" alt="Facebook">
+            </a>
+        </button>
       </div>
 
       <!--<div class="log-in-divider">or</div>-->

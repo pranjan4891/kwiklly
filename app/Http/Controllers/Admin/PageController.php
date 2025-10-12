@@ -58,8 +58,8 @@ class PageController extends Controller
         if (!$admin) {
             return redirect()->route('admin.login')->with('error', 'You are not authorized to access this page.');
         }
-        $policy = Page::findOrFail($id);
-        return view('admin.policies.edit', compact('policy', 'title', 'admin'));
+        $page = Page::findOrFail($id);
+        return view('admin.pages.edit', compact('page', 'title', 'admin'));
     }
 
     // Admin - update policy
@@ -91,7 +91,7 @@ class PageController extends Controller
         $about = AboutUs::first() ?? new AboutUs();
         $about->title = $request->title;
         $about->description = $request->description;
-        $about->list_items = json_encode($request->list_items);
+        $about->list_items = $request->list_items;
 
         // Image upload (same style as product_images)
         if ($request->hasFile('image')) {

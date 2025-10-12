@@ -129,8 +129,8 @@ class OrderController extends Controller
                             'user_id' => $user->id,
                             'vendor_id' => $vendorId,
                             'date' => $vendorData['custom_delivery']['date'],
-                            'start_time' => $vendorData['custom_delivery']['start_time'],
-                            'end_time' => $vendorData['custom_delivery']['end_time'],
+                            'start_time' => date('H:i', strtotime($vendorData['custom_delivery']['start_time'])),
+                            'end_time' => date('H:i', strtotime($vendorData['custom_delivery']['end_time'])),
                             'is_available' => 1, // Mark as booked
                             'created_at' => now(),
                             'updated_at' => now(),

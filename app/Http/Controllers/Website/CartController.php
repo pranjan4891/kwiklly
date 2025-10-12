@@ -437,14 +437,14 @@ class CartController extends Controller
 
     public function getMinimumOrderAmount(Request $request)
     {
-          $vendorId = $request->vendor_id;
+        $vendorId = $request->vendor_id;
         $cartTotal = $request->cart_total ?? 0; // pass current vendor cart total from frontend
 
         // Get vendor details
         $vendor = VendorAdmin::where("id", $vendorId)
-                    ->where("is_active", 1)
-                    ->where("status", 1)
-                    ->first();
+            ->where("is_active", 1)
+            ->where("status", 1)
+            ->first();
 
         if (!$vendor) {
             return response()->json([
@@ -455,6 +455,7 @@ class CartController extends Controller
 
         $minOrderValue = $vendor->minimum_order_value ?? 0;
         $deliveryCharge = $vendor->delivery_charge ?? 0;
+        $minOrderForCook = $vendor->minimum_order_value_for_cook ?? ($vendor->minimum_order_for_cook ?? 0);
 
         // Check if free delivery condition applies
         if ($cartTotal >= $minOrderValue && $minOrderValue > 0) {
@@ -464,7 +465,9 @@ class CartController extends Controller
         return response()->json([
             "success" => true,
             "min_order_amount" => $minOrderValue,
-            "delivery_charge"  => $deliveryCharge,
+            "delivery_charge" => $deliveryCharge,
+            "min_order_for_cook" => $minOrderForCook,
+            "dy_text" => $vendor->dy_text,
         ]);
     }
 
@@ -474,6 +477,7 @@ class CartController extends Controller
         $vendorId = $request->vendor_id;
 
         $coupons = Coupon::where("created_by_id", $vendorId)
+            ->where("created_by_type", "vendor")
             ->where("is_active", 1)
             ->where("is_deleted", 0)
             ->with(['products', 'categories', 'subcategories']) // Load relationships

@@ -81,6 +81,24 @@
                     <label>Admin Comment</label>
                     <textarea name="comment" class="form-control" rows="4">{{ old('comment')?? $vendor->admin_comments }}</textarea>
                 </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="is_active">Is Home Page Request</label>
+                        <select class="form-control" id="is_home_request" name="is_home_request" required>
+                            <option value="1" {{ $vendor->is_home_request ? 'selected' : '' }}>Requested</option>
+                            <option value="2" {{ $vendor->is_home_request ? 'selected' : '' }}>Approved</option>
+                            <option value="3" {{ $vendor->is_home_request ? 'selected' : '' }}>Rejected</option>
+                            <option value="0" {{$vendor->is_home_request ? 'selected' : '' }}>Not Requested</option>
+
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="is_active">Order By</label>
+                        <input type="number" class="form-control" id="order_by" name="order_by" value="{{ old('order_by') ?? $vendor->order_by }}" placeholder="Enter order by">
+                    </div>
+                </div>
 
                 <button type="submit" class="btn btn-primary">Update</button>
                <a href="{{ url()->previous() ?? route('admin.vendor.pending') }}" class="btn btn-default">Back</a>

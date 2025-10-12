@@ -119,22 +119,30 @@
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
-                            <div class="col-md-4" style="margin-top: 20px; margin-bottom: 20px;">
+                            <div class="col-md-3" style="margin-top: 20px; margin-bottom: 20px;">
                                 <div class="form-check">
-                                    <input type="checkbox" name="best_offers" value="1" class="form-check-input"
+                                    <input type="checkbox" name="best_offers_request" value="1" class="form-check-input"
                                         id="bestOffers">
-                                    <label class="form-check-label" for="bestOffers">Best Offers</label>
+                                    <label class="form-check-label" for="bestOffers">Best Offers Request</label>
                                 </div>
                             </div>
-                            <div class="col-md-4" style="margin-top: 20px; margin-bottom: 20px;">
+                            <div class="col-md-3" style="margin-top: 20px; margin-bottom: 20px;">
 
                                 <div class="form-check">
-                                    <input type="checkbox" name="top_selling" value="1" class="form-check-input"
+                                    <input type="checkbox" name="top_selling_request" value="1" class="form-check-input"
                                         id="topSelling">
-                                    <label class="form-check-label" for="topSelling">Top Selling</label>
+                                    <label class="form-check-label" for="topSelling">Top Selling Request</label>
                                 </div>
                             </div>
-                            <div class="col-md-4" style="margin-top: 20px; margin-bottom: 20px;">
+                            <div class="col-md-3" style="margin-top: 20px; margin-bottom: 20px;">
+
+                                <div class="form-check">
+                                    <input type="checkbox" name="spons_product_request" value="1" class="form-check-input"
+                                        id="spons_product_request">
+                                    <label class="form-check-label" for="spons_product_request">Sponsers Product Request </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3" style="margin-top: 20px; margin-bottom: 20px;">
 
                                 <div class="form-check">
                                     <input type="checkbox" name="is_active" value="1" class="form-check-input"

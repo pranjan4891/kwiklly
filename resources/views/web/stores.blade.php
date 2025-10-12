@@ -10,15 +10,15 @@
      <div class="col-md-2 col-3 p-0">
             <div class="sidebared">
                 <ul class="list-unstyled mb-0 text-center">
-                @if($categories)
-                    @foreach($categories as $cat)
-                        <a href="{{ route('stores', [$cat->slug]) }}" style="text-decoration:none" onclick="return redirectWithLocation(this.href)">
-                            <li class="py-3 sidebar-itemde {{($slug==$cat->slug)?'active':''}}">
-                                <img src="{{ asset('public/'.$cat->image) }}" alt="{{ $cat['name'] }}" class="side-img mb-2" />
-                                <div class="side-text">{{ $cat['name'] }}</div>
-                            </li>
-                        </a>
-                    @endforeach
+                    @if($categories)
+                        @foreach($categories as $cat)
+                            <a href="{{ route('stores', [$cat->slug]) }}" style="text-decoration:none" onclick="return redirectWithLocation(this.href)">
+                                <li class="py-3 sidebar-itemde {{($slug==$cat->slug)?'active':''}}">
+                                    <img src="{{ asset('public/'.$cat->image) }}" alt="{{ $cat['name'] }}" class="side-img mb-2" />
+                                    <div class="side-text">{{ $cat['name'] }}</div>
+                                </li>
+                            </a>
+                        @endforeach
                     @endif
                 </ul>
             </div>
@@ -81,7 +81,7 @@
                                 <div class="p-3">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h5 class="mb-0 fw-bold">{{ $store->business_name }}</h5>
-                                        <span class="text-success fw-semibold">5.0 km</span>
+                                        {{-- <span class="text-success fw-semibold">5.0 km</span> --}}
                                     </div>
                                     <div class="mt-2 frequently-ordered text-black">
                                         <i class="fa fa-thumbs-up me-1 text-warning"></i> {{ $store->tagline ?? ' Frequently Ordered' }}

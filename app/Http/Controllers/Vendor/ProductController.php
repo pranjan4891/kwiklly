@@ -58,8 +58,9 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'cgst' => 'nullable|numeric|min:0',
             'sgst' => 'nullable|numeric|min:0',
-            'best_offers' => 'nullable|boolean',
-            'top_selling' => 'nullable|boolean',
+            'best_offers_request' => 'nullable|boolean',
+            'top_selling_request' => 'nullable|boolean',
+            'spons_product_request' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -77,8 +78,9 @@ class ProductController extends Controller
         $product->cgst = $request->cgst ?? 0;
         $product->sgst = $request->sgst ?? 0;
         $product->feature_image_id = $request->feature_image_id;
-        $product->best_offers = $request->has('best_offers');
-        $product->top_selling = $request->has('top_selling');
+        $product->best_offers_request = $request->has('best_offers_request');
+        $product->top_selling_request = $request->has('top_selling_request');
+        $product->spons_product_request = $request->has('spons_product_request');
         $product->is_active = $request->has('is_active');
         $product->is_deleted = 0;
 
@@ -123,8 +125,9 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'cgst' => 'nullable|numeric|min:0',
             'sgst' => 'nullable|numeric|min:0',
-            'best_offers' => 'nullable|boolean',
-            'top_selling' => 'nullable|boolean',
+            'best_offers_request' => 'nullable|boolean',
+            'top_selling_request' => 'nullable|boolean',
+            'spons_product_request' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -140,8 +143,9 @@ class ProductController extends Controller
         $product->cgst = $request->cgst ?? 0;
         $product->sgst = $request->sgst ?? 0;
         $product->feature_image_id = $request->feature_image_id;
-        $product->best_offers = $request->has('best_offers');
-        $product->top_selling = $request->has('top_selling');
+        $product->best_offers_request = $request->has('best_offers_request');
+        $product->top_selling_request = $request->has('top_selling_request');
+        $product->spons_product_request = $request->has('spons_product_request');
         $product->is_active = $request->has('is_active');
 
         $product->save();
@@ -275,7 +279,7 @@ class ProductController extends Controller
             // CSV Header
             fputcsv($handle, [
                 'sku', 'title', 'sub_title', 'category_id', 'sub_category_id', 'is_physical', 'description',
-                'disclaimer', 'information', 'cgst', 'sgst', 'feature_image_id', 'best_offers', 'top_selling', 'is_active',
+                'disclaimer', 'information', 'cgst', 'sgst', 'feature_image_id', 'best_offers_request', 'top_selling_request', 'is_active',
                 'variant_name', 'variant_actual_price', 'variant_selling_price', 'stock', 'attributes'
             ]);
 
@@ -295,8 +299,8 @@ class ProductController extends Controller
                         $product->cgst,
                         $product->sgst,
                         $product->feature_image_id,
-                        $product->best_offers,
-                        $product->top_selling,
+                        $product->best_offers_request,
+                        $product->top_selling_request,
                         $product->is_active,
                         '', '', '', '', ''
                     ]);
@@ -316,8 +320,8 @@ class ProductController extends Controller
                             $product->cgst,
                             $product->sgst,
                             $product->feature_image_id,
-                            $product->best_offers,
-                            $product->top_selling,
+                            $product->best_offers_request,
+                            $product->top_selling_request,
                             $product->is_active,
                             $variant->variant_name,
                             $variant->variant_actual_price,
@@ -378,8 +382,8 @@ class ProductController extends Controller
                     'cgst' => $row['cgst'] ?? 0,
                     'sgst' => $row['sgst'] ?? 0,
                     'feature_image_id' => $row['feature_image_id'] ?? null,
-                    'best_offers' => $row['best_offers'] ?? 0,
-                    'top_selling' => $row['top_selling'] ?? 0,
+                    'best_offers_request' => $row['best_offers_request'] ?? 0,
+                    'top_selling_request' => $row['top_selling_request'] ?? 0,
                     'is_active' => $row['is_active'] ?? 1,
                     'is_deleted' => 0,
                 ]);

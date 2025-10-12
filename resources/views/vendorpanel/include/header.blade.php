@@ -139,11 +139,11 @@
                     </li>
                     <!-- END TOGGLE NAVIGATION -->
                     <!-- SEARCH -->
-                    <li class="xn-search">
+                    {{-- <li class="xn-search">
                         <form role="form">
                             <input type="text" name="search" placeholder="Search..."/>
                         </form>
-                    </li>
+                    </li> --}}
                     <!-- END SEARCH -->
                     <!-- POWER OFF  -->
                     <li class="xn-icon-button pull-right last">
@@ -155,25 +155,25 @@
                     </li>
                     <!-- END POWER OFF -->
                     <!-- MESSAGES -->
-                    <li class="xn-icon-button pull-right">
+                    {{-- <li class="xn-icon-button pull-right">
                         <a href="#"><span class="fa fa-comments"></span></a>
 
-                    </li>
+                    </li> --}}
                     <!-- END MESSAGES -->
                     <!-- TASKS -->
-                    <li class="xn-icon-button pull-right">
+                    {{-- <li class="xn-icon-button pull-right">
                         <a href="#"><span class="fa fa-tasks"></span></a>
 
-                    </li>
+                    </li> --}}
                     <!-- END TASKS -->
                     <!-- LANG BAR -->
                     <li class="xn-icon-button pull-right">
-                        <a href="#"><span class="flag flag-gb"></span></a>
-                        <ul class="xn-drop-left xn-drop-white animated zoomIn">
+                       {{-- <a href="#"><span class="flag flag-gb"></span></a>
+                         <ul class="xn-drop-left xn-drop-white animated zoomIn">
                             <li><a href="#"><span class="flag flag-gb"></span> English</a></li>
 <!--                            <li><a href="#"><span class="flag flag-de"></span> Deutsch</a></li>
                             <li><a href="#"><span class="flag flag-cn"></span> Chinese</a></li>-->
-                        </ul>
+                        </ul> --}}
                     </li>
                     <!-- END LANG BAR -->
                 </ul>

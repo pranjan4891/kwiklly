@@ -72,21 +72,24 @@
    @endif
 </section>
 
+
 <section class="categoryfordesktop">
    <div class="container new-cate-grocery-section">
       <div class="row align-items-center m-0">
          <!-- Left Promo Section -->
          <div class="col-md-4">
-            <div class="new-cate-promo-box">
-               <h2>Grocery at your doorstep</h2>
+            <div class="new-cate-promo-box" style="background:none;">
+               {{-- <h2>Grocery at your doorstep</h2>
                <p>Your favorite vegetables, fruits & more</p>
-               <button class="btn btn-light">Order Now</button>
+               <button class="btn btn-light">Order Now</button> --}}
                @php
                $categoryBanner = collect($banners)->firstWhere('banner_cat_id', 3);
                @endphp
                @if ($categoryBanner)
-               <img src="{{ asset('public/' . $categoryBanner['desktop_image']) }}" alt="Vegetables">
-               @endif
+                    <a href="{{$categoryBanner['banner_url']}}" onclick="return redirectWithLocation(this.href)">
+                        <img src="{{ asset('public/' . $categoryBanner['desktop_image']) }}" alt="Vegetables">
+                    </a>
+                @endif
             </div>
          </div>
          <!-- Right Category Slider -->
@@ -99,10 +102,9 @@
                   <a href="{{route('stores', ['slug' => $cat->slug])}}" class="text-decoration-none text-dark"  onclick="return redirectWithLocation(this.href)">
                      <div class="product-carded">
                         <img src="{{ asset('public/' . $cat->image) }}" alt="{{ $cat['name'] }}">
-                        
                          <div class="py-2 text-center catename "><b>{{ $cat['name'] }}</b></div>
                      </div>
-                    
+
                   </a>
                   @endforeach
                </div>
@@ -118,12 +120,14 @@
    <div class="row align-items-center m-0">
       <!-- Left Promo Section -->
       <div class="col-md-4">
-         <div class="new-cate-promo-box">
-            <h2>Grocery at your doorstep</h2>
+         <div class="new-cate-promo-box" style="background:none;">
+            {{-- <h2>Grocery at your doorstep</h2>
             <p>Your favorite vegetables, fruits & more</p>
-            <button class="btn btn-light">Order Now</button>
+            <button class="btn btn-light">Order Now</button> --}}
             @if ($categoryBanner)
-            <img src="{{ asset('public/' . $categoryBanner['desktop_image']) }}" alt="Vegetables">
+               <a href="{{$categoryBanner['banner_url']}}" onclick="return redirectWithLocation(this.href)">
+                    <img src="{{ asset('public/' . $categoryBanner['desktop_image']) }}" alt="Vegetables">
+                </a>
             @endif
          </div>
       </div>
@@ -133,18 +137,18 @@
          <div class="row" id="category-container">
             <!-- Repeat this block for all your categories (add as many as you want, for demo 18) -->
             @if ($categories->count() > 0)
-            @foreach ($categories as $cat)
-            <div class="col-md-4 col-4 new-cate-item-wrap">
-               <div class="new-cate-item">
-                  <a href="{{route('stores', ['slug' => $cat->slug])}}" class="text-decoration-none text-dark"  onclick="return redirectWithLocation(this.href)">
-                     <div class="product-carded">
-                        <img src="{{ asset('public/' . $cat->image) }}" alt="{{ $cat['name'] }}">
-                     </div>
-                     <div class="py-2 text-center catename"><b>{{ $cat['name'] }}</b></div>
-                  </a>
-               </div>
-            </div>
-            @endforeach
+                @foreach ($categories as $cat)
+                <div class="col-md-4 col-4 new-cate-item-wrap">
+                <div class="new-cate-item">
+                    <a href="{{route('stores', ['slug' => $cat->slug])}}" class="text-decoration-none text-dark"  onclick="return redirectWithLocation(this.href)">
+                        <div class="product-carded">
+                            <img src="{{ asset('public/' . $cat->image) }}" alt="{{ $cat['name'] }}">
+                        </div>
+                        <div class="py-2 text-center catename"><b>{{ $cat['name'] }}</b></div>
+                    </a>
+                </div>
+                </div>
+                @endforeach
             @else
             <p>No categories found.</p>
             @endif
@@ -168,7 +172,13 @@
    @endif
 </section>
 
+<section id="best-offers-products-section">
+   @include('web.partials.best-offers', ['best_offers_products' => $best_offers_products])
+</section>
 
+<section id="sponsors-products-section">
+   @include('web.partials.sponsors', ['sponsors_products' => $sponsors_products])
+</section>
 
 <section id="categories-section">
   @if(isset($categorywiseproducts) && count($categorywiseproducts) > 0)

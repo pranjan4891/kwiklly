@@ -14,7 +14,7 @@
                      @endif
 
                      @if ($product->is_physical)
-                        <a href="{{ route('productdetails', $product->slug) }}">
+                        <a href="{{ route('productdetails', $product->slug) }}" onclick="return redirectWithLocation(this.href)">
                            <img src="{{ asset('public/' . $product->featureImage->feature_image) }}" class="product-image" alt="{{ $product->title }}">
                         </a>
                      @else
@@ -112,9 +112,9 @@
                      </div>
 
                      <div class="store-info">
-                        <span>Ad </span>
+                        {{-- <span>Ad </span> --}}
                         <span><a href="{{ route('explorestore', ['vendor_id' => $product->vendor_id,'cat_id'=>$product->category_id]) }}" onclick="return redirectWithLocation(this.href)">{{ $product->vendor->business_name ?? '' }}</a></span>
-                        <span>5 min</span>
+                        {{-- <span>5 min</span> --}}
                      </div>
                   </div>
                </div>

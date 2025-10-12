@@ -25,6 +25,7 @@ class User extends Authenticatable
         'otp',
         'referral_code',
         'google_id',
+        'facebook_id',
         'avatar',
         'profile_photo',
     ];

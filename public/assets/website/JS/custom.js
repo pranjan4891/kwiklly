@@ -320,39 +320,39 @@ function changeQty(button, change) {
 // });
 
 // // store page side bar active class by js
-//   $(document).ready(function() {
-//     let initialItems = 9;
-//     const loadItems = 3;
-//     const $items = $('.new-cate-item-wrap');
-//     const totalItems = $items.length;
-//     let loadedItems = initialItems;
+  $(document).ready(function() {
+    let initialItems = 9;
+    const loadItems = 3;
+    const $items = $('.new-cate-item-wrap');
+    const totalItems = $items.length;
+    let loadedItems = initialItems;
 
-//     function showItems(count) {
-//       $items.slice(0, count).slideDown();
-//     }
+    function showItems(count) {
+      $items.slice(0, count).slideDown();
+    }
 
-//     function resetItems() {
-//       loadedItems = initialItems;
-//       $items.hide();
-//       showItems(loadedItems);
-//       $('#loadMoreBtn').html('Load More <i class="fa fa-angles-down ms-2"></i>');
-//     }
+    function resetItems() {
+      loadedItems = initialItems;
+      $items.hide();
+      showItems(loadedItems);
+      $('#loadMoreBtn').html('Load More <i class="fa fa-angles-down ms-2"></i>');
+    }
 
 //     // Initial Display
-//     resetItems();
+    resetItems();
 
-//     $('#loadMoreBtn').click(function() {
-//       if ($(this).text().includes('Load Back')) {
-//         resetItems();
-//       } else {
-//         loadedItems += loadItems;
-//         showItems(loadedItems);
-//         if (loadedItems >= totalItems) {
-//           $(this).html('Load Back <i class="fa fa-angles-up ms-2"></i>');
-//         }
-//       }
-//     });
-//   });
+    $('#loadMoreBtn').click(function() {
+      if ($(this).text().includes('Load Back')) {
+        resetItems();
+      } else {
+        loadedItems += loadItems;
+        showItems(loadedItems);
+        if (loadedItems >= totalItems) {
+          $(this).html('Load Back <i class="fa fa-angles-up ms-2"></i>');
+        }
+      }
+    });
+  });
 // //   department side fixed position at mobile screen
 // $(document).ready(function() {
 //     var sidebarOffset = $('.mobile-sidebar').offset().top;

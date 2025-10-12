@@ -44,8 +44,6 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
     require __DIR__ . '/admin.php';
     require __DIR__ . '/branch.php';
     require __DIR__ . '/vendor.php';
-    require __DIR__ . '/customer.php';
-
 
     /*Website-------------------------------*/
     // Protected "store intended" middleware group (✅ applied here)
@@ -60,7 +58,7 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         Route::get('/stores/{slug}', [HomeController::class, 'stores'])->name('stores');
         Route::get('/categorywiseproducts/{category_id}', [HomeController::class, 'allCategoryProducts'])->name('allcategorywiseproduct');
         Route::get('/categorywiseproduct/{category_id}/{subcategory_id}', [HomeController::class, 'CategoryProducts'])->name('categorywiseproduct');
-        Route::get('/productdetails', [HomeController::class, 'productdetails'])->name('productdetails');
+        Route::get('/productdetails/{slug}', [HomeController::class, 'productdetails'])->name('productdetails');
         Route::get('/explorestore/{vendor_id}/{cat_id}', [HomeController::class, 'explorestore'])->name('explorestore');
         Route::get('/explorestore/{vendor_id}/{category_id}/{subcategory_id}', [HomeController::class, 'subcategoryProducts'])->name('subcategory.products');
         Route::get('/product/{id}/variants', function ($id) {
@@ -72,6 +70,7 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         Route::get('/search-suggestions', [SearchController::class, 'suggestions'])->name('search.suggestions');
 
         Route::get('/get-product-variants/{id}', [HomeController::class, 'getProductVariants'])->name('get.product.variants');
+        Route::get('/vendor-progress/{vendor_id}', [HomeController::class, 'getVendorProgress'])->name('vendor.progress');
 
         // web.php
         Route::post('/add-to-cart', [CartController::class, 'addToCart'])->name('cart.add');
@@ -85,6 +84,9 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         })->name('check.auth.status');
     });
 
+    // minimum order amount
+    Route::get('/minimum-order-amount', [CartController::class, 'getMinimumOrderAmount'])->name('minimum.order.amount');
+    Route::get('/coupon/vendorwise', [CartController::class, 'getVendorCoupons'])->name('coupon.vendorwise');
     Route::middleware('auth')->group(function () {
 
         // New Update
@@ -93,19 +95,18 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         // Coupon
         Route::post('/coupon/apply', [CartController::class, 'applyCoupon'])->name('coupon.apply');
         // Route::post('/coupon/clear', [CartController::class, 'clearCoupon'])->name('coupon.clear');
-        Route::get('/coupon/vendorwise', [CartController::class, 'getVendorCoupons'])->name('coupon.vendorwise');
+
         Route::post('/coupon/clear', [CartController::class, 'clearCoupon'])->name('coupon.clear');
 
         // Wallet routes
         Route::post('/cart/apply-wallet', [CartController::class, 'applyWallet'])->name('cart.apply.wallet');
         Route::get('/cart/wallet-balance', [CartController::class, 'getWalletBalance'])->name('cart.wallet.balance');
 
-        // minimum order amount
-        Route::get('/minimum-order-amount', [CartController::class, 'getMinimumOrderAmount'])->name('minimum.order.amount');
+
 
         Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.page');
         Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place');
-          //      Route::get('/order-success', fn () => view('web.order_success'))->name('order.success');
+
         // Order
         Route::post('/checkout/process-order', [OrderController::class, 'storeOrder'])->name('checkout.process.order');
         Route::get('/delivery-address', [OrderController::class, 'deliveryAddress'])->name('delivery.address');
@@ -119,10 +120,10 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
 
         // Customer Address Routes
         Route::post('/address/store', [AddressController::class, 'store'])->name('address.store');
-        Route::post('/address/update/{id}', [AddressController::class, 'update'])->name('address.update');
-        Route::delete('/address/delete/{id}', [AddressController::class, 'delete'])->name('address.delete');
+        Route::post('/address/update/{id}', [AddressController::class, 'update'])->name('address.update')->where('id', '[0-9]+');
+        Route::delete('/address/delete/{id}', [AddressController::class, 'delete'])->name('address.delete')->where('id', '[0-9]+');
         Route::get('/customer/addresses', [AddressController::class, 'getAddresses'])->name('address.list');
-        Route::get('/customer/address/{id}', [AddressController::class, 'getSingleAddress'])->name('address.single');
+        Route::get('/customer/address/{id}', [AddressController::class, 'getSingleAddress'])->name('address.single')->where('id', '[0-9]+');
 
         // routes/web.php
         Route::get('/debug/orders', function() {
@@ -162,4 +163,4 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
     // Frontend routes
     Route::get('/policy/{slug}', [HomeController::class, 'show'])->name('policy.show');
 
-
+    require __DIR__ . '/customer.php';

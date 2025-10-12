@@ -29,13 +29,18 @@ class Product extends Model
         'sgst',
         'feature_image_id',
         'best_offers',
+        'best_offers_request',
         'top_selling',
+        'top_selling_request',
+        'spons_product_request',
+        'spons_product',
         'is_active',
         'is_deleted',
     ];
 
     protected $casts = [
         'best_offers' => 'boolean',
+        'spons_product' => 'boolean',
         'top_selling' => 'boolean',
         'is_active' => 'boolean',
         'is_physical' => 'boolean',

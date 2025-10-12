@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Vendor\VendorController;
 use App\Http\Controllers\Vendor\VendorAuthController;
 use App\Http\Controllers\Vendor\VendorDashboardController;
@@ -14,7 +15,6 @@ use App\Http\Controllers\Vendor\VendorCartController;
 use App\Http\Controllers\Vendor\ProductImagesController;
 use Illuminate\Http\Request;
 
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -26,15 +26,22 @@ use Illuminate\Http\Request;
 |
 */
 
-
 // 👇 Place these outside vendor middleware (public)
 Route::get('/vendor/email/verify', function () {
+    $user = Auth::guard('vendor')->user();
+    if (!is_null($user->email_verified_at)) {
+        return redirect()->route('vendor.dashboard');
+    }
     return view('vendorpanel.auth.verify-email');
 })->middleware('auth:vendor')->name('verification.notice');
 
 Route::get('/vendor/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
-    return redirect()->route('vendor.dashboard');
+
+    // Refresh the user in session to reflect the verified email
+    Auth::guard('vendor')->login(Auth::guard('vendor')->user());
+
+    return redirect()->route('vendor.dashboard')->with('success', 'Email verified successfully!');
 })->middleware(['auth:vendor', 'signed'])->name('verification.verify');
 
 Route::post('/vendor/email/verification-notification', function (Request $request) {
@@ -53,9 +60,8 @@ Route::post('/login-submit', [VendorAuthController::class, 'login'])->name('vend
 /*Vendor Logout - accessible to all authenticated vendors regardless of verified or approval status*/
 Route::prefix('vendor')->name('vendor.')->middleware(['auth:vendor'])->group(function () {
     Route::match(['get', 'post'], '/logout', [VendorAuthController::class, 'logout'])->name('logout');
+    Route::get('/status', [VendorAuthController::class, 'checkStatus'])->name('status');
 });
-
-
 
 
 /*Vendor Dashboard-------------------------------*/
@@ -66,9 +72,14 @@ Route::prefix('vendor')->name('vendor.')->middleware(['auth:vendor', 'verified',
     Route::post('update-profile', [VendorDashboardController::class, 'updateProfile'])->name('update.profile');
     Route::post('update-image', [VendorController::class, 'updateImage'])->name('updateImage');
     Route::post('update-delivery-charges', [VendorDashboardController::class, 'updateDeliveryCharges'])->name('delivery-charges.update');
-
     Route::post('/store-time', [VendorDashboardController::class, 'storeTime'])->name('update.store.time');
 
+    // Location Contacts
+    Route::post('save-location-contact', [VendorDashboardController::class, 'saveLocationContact'])->name('save.location.contact');
+    Route::get('get-location-contacts', [VendorDashboardController::class, 'getLocationContacts'])->name('get.location.contacts');
+    Route::get('get-location', [VendorDashboardController::class, 'getLocation'])->name('get.location');
+    Route::post('share-location/{contactId}', [VendorDashboardController::class, 'shareLocation'])->name('share.location');
+    Route::delete('location-contact/{id}', [VendorDashboardController::class, 'deleteLocationContact']);
 
     // Category
     Route::get('categories', [CategoryController::class, 'categories'])->name('categories');
@@ -136,10 +147,11 @@ Route::prefix('vendor')->name('vendor.')->middleware(['auth:vendor', 'verified',
     Route::post('/cart/update', [VendorCartController::class, 'update'])->name('cart.update');
     Route::get('/cart/remove/{id}', [VendorCartController::class, 'remove'])->name('cart.remove');
 
-
     // Orders
     Route::get('order/list', [OrderController::class, 'orderlist'])->name('orderlist');
-
+    Route::get('order/{orderId}/details', [OrderController::class, 'orderDetails'])->name('order.details');
+    Route::put('order/{orderId}/update-status', [OrderController::class, 'updateOrderStatus'])->name('order.update.status');
+    Route::get('order/{orderId}/download-invoice', [OrderController::class, 'downloadInvoice'])->name('order.download.invoice');
 
 });
 

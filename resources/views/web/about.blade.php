@@ -157,9 +157,12 @@
         <h3 class="about-heading">{{ $about->title ?? 'About Us' }}</h3>
         <p class="about-text">{!! $about->description ?? '' !!}</p>
 
-        @if(!empty($about->list_items))
+        @php
+            $about_list_items = is_array($about->list_items) ? $about->list_items : (!empty($about->list_items) ? json_decode($about->list_items, true) : []);
+        @endphp
+        @if(!empty($about_list_items))
           <ul class="about-list">
-            @foreach($about->list_items as $item)
+            @foreach($about_list_items as $item)
               <li>{{ $item }}</li>
             @endforeach
           </ul>

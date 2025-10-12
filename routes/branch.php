@@ -8,6 +8,7 @@ use App\Http\Controllers\Branch\ProductImagesController;
 use App\Http\Controllers\Branch\ProductController;
 use App\Http\Controllers\Branch\CouponController;
 use App\Http\Controllers\Branch\CartController;
+use App\Http\Controllers\Branch\OrderController;
 use App\Models\City;
 use App\Models\MasterLocation;
 use Illuminate\Http\Request;
@@ -103,6 +104,12 @@ Route::group(['prefix' => 'branch'], function () {
         Route::post('coupons/{coupon}/restore', [CouponController::class, 'restore'])->name('branch.coupons.restore');
         Route::get('coupons/deleted', [CouponController::class, 'deleted'])->name('branch.coupons.deleted');
         Route::delete('coupons/{coupon}/force-delete', [CouponController::class, 'forceDelete'])->name('branch.coupons.forceDelete');
+
+        // Orders
+        Route::get('order/list', [OrderController::class, 'orderlist'])->name('branch.orderlist');
+        Route::get('order/{orderId}/details', [OrderController::class, 'orderDetails'])->name('branchorder.details');
+        Route::put('order/{orderId}/update-status', [OrderController::class, 'updateOrderStatus'])->name('branch.order.update.status');
+        Route::get('order/{orderId}/download-invoice', [OrderController::class, 'downloadInvoice'])->name('branch.order.download.invoice');
 
         // Logout
         Route::get('logout', [BranchController::class, 'logout'])->name('branch.logout');

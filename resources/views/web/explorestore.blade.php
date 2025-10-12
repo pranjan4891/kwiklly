@@ -146,28 +146,28 @@
    to { opacity: 1; transform: translateY(0); }
    }
 </style>
-<!-- Add this script to handle the progress bar -->
 <script>
-   document.addEventListener('DOMContentLoaded', function() {
-       let cartTotal = {{ $cartTotal ?? 0 }};
-       const minimumOrderValue = {{ $vendor->minimum_order_value ?? 0 }};
+    const venprourl = "{{ route('vendor.progress', ['vendor_id' => $vendor->id]) }}";
+    function updateProgress() {
+        fetch(${venprourl})
+            .then(response => response.json())
+            .then(data => {
+                // Update cook section
+                document.getElementById('cook-amount-needed').textContent = data.cook_amount_needed;
+                document.querySelector('.cook-progress').style.width = data.cook_progress + '%';
 
-       let progressPercentage = 0;
-       if (minimumOrderValue > 0) {
-           progressPercentage = Math.min((cartTotal / minimumOrderValue) * 100, 100);
-       }
+                // Update delivery section
+                document.getElementById('delivery-amount-needed').textContent = data.delivery_amount_needed;
+                document.querySelector('.delivery-progress').style.width = data.delivery_progress + '%';
+            })
+            .catch(error => console.error('Error fetching progress:', error));
+    }
 
-       const progressBar = document.querySelector('.xyz-progress-bar.delivery-progress');
-       if (progressBar) {
-           progressBar.style.width = progressPercentage + '%';
-       }
+    window.updateProgress = updateProgress;
 
-       const progressText = document.querySelector('.delivery-progress-text');
-       if (progressText && minimumOrderValue > 0) {
-           const amountNeeded = Math.max(minimumOrderValue - cartTotal, 0);
-           progressText.innerHTML = `Add item worth ₹<b>${amountNeeded.toFixed(2)}</b> more to get free delivery`;
-       }
-   });
+    document.addEventListener('DOMContentLoaded', function() {
+        updateProgress();
+    });
 </script>
 
 <section class="extrapadding">
@@ -244,22 +244,26 @@
                <!-- Right column -->
                <div class="col-md-5">
                   <div class="xyz-info-box">
-                     <div class="coupontext delivery-progress-text">
-                        @php
-                           $cartTotal = $cartTotal ?? 0;
-                           $minimumOrderValue = $vendor->minimum_order_value ?? 0;
-                           $amountNeeded = max($minimumOrderValue - $cartTotal, 0);
-                        @endphp
-                        Add item worth ₹<b>{{ number_format($amountNeeded, 2) }}</b> more to get free delivery
-                     </div>
-                     <div class="xyz-progress mt-1">
-                        <div class="xyz-progress-bar delivery-progress"
-                             style="width: {{ $minimumOrderValue > 0 ? min(($cartTotal / $minimumOrderValue) * 100, 100) : 0 }}%">
+                      <div class="d-flex align-items-center mb-2" id="cook-section">
+                        <img src="{{asset('public/assets/website/images/demo.png')}}" alt="Icon">
+                        <div class="ms-3 w-100">
+                            <div class="coupontext cook-text">Add item worth ₹<b id="cook-amount-needed">{{ $cook_amount_needed ?? 0 }}</b> to get free cook</div>
+                            <div class="xyz-progress mt-1">
+                            <div class="xyz-progress-bar cook-progress" style="width: {{ $cook_progress ?? 0 }}%"></div>
+                            </div>
                         </div>
-                     </div>
-                     <div class="xyz-right-text">*Progress Bar will reset in next order</div>
+                      </div>
+
+                      <div class="xyz-clickable-div" data-state="default" onclick="changeText(this)" id="delivery-section">
+                          <div class="coupontext delivery-text">Add item worth ₹<b id="delivery-amount-needed">{{ $delivery_amount_needed ?? 0 }}</b> more to get free delivery</div>
+                          <div class="xyz-progress mt-1">
+                          <div class="xyz-progress-bar delivery-progress" style="width: {{ $delivery_progress ?? 0 }}%"></div>
+                          </div>
+                      </div>
+                      <div class="xyz-right-text">*Progress Bar will reset in next order</div>
                   </div>
-               </div>
+              </div>
+                </div>
             </div>
          </div>
       </div>
@@ -273,15 +277,23 @@
          <div class="col-md-3">
             <div class="sidebarde">
                <ul>
-                  @forelse($subcategories as $subcategory)
-                     <li class="sidebar-itemde">
-                        <img src="{{ asset('public/uploads/subcategories/'.$subcategory->image) }}" >
-                        <a href="{{ $vendor && $category
-                                    ? route('subcategory.products', [$vendor->id, $category->id, $subcategory->id])
-                                    : 'javascript:void(0);' }}"
-                           class="text-decoration-none text-dark" onclick="return redirectWithLocation(this.href)">
-                           {{ $subcategory->sub_cat_name }}
-                        </a>
+                  @forelse($subcategories as $subcategoryItem)
+                     <li class="sidebar-itemde {{ isset($subcategory) && $subcategoryItem->id == $subcategory->id ? 'active' : '' }}">
+                        <img src="{{ asset('public/uploads/subcategories/'.$subcategoryItem->image) }}" >
+                        @if($vendor && (isset($subcategoryItem->category) || isset($category)))
+                           <a href="{{ route('subcategory.products', [
+                                       $vendor->id,
+                                       $category ? $category->id : $subcategoryItem->category->id,
+                                       $subcategoryItem->id
+                                   ]) }}"
+                              class="text-decoration-none text-dark" onclick="return redirectWithLocation(this.href)">
+                              {{ $subcategoryItem->sub_cat_name }}
+                           </a>
+                        @else
+                           <span class="text-decoration-none text-dark" style="cursor: not-allowed;">
+                              {{ $subcategoryItem->sub_cat_name }}
+                           </span>
+                        @endif
                      </li>
                   @empty
                      <li>No categories available</li>
@@ -325,7 +337,7 @@
                                  <span class="discount-label">{{ round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
                               @endif
 
-                              <a href="{{ $product->is_physical ? route('productdetails', $product->slug) : 'javascript:void(0);' }}">
+                              <a href="{{ $product->is_physical ? route('productdetails', $product->slug) : 'javascript:void(0);' }}"  onclick="return redirectWithLocation(this.href)">
                                  <img src="{{ $product->featureImage
                                                 ? asset('public/' . $product->featureImage->feature_image)
                                                 : asset('public/assets/website/images/no-image.png') }}"
@@ -339,13 +351,17 @@
                               @endif
 
                               <div class="price-container cardpadding">
-                                 <span class="price">
-                                    ₹ {{ intval($defaultVariant->variant_selling_price) ?? '--' }}
-                                 </span>
-                                 @if ($defaultVariant && $defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
-                                    <span class="original-price">
-                                       ₹ {{ intval($defaultVariant->variant_actual_price) }}
+                                  @if ($defaultVariant)
+                                    <span class="price">
+                                       ₹ {{ intval($defaultVariant->variant_selling_price) ?? '--' }}
                                     </span>
+                                    @if ($defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
+                                       <span class="original-price">
+                                          ₹ {{ intval($defaultVariant->variant_actual_price) }}
+                                       </span>
+                                    @endif
+                                 @else
+                                    <span class="price">--</span>
                                  @endif
                                  <div class="qty-box"
                                     data-product-id="{{ $product->id }}"
@@ -399,9 +415,9 @@
 
                               </div>
                                <div class="store-info">
-                                    <span>Ad </span>
+                                    {{-- <span>Ad </span> --}}
                                     {{-- <span>{{ $product->vendor->business_name ?? '' }}</span> --}}
-                                    <span>5 min</span>
+                                    {{-- <span>5 min</span> --}}
                                 </div>
                            </div>
                         </div>
@@ -417,6 +433,6 @@
       </div>
    </div>
 </section>
-@include('web.include.vendor-coupon-modal')
+
 <!-- second section end  -->
 @endsection

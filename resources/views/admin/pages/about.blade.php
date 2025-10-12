@@ -50,7 +50,8 @@
                             <label>List Items</label>
                             <div id="list-items-container">
                                 @php
-                                    $items = !empty($about->list_items) ? json_decode($about->list_items, true) : [];
+                                    $raw_items = $about->list_items ?? null;
+                                    $items = is_array($raw_items) ? $raw_items : (!empty($raw_items) ? json_decode($raw_items, true) : []);
                                 @endphp
 
                                 @if(!empty($items))

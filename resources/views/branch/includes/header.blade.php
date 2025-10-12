@@ -103,9 +103,9 @@
                 <li class="has-submenu">
                     <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Orders</span></a>
                     <ul class="list-unstyled">
-                        <li><a href="#">Store Orders</a></li>
-                        <li><a href="#">Department Orders</a></li>
-                        <li><a href="#">Orders Report</a></li>
+                        <li><a href="{{route('branch.orderlist')}}">Orders</a></li>
+                        <li><a href="#"><i class="fa fa-search"></i> Orders Search</a></li>
+
                     </ul>
                 </li>
                  <li class="has-submenu">
