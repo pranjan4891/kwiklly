@@ -8,7 +8,7 @@
 
             {{-- 🔹 Discount Label --}}
             @if ($defaultVariant->variant_save_price_in_percent > 0)
-                <span class="discount-label">{{ $defaultVariant->variant_save_price_in_percent }}% Off</span>
+                <span class="discount-label">{{ (int) round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
             @endif
 
             {{-- 🔹 Product Image --}}
@@ -19,11 +19,13 @@
             </a>
 
             {{-- 🔹 Product Title --}}
-            <div class="product-title cardpadding">{{ $product->title }}</div>
+            <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
 
             {{-- 🔹 Variant Attributes (e.g. Volume) --}}
             @php
-                $attributes = json_decode($defaultVariant->attributes, true);
+                $attributes = is_array($defaultVariant->attributes) 
+                    ? $defaultVariant->attributes 
+                    : json_decode($defaultVariant->attributes ?? '{}', true);
             @endphp
             @if (!empty($attributes))
                 <div class="product-info cardpadding">{{ collect($attributes)->first() }}</div>
@@ -31,10 +33,12 @@
 
             {{-- 🔹 Price + Cart/Qty Box --}}
             <div class="price-container cardpadding">
-                <span class="price"><span class="rupee-symbol">₹</span> {{ $defaultVariant->variant_selling_price }}</span>
+                <div class="price-wrapper">
+                <span class="price"><span class="rupee-symbol">₹</span> {{ intval($defaultVariant->variant_selling_price) }}</span>
                 @if ($defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
-                    <span class="original-price"><span class="rupee-symbol2">₹</span> {{ $defaultVariant->variant_actual_price }}</span>
+                    <span class="original-price"><span class="rupee-symbol2">₹</span> {{ intval($defaultVariant->variant_actual_price) }}</span>
                 @endif
+                </div>
 
                 @php
                     $hasMultipleVariants = $product->variants->count() > 1;
@@ -92,7 +96,7 @@
                     @else
                          {{-- ❌ Store is closed --}}
                         <button class="add-btn disabled" disabled>
-                            Store Closed
+                            Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                         </button>
                     @endif
                 </div>
@@ -100,9 +104,9 @@
 
             {{-- 🔹 Store Info --}}
             <div class="store-info">
-                <span>Ad</span>
+                <!-- <span>Ad</span> -->
                 <span><a href="{{ route('explorestore', ['vendor_id' => $product->vendor_id,'cat_id'=>$product->category_id]) }}" onclick="return redirectWithLocation(this.href)">{{ $product->vendor->business_name ?? '' }}</a></span>
-                <span>5 min</span>
+                <!-- <span>5 min</span> -->
             </div>
         </div>
     </div>

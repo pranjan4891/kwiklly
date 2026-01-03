@@ -1,5 +1,45 @@
 @extends('web.include.main')
 @section('content')
+<style>
+.profile-order-img-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 190px;
+}
+.order-date-above-img {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    white-space: nowrap;
+}
+.profile-order-img {
+    width: 190px;
+    height: 148px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .profile-order-img-wrapper {
+        min-width: 100%;
+        width: 100%;
+    }
+    .profile-order-img {
+        width: 100%;
+        max-width: 190px;
+        height: 148px;
+    }
+    .order-date-above-img {
+        font-size: 11px;
+    }
+}
+</style>
 <!-- first section start  -->
 <section class="extrapadding">
    <div class="container py-4 bg-light">
@@ -32,12 +72,12 @@
          <div class="col-md-4 position-relative">
             <div class="profile-card">
                <div class="d-flex align-items-center">
-                  <div class="profile-user-info">
+                  <!-- <div class="profile-user-info">
                      <h6 class="mb-3">Kwikily Wallet Balance</h6>
                      <span class="pricepopupaccount">
                      <span class="rupee-symbolaccount">₹</span> {{ number_format($walletBalance, 2) }}
                      </span>
-                  </div>
+                  </div> -->
                </div>
             </div>
          </div>
@@ -48,8 +88,8 @@
             <div class="profile-sidebar" id="profile-tab-group">
                <a href="#" class="profile-tab-btn active" data-target="orders">Orders</a>
                <a href="#" class="profile-tab-btn" data-target="address">Address</a>
-               <a href="#" class="profile-tab-btn" data-target="couponsd">Coupons</a>
-               <a href="#" class="profile-tab-btn" data-target="referrals">Referrals</a>
+               {{-- <a href="#" class="profile-tab-btn" data-target="couponsd">Coupons</a> --}}
+               {{-- <a href="#" class="profile-tab-btn" data-target="referrals">Referrals</a> --}}
                <!-- Hidden Logout Form -->
                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                   @csrf
@@ -66,14 +106,46 @@
                   <h5 class="mb-3">Orders</h5>
                   @forelse ($groupedOrders as $order)
                   @foreach ($order['vendors'] as $vendorName => $vendorData)
+                  @php
+                     $deliveryStatus = $vendorData['delivery_status'] ?? 'pending';
+                     
+                     // Determine if cancelled by user or vendor
+                     $isCancelled = ($deliveryStatus === 'cancelled');
+                     $isUserCancelled = false;
+                     if ($isCancelled) {
+                        // User can only cancel within 5 minutes of order creation
+                        $orderCreatedAt = $order['created_at'];
+                        $currentTime = now()->timestamp;
+                        $fiveMinutesInSeconds = 5 * 60;
+                        $timeElapsed = $currentTime - $orderCreatedAt;
+                        // If cancelled and within 5 minutes, likely user cancelled
+                        // If cancelled after 5 minutes, likely vendor cancelled
+                        $isUserCancelled = ($timeElapsed <= $fiveMinutesInSeconds);
+                     }
+                     
+                     $statusColors = [
+                        'pending' => ['bg' => '#FFF3CD', 'text' => '#856404', 'label' => 'Pending'],
+                        'packed' => ['bg' => '#D1ECF1', 'text' => '#0C5460', 'label' => 'Packed'],
+                        'shipped' => ['bg' => '#D4EDDA', 'text' => '#155724', 'label' => 'Out for Delivery'],
+                        'delivered' => ['bg' => '#D1F2EB', 'text' => '#0E6655', 'label' => 'Delivered'],
+                        'cancelled' => [
+                           'bg' => '#F8D7DA', 
+                           'text' => '#721C24', 
+                           'label' => $isUserCancelled ? 'Cancelled' : 'Rejected by Store'
+                        ]
+                     ];
+                     $statusConfig = $statusColors[$deliveryStatus] ?? $statusColors['pending'];
+                  @endphp
                   <div class="profile-order-card">
+                     <div class="profile-order-img-wrapper">
+                        <small class="order-date-above-img"> {{ $order['date'] }}</small>
                      <img src="{{ $vendorData['image'] }}" class="profile-order-img" alt="{{ $vendorName }}">
+                     </div>
                      <div class="profile-order-details">
-                        <h6 class="mb-1"><b>{{ $vendorName }}</b></h6>
-                        <small>{{ ucfirst($order['status']) }} on: {{ $order['date'] }}</small><br>
-                        <small>Order ID: #{{ $order['order_id'] }}</small><br>
+                        <a href="{{ route('explorestore', ['vendor_id' => $vendorData['vendor_id'],'cat_id'=>'0']) }}" onclick="return redirectWithLocation(this.href)"><h6 class="mb-1"><b>{{ $vendorName }}</b></h6></a>
+                        <small><strong>Order ID:</strong> #{{ $order['order_id'] }}</small><br>
                         @if($vendorData['delivery_date'])
-                        <small>Estimate Delivery On: {{ $vendorData['delivery_date'] }}</small>
+                        <small><strong>Estimate Delivery On:</strong> {{ $vendorData['delivery_date'] }}</small>
                         @endif
                         <!-- Show items for this vendor -->
                         <ul class="mt-2 mb-1 ps-3 small text-muted">
@@ -87,11 +159,29 @@
                            @endforeach
                         </ul>
                         <div class="profile-action-links mt-2">
-                           <a href="{{ route('customer.orderDetails', $order['order_id']) }}">Show Details</a>
+                           <a href="{{ route('customer.orderDetails', $order['order_id']) }}?vendor_id={{ $vendorData['vendor_id'] ?? '' }}">Show Details</a>
                            @if($order['status'] !== 'cancelled' && $order['status'] !== 'delivered')
-                           <a href="{{ route('order.cancel', $order['order_id']) }}">Cancel Order</a>
+                           @php
+                              $orderCreatedAt = $order['created_at'];
+                              $currentTime = now()->timestamp;
+                              $fiveMinutesInSeconds = 5 * 60;
+                              $canCancel = ($currentTime - $orderCreatedAt) <= $fiveMinutesInSeconds;
+                           @endphp
+                           <a href="{{ route('order.cancel', $order['order_id']) }}?vendor_id={{ $vendorData['vendor_id'] ?? '' }}" 
+                              class="cancel-order-btn {{ $canCancel ? '' : 'disabled' }}" 
+                              data-order-id="{{ $order['order_id'] }}"
+                              data-vendor-id="{{ $vendorData['vendor_id'] ?? '' }}"
+                              data-created-at="{{ $orderCreatedAt }}"
+                              @if(!$canCancel) onclick="return false;" style="pointer-events: none; opacity: 0.5; cursor: not-allowed;" @endif>
+                              Cancel Order
+                           </a>
                            @endif
                         </div>
+                     </div>
+                     <div class="profile-order-status-wrapper">
+                        <span class="delivery-status-badge" style="background-color: {{ $statusConfig['bg'] }}; color: {{ $statusConfig['text'] }};">
+                           {{ $statusConfig['label'] }}
+                        </span>
                      </div>
                      <div class="profile-total-badge">Total ₹{{ number_format($vendorData['vendor_total'], 2) }}</div>
                   </div>
@@ -105,14 +195,21 @@
                <!-- Address -->
                <div class="profile-tab-content" id="address">
                   <div class="address-wrapper">
-                     <h3><strong>Address</strong></h3>
-                     <div class="add-address-box">
-                        <strong>Add new address</strong>
-                     </div>
+                     <div class="d-flex justify-content-between align-items-center mb-3">
+                     <h3 class="mb-0"><strong>Address</strong></h3>                     
+                     <button class="btn btn-success" onclick="openAddAddressPopup()">Add Address</button>
+                 </div>
+                     
                      @forelse ($addresses as $address)
                      <div class="address-card {{ $loop->first ? 'selected' : '' }}">
                         <div class="address-left">
-                           <img src="@if($address->type == 'home') https://cdn-icons-png.flaticon.com/128/69/69524.png @elseif($address->type == 'work') https://cdn-icons-png.flaticon.com/128/609/609803.png @else https://cdn-icons-png.flaticon.com/128/69/69524.png @endif" alt="{{ $address->type }}" class="icon">
+                           @if($address->type == 'home')
+                              <span class="address-icon">🏠</span>
+                           @elseif($address->type == 'work')
+                              <span class="address-icon">🏢</span>
+                           @else
+                              <span class="address-icon">🏠</span>
+                           @endif
                            <div>
                               <strong>{{ Str::ucfirst($address->type) }}</strong>
                               <p>{{ $address->name }}, {{ $address->flat }}, {{ $address->area }}, {{ $address->landmark }}, {{ $address->pincode }}</p>
@@ -137,7 +234,7 @@
                      @endforelse
                   </div>
                </div>
-               <!-- Coupons -->
+               {{-- <!-- Coupons -->
                <div class="profile-tab-content" id="couponsd">
                   <h4 class="fw-bold">Coupons</h4>
                   @forelse ($coupons->groupBy('applies_to') as $type => $typeCoupons)
@@ -148,7 +245,7 @@
                         <div class="profile-coupon-card">
                            <div class="d-flex justify-content-between align-items-start">
                               <div>
-                                 <h5 class="fw-bold mb-1">{{ $coupon->discount_value }}{{ $coupon->discount_type == 'percentage' ? '%' : '₹' }} OFF</h5>
+                                 <h5 class="fw-bold mb-1">{{ $coupon->discount_type == 'percentage' ? (int) round($coupon->discount_value) : $coupon->discount_value }}{{ $coupon->discount_type == 'percentage' ? '%' : '₹' }} OFF</h5>
                                  @if($coupon->discount_type == 'percentage' && $coupon->max_discount)
                                  <p class="text-success mb-1">MAX ₹{{ $coupon->max_discount }}</p>
                                  @endif
@@ -179,8 +276,8 @@
                      <p>No coupons available.</p>
                   </div>
                   @endforelse
-               </div>
-               <!-- Referrals -->
+               </div> --}}
+               {{-- <!-- Referrals -->
                <div class="profile-tab-content" id="referrals">
                   <h4 class="fw-bold">Refer a friend to earn extra cash</h4>
                   <h6 class="fw-bold mt-3">How it works</h6>
@@ -215,7 +312,7 @@
                      <i class="fa-solid fa-up-right-from-square me-2"></i>Share Invite Link
                      </button>
                   </div>
-               </div>
+               </div> --}}
                <!-- Logout -->
                <div class="profile-tab-content" id="logout">
                   <h5 class="mb-3 text-danger">Logout</h5>
@@ -253,6 +350,50 @@
          <button type="button" onclick="updateProfile()">Save</button>
       </form>
    </div>
+</div>
+
+<!-- Add New Address Popup -->
+<div class="mypopup-overlay" id="addAddressPopup">
+  <div class="mypopup-content">
+    <div class="mypopup-header">
+      <h2>Add New Address</h2>
+      <span class="mypopup-close" onclick="closeAddAddressPopup()">&times;</span>
+    </div>
+
+    <form id="addAddressForm">
+        <input type="hidden" name="type" id="addAddressType" value="home">
+        
+        <div class="pata-input my-2">
+             <select id="addAddressTypeSelect" name="type" class="form-control" required>
+                <option value="home">Home</option>
+                <option value="work">Work</option>
+             </select>
+        </div>
+        <div class="pata-input">
+            <input type="text" id="addAutocomplete" name="area" placeholder="Area / Sector / Locality*" class="form-control" required>
+        </div>
+        <div class="pata-input">
+            <input type="text" name="flat" placeholder="Flat / Building no*" class="form-control" required>
+        </div>
+        <div class="pata-input">
+            <input type="text" name="landmark" placeholder="Landmark (optional)" class="form-control">
+        </div>
+        <div class="pata-input">
+            <input type="text" name="pincode" placeholder="Pincode*" class="form-control" required>
+        </div>
+        <div class="pata-input">
+            <input type="text" name="name" placeholder="Name*" class="form-control" required>
+        </div>
+        <div class="pata-input">
+            <input type="text" name="phone" placeholder="Phone Number*" class="form-control" required>
+        </div>
+        <div class="pata-input">
+            <input type="text" name="alt_phone" placeholder="Alternate Phone Number (optional)" class="form-control">
+        </div>
+        
+        <button type="button" class="pata-save-btn mt-3 w-100" onclick="saveNewAddress()">Save Address</button>
+    </form>
+  </div>
 </div>
 
 <!-- Edit Address Popup -->
@@ -525,5 +666,180 @@
            }
        });
    }
+
+   // Check and disable cancel buttons after 5 minutes
+   function checkCancelButtonTimeout() {
+       const cancelButtons = document.querySelectorAll('.cancel-order-btn');
+       const fiveMinutesInSeconds = 5 * 60; // 5 minutes in seconds
+       
+       cancelButtons.forEach(button => {
+           const createdAt = parseInt(button.getAttribute('data-created-at'));
+           if (!createdAt) return;
+           
+           const currentTime = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+           const timeElapsed = currentTime - createdAt;
+           
+           if (timeElapsed > fiveMinutesInSeconds) {
+               // Disable the button
+               button.classList.add('disabled');
+               button.style.pointerEvents = 'none';
+               button.style.opacity = '0.5';
+               button.style.cursor = 'not-allowed';
+               button.onclick = function(e) {
+                   e.preventDefault();
+                   return false;
+               };
+           }
+       });
+   }
+
+   // Check on page load
+   document.addEventListener('DOMContentLoaded', function() {
+       checkCancelButtonTimeout();
+       
+       // Check every 30 seconds to update button states
+       setInterval(checkCancelButtonTimeout, 30000);
+
+       // Initialize address type select for add address
+       const addAddressTypeSelect = document.getElementById('addAddressTypeSelect');
+       const addAddressType = document.getElementById('addAddressType');
+
+       if (addAddressTypeSelect && addAddressType) {
+           addAddressTypeSelect.addEventListener('change', function() {
+               addAddressType.value = this.value;
+           });
+       }
+
+   });
+
+   function openAddAddressPopup() {
+       document.getElementById("addAddressPopup").style.display = "flex";
+       resetAddAddressForm();
+       // Initialize autocomplete after a short delay to ensure Google Maps is loaded
+       setTimeout(function() {
+           initAddAddressAutocomplete();
+       }, 100);
+   }
+
+   function closeAddAddressPopup() {
+       document.getElementById("addAddressPopup").style.display = "none";
+       resetAddAddressForm();
+   }
+
+   function resetAddAddressForm() {
+       const form = document.getElementById('addAddressForm');
+       if (form) {
+           form.reset();
+           document.getElementById('addAddressType').value = 'home';
+           const typeSelect = document.getElementById('addAddressTypeSelect');
+           if (typeSelect) {
+               typeSelect.value = 'home';
+           }
+       }
+   }
+
+   function saveNewAddress() {
+       const form = document.getElementById('addAddressForm');
+       const formData = new FormData(form);
+
+       fetch('{{ route("address.store") }}', {
+           method: 'POST',
+           body: formData,
+           headers: {
+               'X-CSRF-TOKEN': '{{ csrf_token() }}',
+               'Accept': 'application/json'
+           }
+       })
+       .then(response => response.json())
+       .then(data => {
+           if (data.success) {
+               Swal.fire('Success!', data.message, 'success').then(() => {
+                   closeAddAddressPopup();
+                   location.reload(); // reload to update addresses
+               });
+           } else {
+               Swal.fire('Error!', data.errors ? Object.values(data.errors).flat().join('<br>') : 'Something went wrong.', 'error');
+           }
+       })
+       .catch(error => {
+           Swal.fire('Error!', 'An error occurred. Please try again.', 'error');
+       });
+   }
+
+   // Initialize Google Places Autocomplete for add address
+   function initAddAddressAutocomplete() {
+       const input = document.getElementById('addAutocomplete');
+       if (!input) return;
+       
+       if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
+           console.warn('Google Maps API not loaded');
+           return;
+       }
+
+       // Remove existing autocomplete if any
+       if (window.addAddressAutocomplete) {
+           google.maps.event.clearInstanceListeners(window.addAddressAutocomplete);
+       }
+
+       window.addAddressAutocomplete = new google.maps.places.Autocomplete(input, {
+           types: ['geocode'],
+           componentRestrictions: { country: 'in' }
+       });
+
+       window.addAddressAutocomplete.addListener('place_changed', function() {
+           const place = window.addAddressAutocomplete.getPlace();
+           if (!place.geometry) {
+               console.warn("No details available for input: '" + place.name + "'");
+               return;
+           }
+           extractAddAddressComponents(place);
+       });
+   }
+
+   // Extract address components for add address form
+   function extractAddAddressComponents(place) {
+       let streetNumber = '';
+       let route = '';
+       let locality = '';
+       let postalCode = '';
+
+       for (const component of place.address_components) {
+           const componentType = component.types[0];
+           switch (componentType) {
+               case "street_number":
+                   streetNumber = component.long_name;
+                   break;
+               case "route":
+                   route = component.long_name;
+                   break;
+               case "locality":
+                   locality = component.long_name;
+                   break;
+               case "postal_code":
+                   postalCode = component.long_name;
+                   break;
+           }
+       }
+
+       const form = document.getElementById('addAddressForm');
+       if (form) {
+           if (streetNumber || route) {
+               const flatInput = form.querySelector('input[name="flat"]');
+               if (flatInput) flatInput.value = [streetNumber, route].filter(Boolean).join(' ');
+           }
+           if (locality) {
+               const areaInput = form.querySelector('input[name="area"]');
+               if (areaInput) areaInput.value = locality;
+           }
+           if (postalCode) {
+               const pincodeInput = form.querySelector('input[name="pincode"]');
+               if (pincodeInput) pincodeInput.value = postalCode;
+           }
+       }
+   }
+
 </script>
+@if(env('GOOGLE_MAPS_API_KEY'))
+<script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places"></script>
+@endif
 @endpush

@@ -10,7 +10,7 @@
                <div class="item">
                   <div class="product-card p-0">
                      @if ($defaultVariant->variant_save_price_in_percent > 0)
-                        <span class="discount-label">{{ round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
+                        <span class="discount-label">{{ (int) round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
                      @endif
 
                      @if ($product->is_physical)
@@ -23,7 +23,7 @@
                         </a>
                      @endif
 
-                     <div class="product-title cardpadding">{{ $product->title }}</div>
+                     <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
                      @php $attributes = json_decode($defaultVariant->attributes, true); @endphp
                      @if (!empty($attributes))
                         <div class="product-info cardpadding">{{ collect($attributes)->first() }}</div>
@@ -31,6 +31,7 @@
 
                      {{-- ✅ Same cart logic --}}
                      <div class="price-container cardpadding">
+                        <div class="price-wrapper">
                         <span class="price">
                             <span class="rupee-symbol">₹</span> {{ intval($defaultVariant->variant_selling_price) }}
                         </span>
@@ -40,6 +41,7 @@
                                 <span class="rupee-symbol2">₹</span> {{ intval($defaultVariant->variant_actual_price) }}
                             </span>
                         @endif
+                        </div>
 
                         @php
                            $hasMultipleVariants = $product->variants->count() > 1;
@@ -105,7 +107,7 @@
                             @else
                                 {{-- ❌ Store is closed --}}
                                 <button class="add-btn disabled" disabled>
-                                    Store Closed
+                                    Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                 </button>
                             @endif
                         </div>

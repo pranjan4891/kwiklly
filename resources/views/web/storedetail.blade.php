@@ -325,12 +325,14 @@
                         <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
                         <div class="product-info cardpadding">500 ml</div>
                         <div class="price-container cardpadding">
+                            <div class="price-wrapper">
                             <span class="price">
                                 <span class="rupee-symbol">₹</span> 30
                             </span>
                             <span class="original-price">
                                 <span class="rupee-symbol2">₹</span> 38
                             </span>                        
+                            </div>
                             <button class="add-btn d-flex flex-column align-items-center position-relative" onclick="openPopup()">
                                 <div class="d-flex align-items-center">
                                     Add
@@ -355,12 +357,14 @@
                         <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
                         <div class="product-info cardpadding">500 ml</div>
                         <div class="price-container cardpadding">
+                            <div class="price-wrapper">
                         <span class="price">
                                 <span class="rupee-symbol">₹</span> 30
                             </span>
                             <span class="original-price">
                                 <span class="rupee-symbol2">₹</span> 38
                             </span>                        
+                            </div>
                             <button class="add-btn" onclick="convertToQty(this)">Add <img src="images/cart.svg" alt="" class="ms-2"></button>
                         </div>
                         <div class="store-info ">
@@ -379,12 +383,14 @@
                         <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
                         <div class="product-info cardpadding">500 ml</div>
                         <div class="price-container cardpadding">
+                            <div class="price-wrapper">
                             <span class="price">
                                 <span class="rupee-symbol">₹</span> 30
                             </span>
                             <span class="original-price">
                                 <span class="rupee-symbol2">₹</span> 38
                             </span>                        
+                            </div>
                             <button class="add-btn d-flex flex-column align-items-center position-relative" onclick="openPopup()">
                                 <div class="d-flex align-items-center">
                                     Add
@@ -409,12 +415,14 @@
                         <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
                         <div class="product-info cardpadding">500 ml</div>
                         <div class="price-container cardpadding">
+                            <div class="price-wrapper">
                         <span class="price">
                                 <span class="rupee-symbol">₹</span> 30
                             </span>
                             <span class="original-price">
                                 <span class="rupee-symbol2">₹</span> 38
                             </span>                        
+                            </div>
                             <button class="add-btn" onclick="convertToQty(this)">Add <img src="images/cart.svg" alt="" class="ms-2"></button>
                         </div>
                         <div class="store-info ">
@@ -433,12 +441,14 @@
                         <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
                         <div class="product-info cardpadding">500 ml</div>
                         <div class="price-container cardpadding">
+                            <div class="price-wrapper">
                             <span class="price">
                                 <span class="rupee-symbol">₹</span> 30
                             </span>
                             <span class="original-price">
                                 <span class="rupee-symbol2">₹</span> 38
                             </span>                        
+                            </div>
                             <button class="add-btn d-flex flex-column align-items-center position-relative" onclick="openPopup()">
                                 <div class="d-flex align-items-center">
                                     Add
@@ -463,12 +473,14 @@
                         <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
                         <div class="product-info cardpadding">500 ml</div>
                         <div class="price-container cardpadding">
+                            <div class="price-wrapper">
                         <span class="price">
                                 <span class="rupee-symbol">₹</span> 30
                             </span>
                             <span class="original-price">
                                 <span class="rupee-symbol2">₹</span> 38
                             </span>                        
+                            </div>
                             <button class="add-btn" onclick="convertToQty(this)">Add <img src="images/cart.svg" alt="" class="ms-2"></button>
                         </div>
                         <div class="store-info ">
@@ -487,12 +499,14 @@
                         <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
                         <div class="product-info cardpadding">500 ml</div>
                         <div class="price-container cardpadding">
+                            <div class="price-wrapper">
                             <span class="price">
                                 <span class="rupee-symbol">₹</span> 30
                             </span>
                             <span class="original-price">
                                 <span class="rupee-symbol2">₹</span> 38
                             </span>                        
+                            </div>
                             <button class="add-btn d-flex flex-column align-items-center position-relative" onclick="openPopup()">
                                 <div class="d-flex align-items-center">
                                     Add
@@ -517,12 +531,14 @@
                         <div class="product-title cardpadding">Mother Dairy Toned Milk</div>
                         <div class="product-info cardpadding">500 ml</div>
                         <div class="price-container cardpadding">
+                            <div class="price-wrapper">
                         <span class="price">
                                 <span class="rupee-symbol">₹</span> 30
                             </span>
                             <span class="original-price">
                                 <span class="rupee-symbol2">₹</span> 38
                             </span>                        
+                            </div>
                             <button class="add-btn" onclick="convertToQty(this)">Add <img src="images/cart.svg" alt="" class="ms-2"></button>
                         </div>
                         <div class="store-info ">

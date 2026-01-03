@@ -3,6 +3,11 @@
 @section('content')
 <style>
 
+  @media (max-width: 768px) {
+  .log-in-box {
+    margin-top: 100px;
+  }
+}
 
 </style>
 <!-- first section start  -->
@@ -24,7 +29,7 @@
         </button>
       </div>
 
-      <!--<div class="log-in-divider">or</div>-->
+      <div class="log-in-divider">or</div>
 
       <form action="{{ route('login.store') }}" method="POST">
     @csrf

@@ -6,18 +6,69 @@
 // --- Detect Current Location (with reverse geocoding) ---
 function detectLocation(){
     console.log("detectLocation called");
+    
+    // Get the button element
+    const detectBtn = document.querySelector('.addpop-detect-btn');
+    const originalText = detectBtn ? detectBtn.innerHTML : '';
+    
+    // Show loader on button
+    if (detectBtn) {
+        detectBtn.disabled = true;
+        detectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Detecting location...';
+        detectBtn.style.opacity = '0.7';
+        detectBtn.style.cursor = 'not-allowed';
+    }
+    
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
             let lat = position.coords.latitude;
             let lng = position.coords.longitude;
             console.log("Location detected:", lat, lng);
 
-            reverseGeocode(lat, lng, false); // false = user manually clicked button
+            // Update button text to show reverse geocoding in progress
+            if (detectBtn) {
+                detectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Searching location...';
+            }
+
+            reverseGeocode(lat, lng, false).then(() => {
+                // Reset button after successful location update
+                if (detectBtn) {
+                    detectBtn.disabled = false;
+                    detectBtn.innerHTML = originalText || 'Detect Current Location';
+                    detectBtn.style.opacity = '1';
+                    detectBtn.style.cursor = 'pointer';
+                }
+            }).catch((error) => {
+                // Reset button on error
+                if (detectBtn) {
+                    detectBtn.disabled = false;
+                    detectBtn.innerHTML = originalText || 'Detect Current Location';
+                    detectBtn.style.opacity = '1';
+                    detectBtn.style.cursor = 'pointer';
+                }
+                console.warn("Reverse geocode error:", error);
+            });
         }, (err) => {
             console.warn("Geolocation error:", err);
+            // Reset button on error
+            if (detectBtn) {
+                detectBtn.disabled = false;
+                detectBtn.innerHTML = originalText || 'Detect Current Location';
+                detectBtn.style.opacity = '1';
+                detectBtn.style.cursor = 'pointer';
+            }
+            alert('Unable to detect your location. Please try again or search manually.');
         });
     } else {
         console.warn("Geolocation not supported by this browser.");
+        // Reset button if geolocation not supported
+        if (detectBtn) {
+            detectBtn.disabled = false;
+            detectBtn.innerHTML = originalText || 'Detect Current Location';
+            detectBtn.style.opacity = '1';
+            detectBtn.style.cursor = 'pointer';
+        }
+        alert('Geolocation is not supported by this browser.');
     }
 }
 

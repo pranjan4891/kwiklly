@@ -104,7 +104,9 @@ class PhonePeController extends Controller
             $payment = Payment::where('transaction_id', $orderId)->first();
 
             if (!$payment) {
-                return redirect()->route('phonepe.failure')->with('error', 'Payment not found');
+                return redirect()->route('phonepe.failure')
+                    ->with('error', 'Payment not found')
+                    ->with('order_id', null);
             }
 
             // Check payment status with PhonePe
@@ -112,12 +114,28 @@ class PhonePeController extends Controller
             Log::info('PhonePe Status Check: ', $status);
 
             // Check different possible success indicators based on PhonePe API response
+            $state = strtoupper($status['state'] ?? $status['code'] ?? '');
             $isSuccess = (
-                ($status['code'] ?? '') === 'PAYMENT_SUCCESS' ||
+                $state === 'PAYMENT_SUCCESS' ||
+                $state === 'SUCCESS' ||
+                $state === 'COMPLETED' ||
                 ($status['success'] ?? false) === true ||
-                ($status['state'] ?? '') === 'COMPLETED' ||
-                ($status['paymentState'] ?? '') === 'SUCCESS' ||
-                ($status['state'] ?? '') === 'SUCCESS'
+                ($status['paymentState'] ?? '') === 'SUCCESS'
+            );
+
+            // Check for cancel/failure states
+            $isCancelled = (
+                $state === 'CANCELLED' ||
+                $state === 'CANCEL' ||
+                $state === 'USER_CANCELLED' ||
+                $state === 'PAYMENT_CANCELLED'
+            );
+
+            $isFailed = (
+                $state === 'FAILED' ||
+                $state === 'FAILURE' ||
+                $state === 'PAYMENT_FAILED' ||
+                ($status['code'] ?? '') === 'PAYMENT_FAILED'
             );
 
             if ($isSuccess) {
@@ -132,32 +150,60 @@ class PhonePeController extends Controller
                     'status' => 'confirmed'
                 ]);
 
-                 // Clear cart
+                // Clear cart after successful payment
                 CartItem::where('user_id', Auth::id())->delete();
+                
+                // Clear session cart if exists
+                if (session()->has('cart')) {
+                    session()->forget('cart');
+                }
 
                 return redirect()->route('phonepe.success')->with([
                     'success' => 'Payment completed successfully',
                     'order_id' => $payment->order_id
+                ])->with('order_id', $payment->order_id);
+            }
+
+            // Payment cancelled by user
+            if ($isCancelled) {
+                $payment->update([
+                    'payment_status' => 'cancelled',
+                    'gateway_response' => json_encode($status),
+                    'failure_reason' => 'Payment cancelled by user'
                 ]);
+
+                return redirect()->route('phonepe.failure')
+                    ->with('error', 'Payment was cancelled. Please try again if you wish to complete the order.')
+                    ->with('order_id', $payment->order_id);
             }
 
             // Payment failed or still pending
-            if (($status['state'] ?? '') === 'PENDING') {
-                return redirect()->route('phonepe.failure')->with('error', 'Payment is still pending. Please check back later.');
+            if ($state === 'PENDING') {
+                return redirect()->route('phonepe.failure')
+                    ->with('error', 'Payment is still pending. Please check back later.')
+                    ->with('order_id', $payment->order_id);
             }
 
             // Payment failed
             $payment->update([
                 'payment_status' => 'failed',
                 'gateway_response' => json_encode($status),
-                'failure_reason' => $status['message'] ?? ($status['error'] ?? 'Payment failed')
+                'failure_reason' => $status['message'] ?? ($status['error'] ?? ($isFailed ? 'Payment failed' : 'Payment could not be processed'))
             ]);
 
-            return redirect()->route('phonepe.failure')->with('error', $status['message'] ?? ($status['error'] ?? 'Payment failed'));
+            $orderId = $payment->order_id ?? null;
+            $errorMessage = $status['message'] ?? ($status['error'] ?? ($isFailed ? 'Payment failed' : 'Payment could not be processed'));
+            
+            return redirect()->route('phonepe.failure')
+                ->with('error', $errorMessage)
+                ->with('order_id', $orderId);
 
         } catch (\Exception $e) {
             Log::error('PhonePe Redirect Error: ' . $e->getMessage());
-            return redirect()->route('phonepe.failure')->with('error', 'Error processing payment: ' . $e->getMessage());
+            $orderId = isset($payment) && $payment ? $payment->order_id : null;
+            return redirect()->route('phonepe.failure')
+                ->with('error', 'Error processing payment: ' . $e->getMessage())
+                ->with('order_id', $orderId);
         }
     }
 
@@ -174,9 +220,9 @@ class PhonePeController extends Controller
                 $payment = Payment::where('transaction_id', $merchantOrderId)->first();
 
                 if ($payment) {
-                    $status = $request->input('data.state') ?? $request->input('status');
+                    $status = strtoupper($request->input('data.state') ?? $request->input('status') ?? '');
 
-                    if ($status === 'COMPLETED' || $status === 'SUCCESS') {
+                    if ($status === 'COMPLETED' || $status === 'SUCCESS' || $status === 'PAYMENT_SUCCESS') {
                         // Update payment status
                         $payment->update([
                             'payment_status' => 'completed',
@@ -186,6 +232,18 @@ class PhonePeController extends Controller
                         // Update order status
                         $payment->order->update([
                             'status' => 'confirmed'
+                        ]);
+
+                        // Clear cart after successful payment
+                        if ($payment->user_id) {
+                            CartItem::where('user_id', $payment->user_id)->delete();
+                        }
+                    } elseif ($status === 'CANCELLED' || $status === 'CANCEL' || $status === 'USER_CANCELLED') {
+                        // Payment cancelled
+                        $payment->update([
+                            'payment_status' => 'cancelled',
+                            'gateway_response' => json_encode($request->all()),
+                            'failure_reason' => 'Payment cancelled by user'
                         ]);
                     } else {
                         // Payment failed
@@ -216,5 +274,39 @@ class PhonePeController extends Controller
             Log::error('PhonePe Status Check Error: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    // Show success page
+    public function showSuccess(Request $request)
+    {
+        $orderId = session('order_id') ?? $request->get('order_id');
+        $order = null;
+        $message = session('success', 'Payment completed successfully!');
+
+        if ($orderId) {
+            $order = Order::with(['vendorOrders.vendor', 'address', 'user'])
+                ->where('id', $orderId)
+                ->where('user_id', Auth::id())
+                ->first();
+        }
+
+        return view('web.phonepe.success', compact('order', 'message'));
+    }
+
+    // Show failure page
+    public function showFailure(Request $request)
+    {
+        $orderId = session('order_id') ?? $request->get('order_id');
+        $order = null;
+        $error = session('error', 'Payment failed. Please try again.');
+
+        if ($orderId) {
+            $order = Order::with(['vendorOrders.vendor', 'address', 'user'])
+                ->where('id', $orderId)
+                ->where('user_id', Auth::id())
+                ->first();
+        }
+
+        return view('web.phonepe.failure', compact('order', 'error'));
     }
 }

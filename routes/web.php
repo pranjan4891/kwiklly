@@ -52,6 +52,7 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         Route::get('/about-us', [HomeController::class, 'aboutUs'])->name('aboutus');
         // routes/web.php
         Route::post('/location-products', [HomeController::class, 'locationProducts'])->name('location.products');
+        Route::post('/check-location-in-master', [HomeController::class, 'checkLocationInMaster'])->name('check.location.in.master');
 
         Route::get('/department', [HomeController::class, 'department'])->name('department');
         Route::get('/department/products', [HomeController::class, 'getProducts'])->name('department.products');
@@ -97,6 +98,7 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         // Route::post('/coupon/clear', [CartController::class, 'clearCoupon'])->name('coupon.clear');
 
         Route::post('/coupon/clear', [CartController::class, 'clearCoupon'])->name('coupon.clear');
+        Route::get('/coupon/vendorwise/checkout', [CartController::class, 'getVendorCouponsCheckout'])->name('coupon.vendorwise.checkout');
 
         // Wallet routes
         Route::post('/cart/apply-wallet', [CartController::class, 'applyWallet'])->name('cart.apply.wallet');
@@ -104,8 +106,8 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
 
 
 
-        Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.page');
-        Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place');
+        // Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.page');
+        // Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('checkout.place');
 
         // Order
         Route::post('/checkout/process-order', [OrderController::class, 'storeOrder'])->name('checkout.process.order');
@@ -157,10 +159,10 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
     Route::match(['get','post'],'/phonepe/callback',[PhonePeController::class,'callback']);
 
     // Success/Failure UI pages (you can customize with Blade)
-    Route::view('/success', 'web.phonepe.success')->name('phonepe.success');
-    Route::view('/failure', 'web.phonepe.failure')->name('phonepe.failure');
+    Route::get('/success', [PhonePeController::class, 'showSuccess'])->name('phonepe.success');
+    Route::get('/failure', [PhonePeController::class, 'showFailure'])->name('phonepe.failure');
 
     // Frontend routes
-    Route::get('/policy/{slug}', [HomeController::class, 'show'])->name('policy.show');
+    Route::get('pages/{slug}', [HomeController::class, 'show'])->name('policy.show');
 
     require __DIR__ . '/customer.php';

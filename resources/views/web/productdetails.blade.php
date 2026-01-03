@@ -50,7 +50,7 @@
                 $selectedVariant = $product->variants->first();
                 $sellingPrice = $selectedVariant ? $selectedVariant->variant_selling_price : 0;
                 $actualPrice = $selectedVariant ? $selectedVariant->variant_actual_price : 0;
-                $discountPercent = ($actualPrice > $sellingPrice && $actualPrice > 0) ? round((($actualPrice - $sellingPrice) / $actualPrice) * 100) : 0;
+                $discountPercent = ($actualPrice > $sellingPrice && $actualPrice > 0) ? (int) round((($actualPrice - $sellingPrice) / $actualPrice) * 100) : 0;
             @endphp
 
             <div class="d-flex justify-content-between align-items-center">
@@ -183,7 +183,7 @@
                 @else
                     {{-- ❌ Store is closed --}}
                     <button class="add-btn-detail disabled" disabled>
-                        Store Closed
+                        Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                     </button>
                 @endif
             </div>
@@ -272,7 +272,7 @@
         @else
             {{-- ❌ Store is closed --}}
             <button class="add-btn-mobile disabled" disabled>
-                Store Closed
+                Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
             </button>
         @endif
 
@@ -380,7 +380,7 @@
                             @else
                                 {{-- ❌ Store is closed --}}
                                 <button class="add-btn disabled" disabled>
-                                    Store Closed
+                                    Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                 </button>
                             @endif
                         </div>
@@ -492,7 +492,7 @@
                             @else
                                 {{-- ❌ Store is closed --}}
                                 <button class="add-btn disabled" disabled>
-                                    Store Closed
+                                    Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                 </button>
                             @endif
                         </div>

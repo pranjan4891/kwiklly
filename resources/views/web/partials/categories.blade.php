@@ -4,7 +4,7 @@
             @if ($categoryData['products']->count() > 0) {{-- ✅ only show if products exist --}}
             <div class="container mt-4">
                 {{-- 🔹 Category Title --}}
-                <h4 class="pb-3 pt-4 headingclass">{{ $categoryData['name'] }}</h4>
+                <h4 class="pb-3 pt-4 headingclass">{{ ucfirst(strtolower($categoryData['name'])) }}</h4>
 
                 {{-- 🔹 First Carousel (first 8 products) --}}
                 <div class="owl-carousel owl-theme mb-4">
@@ -18,7 +18,7 @@
 
                                     {{-- 🔹 Discount Label --}}
                                     @if ($defaultVariant->variant_save_price_in_percent > 0)
-                                        <span class="discount-label">{{ round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
+                                        <span class="discount-label">{{ (int) round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
                                     @endif
 
                                     {{-- 🔹 Product Image --}}
@@ -29,7 +29,7 @@
                                     </a>
 
                                     {{-- 🔹 Product Title --}}
-                                    <div class="product-title cardpadding">{{ $product->title }}</div>
+                                    <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
 
                                     {{-- 🔹 Variant Attribute (like volume/size) --}}
                                     @php
@@ -41,10 +41,12 @@
 
                                     {{-- 🔹 Price & Cart --}}
                                     <div class="price-container cardpadding">
+                                        <div class="price-wrapper">
                                         <span class="price"><span class="rupee-symbol">₹</span> {{ intval($defaultVariant->variant_selling_price) }}</span>
                                         @if ($defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
                                             <span class="original-price"><span class="rupee-symbol2">₹</span> {{ intval($defaultVariant->variant_actual_price) }}</span>
                                         @endif
+                                        </div>
 
                                         @php
                                             $hasMultipleVariants = $product->variants->count() > 1;
@@ -103,7 +105,7 @@
                                             @else
                                                 {{-- ❌ Store is closed --}}
                                                 <button class="add-btn disabled" disabled>
-                                                    Store Closed
+                                                    Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                                 </button>
                                             @endif
                                         </div>
@@ -142,8 +144,7 @@
             </div>
             @endif {{-- ✅ end if products exist --}}
         @endforeach
-    @else
-        <p>No category-wise products found.</p>
+   
     @endif
 
 

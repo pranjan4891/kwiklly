@@ -1,14 +1,25 @@
-@if ($homepageCategories->count() > 0)
+@php
+// Ensure unique categories by ID to prevent duplicates
+$uniqueHomepageCategories = $homepageCategories->unique('id')->values();
+@endphp
+@if ($uniqueHomepageCategories->count() > 0)
 
         <!-- Repeat this block for all your categories -->
-        @foreach ($homepageCategories as $cat)
+        @foreach ($uniqueHomepageCategories as $cat)
+        @php
+           $categoryName = strtolower($cat['name']);
+           // Replace & with & (with spaces) if not already spaced
+           $categoryName = preg_replace('/\s*&\s*/', ' & ', $categoryName);
+           // Convert to title case
+           $categoryName = ucwords($categoryName);
+        @endphp
         <div class="col-md-4 col-4 new-cate-item-wrap">
         <div class="new-cate-item">
             <a href="{{route('stores', ['slug' => $cat->slug])}}" class="text-decoration-none text-dark"  onclick="return redirectWithLocation(this.href)">
                 <div class="product-carded">
-                    <img src="{{ asset('public/' . $cat->image) }}" alt="{{ $cat['name'] }}">
+                    <img src="{{ asset('public/' . $cat->image) }}" alt="{{ $categoryName }}">
                 </div>
-                <div class="py-2 text-center catename"><b>{{ $cat['name'] }}</b></div>
+                <div class="py-2 text-center catename"><b>{{ $categoryName }}</b></div>
             </a>
         </div>
         </div>

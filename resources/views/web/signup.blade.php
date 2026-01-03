@@ -1,6 +1,16 @@
 @extends('web.include.main')
 @section('content')
 <?php //include("include/header2.php")?>
+
+<style>
+  
+  @media (max-width: 768px) {
+  .log-in-box {
+    margin-top: 100px !important;
+  }
+}
+  </style>
+
 <!-- first section start  -->
 <section class="">
 <div class="container log-in-container form-section">

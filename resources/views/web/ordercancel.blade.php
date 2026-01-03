@@ -171,6 +171,9 @@
         <div class="text-end mt-3">
           <form action="{{ route('order.cancel.process', $order->order_number) }}" method="POST">
             @csrf
+            @if(isset($vendorId) && $vendorId)
+              <input type="hidden" name="vendor_id" value="{{ $vendorId }}">
+            @endif
             <button type="submit" class="btn text-danger"><h5><b>Cancel Order</b></h5></button>
           </form>
         </div>

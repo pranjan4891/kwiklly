@@ -5,7 +5,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
+use App\Models\CartItem;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class FacebookController extends Controller
@@ -15,7 +17,7 @@ class FacebookController extends Controller
         return Socialite::driver('facebook')->stateless()->redirect();
     }
 
-    public function handleFacebookCallback()
+    public function handleFacebookCallback(Request $request)
     {
         try {
             $facebookUser = Socialite::driver('facebook')->stateless()->user();
@@ -45,8 +47,31 @@ class FacebookController extends Controller
         }
 
         Auth::login($user, true);
+        $request->session()->regenerate();
 
-        return redirect()->route('customer.dashboard');
+        // Migrate session cart
+        $sessionCart = session('cart', []);
+        foreach ($sessionCart as $item) {
+            CartItem::updateOrCreate(
+                [
+                    'user_id' => auth()->id(),
+                    'product_id' => $item['product_id'],
+                    'variant_id' => $item['variant_id'],
+                ],
+                [
+                    'quantity' => DB::raw("quantity + {$item['quantity']}"),
+                    'price' => $item['price']
+                ]
+            );
+        }
+        session()->forget('cart');
+
+        if (!empty($sessionCart)) {
+            return redirect()->route('cart.view');
+        }
+
+        // Redirect to intended page or dashboard
+        return redirect()->intended('/');
     }
 
 }
