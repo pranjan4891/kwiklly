@@ -32,9 +32,29 @@ class CouponController extends Controller
         if (!$vendor) {
             return redirect()->route('vendor.dashboard')->with('error', 'You do not have permission to create a coupon.');
         }
-        $products = Product::where('is_deleted', 0)->where('is_active', 1)->where('vendor_id', $vendor->id)->get(); // Fix: not Product::all()
-        $categories = Category::where('is_deleted', 0)->where('is_active', 1)->get(); // main categories
-        $subcategories = Subcategory::where('is_deleted', 0)->where('is_active', 1)->get(); // Fix: not Category
+        // Get vendor's products only (not from other vendors)
+        // Also ensure products have valid category_id and sub_category_id
+        $products = Product::where('is_deleted', 0)
+            ->where('is_active', 1)
+            ->where('vendor_id', $vendor->id)
+            ->whereNotNull('category_id')
+            ->whereNotNull('sub_category_id')
+            ->get();
+        
+        // Get only categories that have products from this vendor
+        $categoryIds = $products->pluck('category_id')->filter()->unique()->toArray();
+        $categories = Category::where('is_deleted', 0)
+            ->where('is_active', 1)
+            ->whereIn('id', $categoryIds)
+            ->get();
+        
+        // Get only subcategories that have products from this vendor
+        $subcategoryIds = $products->pluck('sub_category_id')->filter()->unique()->toArray();
+        $subcategories = Subcategory::where('is_deleted', 0)
+            ->where('is_active', 1)
+            ->whereIn('id', $subcategoryIds)
+            ->get();
+        
         return view('vendorpanel.coupon.create', compact('products', 'categories', 'subcategories', 'title', 'vendor'));
     }
 
@@ -50,7 +70,7 @@ class CouponController extends Controller
             'max_uses_per_user' => 'nullable|integer',
             'starts_at' => 'nullable|date',
             'expires_at' => 'nullable|date|after:starts_at',
-            'applies_to' => 'required|in:all,product,category,attributes',
+            'applies_to' => 'required|in:all,product,category,subcategory',
             'is_active' => 'boolean',
             'product_ids' => 'array',
             'category_ids' => 'array',
@@ -62,9 +82,30 @@ class CouponController extends Controller
 
         $coupon = Coupon::create($data);
 
-        $coupon->products()->sync($request->product_ids);
-        $coupon->categories()->sync($request->category_ids);
-        $coupon->subcategories()->sync($request->subcategory_ids);
+        // Sync relationships based on applies_to value
+        $appliesTo = $request->applies_to;
+        
+        if ($appliesTo === 'all') {
+            // If applies to all, don't sync any relationships
+            $coupon->products()->sync([]);
+            $coupon->categories()->sync([]);
+            $coupon->subcategories()->sync([]);
+        } elseif ($appliesTo === 'product') {
+            // Only sync products
+            $coupon->products()->sync($request->product_ids ?? []);
+            $coupon->categories()->sync([]);
+            $coupon->subcategories()->sync([]);
+        } elseif ($appliesTo === 'category') {
+            // Only sync categories
+            $coupon->products()->sync([]);
+            $coupon->categories()->sync($request->category_ids ?? []);
+            $coupon->subcategories()->sync([]);
+        } elseif ($appliesTo === 'subcategory') {
+            // Only sync subcategories
+            $coupon->products()->sync([]);
+            $coupon->categories()->sync([]);
+            $coupon->subcategories()->sync($request->subcategory_ids ?? []);
+        }
 
         return redirect()->route('vendor.coupons.index')->with('success', 'Coupon created successfully.');
     }
@@ -76,9 +117,29 @@ class CouponController extends Controller
         if (!$vendor) {
             return redirect()->route('vendor.dashboard')->with('error', 'You do not have permission to edit this coupon.');
         }
-        $products = Product::where('is_deleted', 0)->where('is_active', 1)->where('vendor_id', $vendor->id)->get();
-        $categories = Category::where('is_deleted', 0)->where('is_active', 1)->get();
-        $subcategories = Subcategory::where('is_deleted', 0)->where('is_active', 1)->get();
+        // Get vendor's products only (not from other vendors)
+        // Also ensure products have valid category_id and sub_category_id
+        $products = Product::where('is_deleted', 0)
+            ->where('is_active', 1)
+            ->where('vendor_id', $vendor->id)
+            ->whereNotNull('category_id')
+            ->whereNotNull('sub_category_id')
+            ->get();
+        
+        // Get only categories that have products from this vendor
+        $categoryIds = $products->pluck('category_id')->filter()->unique()->toArray();
+        $categories = Category::where('is_deleted', 0)
+            ->where('is_active', 1)
+            ->whereIn('id', $categoryIds)
+            ->get();
+        
+        // Get only subcategories that have products from this vendor
+        $subcategoryIds = $products->pluck('sub_category_id')->filter()->unique()->toArray();
+        $subcategories = Subcategory::where('is_deleted', 0)
+            ->where('is_active', 1)
+            ->whereIn('id', $subcategoryIds)
+            ->get();
+        
         return view('vendorpanel.coupon.edit', compact('title', 'vendor', 'coupon', 'products', 'categories', 'subcategories'));
     }
 
@@ -107,10 +168,34 @@ class CouponController extends Controller
 
         $coupon->update($data);
 
-        // Check if applies_to is set before syncing to avoid null inserts
-        $coupon->products()->sync($request->product_ids ?? []);
-        $coupon->categories()->sync($request->category_ids ?? []);
-        $coupon->subcategories()->sync($request->subcategory_ids ?? []);
+        // Sync relationships based on applies_to value
+        // Always clear all relationships first, then sync only the relevant ones
+        $appliesTo = $request->applies_to;
+        
+        if ($appliesTo === 'all') {
+            // If applies to all, clear all relationships
+            $coupon->products()->sync([]);
+            $coupon->categories()->sync([]);
+            $coupon->subcategories()->sync([]);
+        } elseif ($appliesTo === 'product') {
+            // Only sync products, clear categories and subcategories
+            $productIds = $request->product_ids ?? [];
+            $coupon->products()->sync($productIds);
+            $coupon->categories()->sync([]);
+            $coupon->subcategories()->sync([]);
+        } elseif ($appliesTo === 'category') {
+            // Only sync categories, clear products and subcategories
+            $categoryIds = $request->category_ids ?? [];
+            $coupon->products()->sync([]);
+            $coupon->categories()->sync($categoryIds);
+            $coupon->subcategories()->sync([]);
+        } elseif ($appliesTo === 'subcategory') {
+            // Only sync subcategories, clear products and categories
+            $subcategoryIds = $request->subcategory_ids ?? [];
+            $coupon->products()->sync([]);
+            $coupon->categories()->sync([]);
+            $coupon->subcategories()->sync($subcategoryIds);
+        }
 
         return redirect()->route('vendor.coupons.index')->with('success', 'Coupon updated successfully.');
     }

@@ -27,18 +27,35 @@
                     <div class="col-md-6">
                         <p><strong>Order Number:</strong> {{ $vendorOrder->order->order_number ?? 'N/A' }}</p>
                         <p><strong>Order Date:</strong> {{ $vendorOrder->created_at ? $vendorOrder->created_at->format('d/m/Y H:i') : 'N/A' }}</p>
-                        <p><strong>Delivery Date:</strong> {{ $vendorOrder->deliverySlot ? $vendorOrder->deliverySlot->slot_date : 'N/A' }}</p>
-                        <p><strong>Delivery Time:</strong> {{ $vendorOrder->deliverySlot ? $vendorOrder->deliverySlot->start_time . ' - ' . $vendorOrder->deliverySlot->end_time : 'N/A' }}</p>
+                        @php
+                            $deliverySlot = $vendorOrder->deliverySlot;
+                            $deliveryDate = $deliverySlot && $deliverySlot->date ? $deliverySlot->date->format('d/m/Y') : 'N/A';
+                            $deliveryTime = $deliverySlot && $deliverySlot->start_time && $deliverySlot->end_time 
+                                ? date('h:i A', strtotime($deliverySlot->start_time)) . ' - ' . date('h:i A', strtotime($deliverySlot->end_time))
+                                : 'N/A';
+                        @endphp
+                        <p><strong>Delivery Date:</strong> {{ $deliveryDate }}</p>
+                        <p><strong>Delivery Time:</strong> {{ $deliveryTime }}</p>
                     </div>
                     <div class="col-md-6">
                         <p><strong>Status:</strong>
                             <span class="label label-default">{{ $vendorOrder->delivery_status ? strtoupper(str_replace('_', ' ', $vendorOrder->delivery_status)) : 'N/A' }}</span>
                         </p>
                         <p><strong>Total Amount:</strong> ₹{{ number_format($vendorOrder->final_amount ?? 0, 2) }}</p>
+                        @php
+                            $payment = $vendorOrder->order->payments->first();
+                            $paymentStatus = $payment ? ucfirst($payment->payment_status) : 'Pending';
+                            $paymentMethod = $payment ? ucfirst(str_replace('_', ' ', $payment->payment_method)) : 'Online';
+                            $paymentStatusClass = $payment && $payment->payment_status == 'success' ? 'label-success' : 
+                                                ($payment && $payment->payment_status == 'pending' ? 'label-warning' : 'label-danger');
+                        @endphp
                         <p><strong>Payment Status:</strong>
-                            <span class="label label-success">{{ $vendorOrder->order->payment_status ?? 'PAID' }}</span>
+                            <span class="label {{ $paymentStatusClass }}">{{ $paymentStatus }}</span>
                         </p>
-                        <p><strong>Payment Method:</strong> {{ $vendorOrder->order->payment_method ?? 'Online' }}</p>
+                        <p><strong>Payment Method:</strong> {{ $paymentMethod }}</p>
+                        @if($payment && $payment->transaction_id)
+                            <p><strong>Transaction ID:</strong> {{ $payment->transaction_id }}</p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -52,16 +69,45 @@
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Name:</strong> {{ $vendorOrder->order->user->name ?? 'N/A' }}</p>
-                        <p><strong>Email:</strong> {{ $vendorOrder->order->user->email ?? 'N/A' }}</p>
-                        <p><strong>Phone:</strong> {{ $vendorOrder->order->user->phone ?? 'N/A' }}</p>
+                        @php
+                            $address = $vendorOrder->order->address; // CustomerAddress
+                            $customerName = $vendorOrder->order->user->name ?? ($address->name ?? 'N/A');
+                            $customerEmail = $vendorOrder->order->user->email ?? 'N/A';
+                            $customerPhone = $address->phone ?? ($vendorOrder->order->user->phone ?? 'N/A');
+                        @endphp
+                        <p><strong>Name:</strong> {{ $customerName }}</p>
+                        <p><strong>Email:</strong> {{ $customerEmail }}</p>
+                        <p><strong>Phone:</strong> {{ $customerPhone }}</p>
+                        @if($address && $address->alt_phone)
+                            <p><strong>Alternate Phone:</strong> {{ $address->alt_phone }}</p>
+                        @endif
                     </div>
                     <div class="col-md-6">
                         <p><strong>Address:</strong></p>
                         <address>
-                            {{ $vendorOrder->order->address->address_line_1 ?? '' }}<br>
-                            {{ $vendorOrder->order->address->address_line_2 ?? '' }}<br>
-                            {{ $vendorOrder->order->address->city ?? '' }}, {{ $vendorOrder->order->address->state ?? '' }} - {{ $vendorOrder->order->address->pincode ?? '' }}
+                            @if($address)
+                                @if($address->full_address)
+                                    {{ $address->full_address }}<br>
+                                @else
+                                    @if($address->name)
+                                        <strong>{{ $address->name }}</strong><br>
+                                    @endif
+                                    @if($address->flat)
+                                        {{ $address->flat }}<br>
+                                    @endif
+                                    @if($address->area)
+                                        {{ $address->area }}<br>
+                                    @endif
+                                    @if($address->landmark)
+                                        {{ $address->landmark }}<br>
+                                    @endif
+                                @endif
+                                @if($address->pincode)
+                                    Pincode: {{ $address->pincode }}
+                                @endif
+                            @else
+                                Address not available
+                            @endif
                         </address>
                     </div>
                 </div>
@@ -89,7 +135,29 @@
                             @forelse($vendorOrder->orderItems as $item)
                                 <tr>
                                     <td>{{ $item->product->title ?? 'N/A' }}</td>
-                                    <td>{{ $item->variant ? implode(' | ', array_filter([$item->variant->size ?? '', $item->variant->color ?? '', $item->variant->material ?? ''])) : 'N/A' }}</td>
+                                    <td>
+                                        @if($item->variant)
+                                            @php
+                                                $variantDisplay = '';
+                                                if ($item->variant->variant_name) {
+                                                    $variantDisplay = $item->variant->variant_name;
+                                                } elseif ($item->variant->attributes && is_array($item->variant->attributes) && !empty($item->variant->attributes)) {
+                                                    $attrParts = [];
+                                                    foreach ($item->variant->attributes as $key => $value) {
+                                                        if (!empty($value)) {
+                                                            $attrParts[] = $key . ': ' . $value;
+                                                        }
+                                                    }
+                                                    $variantDisplay = !empty($attrParts) ? implode(' | ', $attrParts) : 'N/A';
+                                                } else {
+                                                    $variantDisplay = 'N/A';
+                                                }
+                                            @endphp
+                                            {{ $variantDisplay }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
                                     <td>{{ $item->quantity ?? 0 }}</td>
                                     <td>₹{{ number_format($item->price ?? 0, 2) }}</td>
                                     <td>₹{{ number_format(($item->price ?? 0) * ($item->quantity ?? 0), 2) }}</td>

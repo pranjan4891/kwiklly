@@ -42,7 +42,19 @@ class CategoryController extends Controller
      public function store(Request $request)
      {
          $request->validate([
-             'category_name' => 'required|string|max:255',
+             'category_name' => [
+                 'required',
+                 'string',
+                 'max:255',
+                 function ($attribute, $value, $fail) {
+                     $exists = Category::whereRaw('UPPER(name) = ?', [strtoupper($value)])
+                         ->where('is_deleted', 0)
+                         ->exists();
+                     if ($exists) {
+                         $fail('This category name already exists. Please choose a different name.');
+                     }
+                 }
+             ],
              'cat_img' => 'required|image|mimes:jpeg,png,jpg,gif,svg|dimensions:min_width=120,min_height=120'
          ]);
 
@@ -88,7 +100,20 @@ class CategoryController extends Controller
          $category = Category::findOrFail($id);
 
          $request->validate([
-             'category_name' => 'required|string|max:255',
+             'category_name' => [
+                 'required',
+                 'string',
+                 'max:255',
+                 function ($attribute, $value, $fail) use ($id) {
+                     $exists = Category::whereRaw('UPPER(name) = ?', [strtoupper($value)])
+                         ->where('id', '!=', $id)
+                         ->where('is_deleted', 0)
+                         ->exists();
+                     if ($exists) {
+                         $fail('This category name already exists. Please choose a different name.');
+                     }
+                 }
+             ],
              'cat_img' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
          ]);
 
@@ -152,11 +177,26 @@ class CategoryController extends Controller
         // Validate the request including webp support
         $validator = Validator::make($request->all(), [
             'cat_id' => 'required|exists:categories,id',
-            'subcategory_name' => 'required|string|max:255',
+            'subcategory_name' => [
+                'required',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) use ($request) {
+                    $exists = Subcategory::where('category_id', $request->cat_id)
+                        ->whereRaw('LOWER(sub_cat_name) = ?', [strtolower($value)])
+                        ->where('is_deleted', 0)
+                        ->exists();
+                    if ($exists) {
+                        $fail('This subcategory name already exists for the selected category.');
+                    }
+                }
+            ],
             'attribute' => 'required|array',
             'attribute.*' => 'exists:attributes,id',
             'status' => 'required|in:0,1',
             'subcat_img' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ], [
+            'subcategory_name.required' => 'Subcategory name is required.',
         ]);
 
         if ($validator->fails()) {
@@ -195,11 +235,27 @@ class CategoryController extends Controller
 
         $request->validate([
             'cat_id' => 'required|exists:categories,id',
-            'subcategory_name' => 'required|string|max:255',
+            'subcategory_name' => [
+                'required',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) use ($request, $id) {
+                    $exists = Subcategory::where('category_id', $request->cat_id)
+                        ->whereRaw('LOWER(sub_cat_name) = ?', [strtolower($value)])
+                        ->where('id', '!=', $id)
+                        ->where('is_deleted', 0)
+                        ->exists();
+                    if ($exists) {
+                        $fail('This subcategory name already exists for the selected category.');
+                    }
+                }
+            ],
             'attribute' => 'required|array',
             'attribute.*' => 'exists:attributes,id',
             'status' => 'required|in:0,1',
             'subcat_img' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ], [
+            'subcategory_name.required' => 'Subcategory name is required.',
         ]);
 
         if ($request->hasFile('subcat_img')) {

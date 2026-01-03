@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CustomerController extends Controller
 {
@@ -191,15 +192,41 @@ class CustomerController extends Controller
 
     public function saveUpdateProfile(Request $request)
     {
+        // Check if user is authenticated
+        if (!auth()->check()) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'You must be logged in to update your profile.'], 401);
+            }
+            return redirect()->route('login')->with('error', 'You must be logged in to update your profile.');
+        }
+
         // @var User $user
         $user = auth()->user();
 
-        $validator = validator($request->all(), [
+        // Check if user is a guest user (if guest users have a specific type or flag)
+        if ($user->user_type == 'guest' || (isset($user->is_guest) && $user->is_guest)) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Guest users cannot update their profile. Please create a full account.'], 403);
+            }
+            return back()->with('error', 'Guest users cannot update their profile. Please create a full account.');
+        }
+
+        // Build validation rules
+        $rules = [
             'name'  => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone_number' => 'required|digits:10|unique:users,phone_number,' . $user->id,
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        ];
+
+        // Phone number validation - make it conditional or handle existing phone
+        if ($request->has('phone_number') && !empty($request->phone_number)) {
+            $rules['phone_number'] = 'required|digits:10|unique:users,phone_number,' . $user->id;
+        } elseif (!$user->phone_number) {
+            // Only require phone if user doesn't have one
+            $rules['phone_number'] = 'required|digits:10|unique:users,phone_number';
+        }
+
+        $validator = validator($request->all(), $rules);
 
         if ($validator->fails()) {
             if ($request->expectsJson()) {
@@ -236,13 +263,23 @@ class CustomerController extends Controller
             $avatarPath = null;
         }
 
-        /** @var User $user */
-        $user->update([
+        // Prepare update data
+        $updateData = [
             'name' => $request->name,
             'email' => $request->email,
-            'phone_number' => $request->phone_number,
             'profile_photo' => $avatarPath,
-        ]);
+        ];
+
+        // Only update phone_number if provided
+        if ($request->has('phone_number') && !empty($request->phone_number)) {
+            $updateData['phone_number'] = $request->phone_number;
+        } elseif ($user->phone_number) {
+            // Keep existing phone number if not provided
+            $updateData['phone_number'] = $user->phone_number;
+        }
+
+        /** @var User $user */
+        $user->update($updateData);
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'message' => 'Profile updated successfully!']);
@@ -350,10 +387,11 @@ class CustomerController extends Controller
         // Get wallet balance
         $walletBalance = WalletTransaction::getBalance($user->id);
 
-        // Get orders with proper relationships
+        // Get orders with proper relationships - only latest 6 orders
         $orders = Order::with(['vendorOrders.vendor', 'vendorOrders.orderItems.product', 'vendorOrders.orderItems.variant', 'vendorOrders.deliverySlot'])
             ->where('user_id', $user->id)
             ->latest()
+            ->take(6)
             ->get();
 
         // Group orders by vendor with vendor-specific totals
@@ -400,7 +438,9 @@ class CustomerController extends Controller
                     'image' => $vendorLogo,
                     'items' => $vendorItems,
                     'vendor_total' => $vendorTotal,
-                    'delivery_date' => $deliveryDate
+                    'delivery_date' => $deliveryDate,
+                    'delivery_status' => $vendorOrder->delivery_status ?? 'pending', // Add delivery status from vendor_orders
+                    'vendor_id' => $vendorOrder->vendor_id // Add vendor_id for filtering
                 ];
             }
 
@@ -409,6 +449,7 @@ class CustomerController extends Controller
                 'order_total' => $order->total_price, // Keep the full order total if needed
                 'status' => $order->status,
                 'date' => $order->created_at->format('D j M Y, h:i A'),
+                'created_at' => $order->created_at->timestamp, // Pass timestamp for 5-minute check
                 'vendors' => $itemsByVendor
             ];
         }
@@ -425,35 +466,70 @@ class CustomerController extends Controller
     }
 
 
-    public function orderDetails($order_id)
+    public function orderDetails($order_id, Request $request)
     {
-        $order = Order::with(['vendorOrders.vendor', 'vendorOrders.orderItems.product', 'vendorOrders.orderItems.variant'])
+        $order = Order::with([
+            'vendorOrders.vendor', 
+            'vendorOrders.orderItems.product.featureImage',
+            'vendorOrders.orderItems.variant',
+            'vendorOrders.deliverySlot'
+        ])
             ->where('order_number', $order_id)
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
-        return view('web.orderdetails', compact('order'));
+        // Get vendor_id from query parameter if provided
+        $vendorId = $request->get('vendor_id');
+
+        return view('web.orderdetails', compact('order', 'vendorId'));
     }
 
-    public function orderCancel($orderNumber)
+    public function orderCancel($orderNumber, Request $request)
     {
         $order = Order::with(['vendorOrders.vendor', 'vendorOrders.orderItems.product', 'vendorOrders.orderItems.variant'])
                     ->where('order_number', $orderNumber)
                     ->where('user_id', auth()->id())
                     ->firstOrFail();
 
-        return view('web.ordercancel', compact('order'));
+        // Get vendor_id from query parameter if provided
+        $vendorId = $request->get('vendor_id');
+
+        return view('web.ordercancel', compact('order', 'vendorId'));
     }
 
-    public function processCancel($orderNumber)
+    public function processCancel($orderNumber, Request $request)
     {
         $order = Order::with(['vendorOrders.vendor', 'vendorOrders.orderItems.product', 'vendorOrders.orderItems.variant'])
                     ->where('order_number', $orderNumber)
                     ->where('user_id', auth()->id())
                     ->firstOrFail();
 
+        // Get vendor_id from request (POST or GET) if provided (for vendor-specific cancellation)
+        $vendorId = $request->input('vendor_id');
+
+        if ($vendorId) {
+            // Cancel specific vendor order
+            $vendorOrder = $order->vendorOrders()->where('vendor_id', $vendorId)->first();
+            
+            if ($vendorOrder && $vendorOrder->delivery_status !== 'cancelled') {
+                $vendorOrder->delivery_status = 'cancelled';
+                $vendorOrder->save();
+            }
+        } else {
+            // Cancel all vendor orders for this order
+            $order->vendorOrders()->update(['delivery_status' => 'cancelled']);
+        }
+
+        // Refresh order to get latest vendor orders
+        $order->refresh();
+        $order->load('vendorOrders');
+
+        // Check if all vendor orders are cancelled
+        $allCancelled = $order->vendorOrders->where('delivery_status', '!=', 'cancelled')->count() === 0;
+        if ($allCancelled && $order->vendorOrders->count() > 0) {
         $order->status = 'cancelled';
         $order->save();
+        }
 
         return redirect()->route('customer.dashboard')->with('success', 'Order cancelled successfully.');
     }
@@ -492,6 +568,38 @@ class CustomerController extends Controller
         }
         $address->delete();
         return response()->json(['success' => true, 'message' => 'Address deleted successfully!']);
+    }
+
+    public function downloadInvoice($order_id)
+    {
+        $order = Order::with([
+            'vendorOrders.vendor',
+            'vendorOrders.orderItems.product.category',
+            'vendorOrders.orderItems.product.subcategory',
+            'vendorOrders.orderItems.variant',
+            'vendorOrders.deliverySlot',
+            'user',
+            'address'
+        ])
+        ->where('order_number', $order_id)
+        ->where('user_id', auth()->id())
+        ->firstOrFail();
+
+        // Check if order is delivered
+        $isDelivered = $order->vendorOrders->contains(function($vendorOrder) {
+            return $vendorOrder->delivery_status === 'delivered';
+        });
+
+        if (!$isDelivered) {
+            return redirect()->back()->with('error', 'Invoice can only be downloaded for delivered orders.');
+        }
+
+        $filename = 'invoice_' . $order->order_number . '.pdf';
+
+        $pdf = Pdf::loadView('web.order.invoice', compact('order'));
+        $pdf->setPaper('A4', 'portrait');
+        
+        return $pdf->download($filename);
     }
 
 }

@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\VendorOrder;
 use App\Models\User;
+use App\Models\Payment;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 
@@ -65,17 +66,41 @@ class OrderController extends Controller
         // Transform data for the view (maintaining compatibility with old structure)
         $orderDetails = $vendorOrders->map(function ($vendorOrder) {
             $order = $vendorOrder->order;
-            $address = $order->address;
+            $address = $order->address; // CustomerAddress relationship
+            $deliverySlot = $vendorOrder->deliverySlot;
 
-            // Format delivery date time
-            $deliveryInfo = 'Normal-Delivery'; // Default
-            if ($vendorOrder->deliverySlot) {
-                $slotDateTime = $vendorOrder->deliverySlot->slot_date . ' ' . $vendorOrder->deliverySlot->start_time . '-' . $vendorOrder->deliverySlot->end_time;
-                if (strpos($vendorOrder->deliverySlot->slot_name, 'Express') !== false) {
-                    $deliveryInfo = 'Express-Delivery';
+            // Format estimated delivery date and time from DeliverySlot
+            $estimatedDeliveryDateTime = null;
+            if ($deliverySlot) {
+                // Use date and start_time from DeliverySlot model
+                $date = $deliverySlot->date ? $deliverySlot->date->format('Y-m-d') : null;
+                $startTime = $deliverySlot->start_time ?? null;
+                
+                if ($date && $startTime) {
+                    // Format as datetime string: Y-m-d H:i:s
+                    $estimatedDeliveryDateTime = $date . ' ' . $startTime;
                 }
+            }
+
+            // Build customer address from CustomerAddress model
+            $addressParts = [];
+            if ($address) {
+                if ($address->name) {
+                    $addressParts[] = $address->name;
+                }
+                if ($address->flat) {
+                    $addressParts[] = $address->flat;
+                }
+                if ($address->area) {
+                    $addressParts[] = $address->area;
+                }
+                if ($address->landmark) {
+                    $addressParts[] = $address->landmark;
+                }
+                // Use full_address if available, otherwise build from parts
+                $fullAddress = $address->full_address ?? implode(', ', $addressParts);
             } else {
-                $slotDateTime = date('d/m/Y H:i', strtotime($vendorOrder->created_at)) . '-' . date('H:i', strtotime($vendorOrder->created_at . ' +30 minutes'));
+                $fullAddress = 'N/A';
             }
 
             return (object) [
@@ -83,20 +108,20 @@ class OrderController extends Controller
                 'order_id' => $order->id,
                 'vendor_order_id' => $vendorOrder->id,
                 'fld_invno' => $order->order_number,
-                'estimated_delivery_datetime' => $vendorOrder->deliverySlot ? $vendorOrder->deliverySlot->slot_date . ' ' . $vendorOrder->deliverySlot->start_time : null,
-                'fld_delivery_time' => $vendorOrder->deliverySlot ? $vendorOrder->deliverySlot->start_time . '-' . $vendorOrder->deliverySlot->end_time : 'Standard',
-                'delivery_type' => $deliveryInfo,
+                'estimated_delivery_datetime' => $estimatedDeliveryDateTime,
+                'fld_delivery_time' => $deliverySlot ? ($deliverySlot->start_time . '-' . $deliverySlot->end_time) : 'Standard',
+                'delivery_type' => $deliverySlot ? 'Scheduled' : 'Standard',
                 'fld_invdate' => $order->created_at->format('d/m/Y H:i'),
                 'fld_grand_total' => '₹' . number_format($vendorOrder->final_amount, 2),
-                'fld_name' => $order->user->name ?? 'N/A',
-                'fld_address1' => $address->address_line_1 ?? '',
-                'fld_city' => $address->city ?? '',
+                'fld_name' => $order->user->name ?? ($address->name ?? 'N/A'),
+                'fld_address1' => $fullAddress,
+                'fld_city' => $address->area ?? '',
                 'fld_pinocde' => $address->pincode ?? '',
                 'fld_order_status' => $this->getStatusLabel($vendorOrder->delivery_status),
                 'delivery_status' => $vendorOrder->delivery_status,
                 'fld_payment_mode' => 'Online', // You can add payment info later
                 'total_items' => $vendorOrder->orderItems->count(),
-                'customer_phone' => $order->user->phone ?? '',
+                'customer_phone' => $address->phone ?? ($order->user->phone ?? ''),
                 'customer_email' => $order->user->email ?? '',
             ];
         });
@@ -133,10 +158,12 @@ class OrderController extends Controller
         $vendorOrder = VendorOrder::with([
             'order',
             'order.user',
-            'order.address',
+            'order.address', // CustomerAddress relationship
+            'order.payments', // Payment relationship
             'orderItems',
             'orderItems.product',
-            'orderItems.variant'
+            'orderItems.variant',
+            'deliverySlot' // DeliverySlot relationship
         ])
         ->where('id', $orderId)
         ->where('vendor_id', $vendorId)
@@ -153,11 +180,33 @@ class OrderController extends Controller
 
         $vendorId = auth('vendor')->id();
 
-        $vendorOrder = VendorOrder::where('id', $orderId)
+        $vendorOrder = VendorOrder::with('order.vendorOrders')
+            ->where('id', $orderId)
             ->where('vendor_id', $vendorId)
             ->firstOrFail();
 
         $vendorOrder->update(['delivery_status' => $request->status]);
+
+        // Update main order status based on all vendor orders
+        $order = $vendorOrder->order;
+        if ($order) {
+            $allVendorOrders = $order->vendorOrders;
+            $totalVendors = $allVendorOrders->count();
+            
+            // Check if all vendor orders are cancelled
+            $allCancelled = $allVendorOrders->where('delivery_status', 'cancelled')->count() === $totalVendors;
+            
+            // Check if all vendor orders are delivered
+            $allDelivered = $allVendorOrders->where('delivery_status', 'delivered')->count() === $totalVendors;
+            
+            if ($allCancelled && $totalVendors > 0) {
+                $order->status = 'cancelled';
+                $order->save();
+            } elseif ($allDelivered && $totalVendors > 0) {
+                $order->status = 'delivered';
+                $order->save();
+            }
+        }
 
         if ($request->ajax()) {
             return response()->json(['success' => true, 'message' => 'Order status updated successfully']);
@@ -175,8 +224,10 @@ class OrderController extends Controller
             'order.user',
             'order.address',
             'orderItems',
-            'orderItems.product',
-            'orderItems.variant'
+            'orderItems.product.category',
+            'orderItems.product.subcategory',
+            'orderItems.variant',
+            'deliverySlot'
         ])
         ->where('id', $orderId)
         ->where('vendor_id', $vendorId)
@@ -185,6 +236,7 @@ class OrderController extends Controller
         $filename = 'invoice_' . $vendorOrder->order->order_number . '.pdf';
 
         $pdf = Pdf::loadView('vendorpanel.order.invoice', compact('vendorOrder'));
+        $pdf->setPaper('A4', 'portrait');
         return $pdf->download($filename);
     }
 }

@@ -1,5 +1,12 @@
 @extends('web.include.main2')
 @section('content')
+<style>
+    #current-location-btn{
+    color: red;
+    background-color: white;
+    border-color: red;
+    }
+</style>
 <!-- first section start  -->
 <section class="registrationspace">
    <div class="container register-section">

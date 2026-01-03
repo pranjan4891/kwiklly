@@ -44,7 +44,7 @@
         request()
             ->session()
             ->regenerateToken();
-        return redirect()->route("login");
+        return redirect()->route("loginbyphone");
     })->name("logout");
 
     Route::middleware("auth")->group(function () {
@@ -57,8 +57,9 @@
         Route::get('address/{address}', [CustomerController::class, 'showAddress'])->name('address.show');
         Route::post('address/{address}', [CustomerController::class, 'updateAddress'])->name('address.update');
         Route::delete('address/{address}', [CustomerController::class, 'deleteAddress'])->name('address.delete');
+        Route::get("/order-invoice/{order_id}", [CustomerController::class, "downloadInvoice"])->name("customer.order.invoice");
         Route::post("/logout", function () {
             auth()->logout();
-            return redirect()->route("login");
+            return redirect()->route("loginbyphone");
         })->name("logout");
     });

@@ -159,11 +159,33 @@ class OrderController extends Controller
 
         $branch = auth('branch')->user();
 
-        $vendorOrder = VendorOrder::where('id', $orderId)
+        $vendorOrder = VendorOrder::with('order.vendorOrders')
+            ->where('id', $orderId)
             ->where('vendor_id', $branch->id)
             ->firstOrFail();
 
         $vendorOrder->update(['delivery_status' => $request->status]);
+
+        // Update main order status based on all vendor orders
+        $order = $vendorOrder->order;
+        if ($order) {
+            $allVendorOrders = $order->vendorOrders;
+            $totalVendors = $allVendorOrders->count();
+            
+            // Check if all vendor orders are cancelled
+            $allCancelled = $allVendorOrders->where('delivery_status', 'cancelled')->count() === $totalVendors;
+            
+            // Check if all vendor orders are delivered
+            $allDelivered = $allVendorOrders->where('delivery_status', 'delivered')->count() === $totalVendors;
+            
+            if ($allCancelled && $totalVendors > 0) {
+                $order->status = 'cancelled';
+                $order->save();
+            } elseif ($allDelivered && $totalVendors > 0) {
+                $order->status = 'delivered';
+                $order->save();
+            }
+        }
 
         if ($request->ajax()) {
             return response()->json(['success' => true, 'message' => 'Order status updated successfully']);
@@ -181,7 +203,8 @@ class OrderController extends Controller
             'order.user',
             'order.address',
             'orderItems',
-            'orderItems.product',
+            'orderItems.product.category',
+            'orderItems.product.subcategory',
             'orderItems.variant'
         ])
         ->where('id', $orderId)
@@ -191,6 +214,7 @@ class OrderController extends Controller
         $filename = 'invoice_' . $vendorOrder->order->order_number . '.pdf';
 
         $pdf = Pdf::loadView('branch.order.invoice', compact('vendorOrder'));
+        $pdf->setPaper('A4', 'portrait');
         return $pdf->download($filename);
     }
 }

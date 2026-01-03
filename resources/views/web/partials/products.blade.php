@@ -26,7 +26,8 @@
 
         <div class="col-md-4 pb-4 col-6 product-item" data-subcategory="{{ $product->sub_category_id }}">
             <div class="item">
-                <div class="product-card2 p-0">
+                <div class="product-card p-0">
+
                     @if ($defaultVariant && ($defaultVariant->variant_save_price_in_percent ?? 0) > 0)
                         <span class="discount-label">{{ (int) round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
                     @endif
@@ -47,31 +48,25 @@
                         @endif
                     </a>
                     @endif
-
-                    <div class="product-title cardpadding">{{ $product->title }}</div>
+                    <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
 
                     @if (!empty($firstAttr))
                         <div class="product-info cardpadding">{{ $firstAttr }}</div>
-                    @elseif($defaultVariant)
-                        <div class="product-info cardpadding">
-                            {{ ($defaultVariant->weight ?? '') . ($defaultVariant->unit ?? '') }}
-                        </div>
+                    @else
+                        <div class="product-info cardpadding">{{ $defaultVariant->variant_name ?? '' }}</div>
                     @endif
 
                     <div class="price-container cardpadding">
-                        @if ($defaultVariant)
-                            <span class="price">
-                                ₹ {{ intval($defaultVariant->variant_selling_price) ?? '--' }}
+                        <div class="price-wrapper">
+                        <span class="price">
+                            <span class="rupee-symbol">₹</span> {{ $defaultVariant ? intval($defaultVariant->variant_selling_price) : '--' }}
+                        </span>
+                        @if ($defaultVariant && $defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
+                            <span class="original-price">
+                                <span class="rupee-symbol2">₹</span> {{ intval($defaultVariant->variant_actual_price) }}
                             </span>
-
-                            @if ($defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
-                                <span class="original-price">
-                                    ₹ {{ intval($defaultVariant->variant_actual_price) }}
-                                </span>
-                            @endif
-                        @else
-                            <span class="price">--</span>
                         @endif
+                        </div>
                         <div class="qty-box"
                             data-product-id="{{ $product->id }}"
                             data-variant-id="{{ $firstVariant->id ?? '' }}"
@@ -117,25 +112,19 @@
                             @else
                                 {{-- ❌ Store is closed --}}
                                 <button class="add-btn disabled" disabled>
-                                    Store Closed
+                                    Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                 </button>
                             @endif
                         </div>
                     </div>
 
+
                     <div class="store-info">
-                        {{-- <span>Ad</span> --}}
-                        {{-- <span>{{ $selectedVendor->business_name ?? 'Chandrash Grocery' }}</span> --}}
-                        {{-- <span>5 min away</span> --}}
+                        <span><a href="{{ route('explorestore', ['vendor_id' => $product->vendor_id,'cat_id'=>$product->category_id]) }}" onclick="return redirectWithLocation(this.href)">{{ $product->vendor->business_name ?? '' }}</a></span>
                     </div>
                 </div>
             </div>
         </div>
     @endforeach
-@else
-    <div class="col-12">
-        <div class="no-products text-center py-5">
-            <h5 class="mt-3">Product not available</h5>
-        </div>
-    </div>
+
 @endif

@@ -33,6 +33,7 @@ class HomeController extends Controller
         $lat = $request->input('latitude');
         $lng = $request->input('longitude');
 
+        // Initialize empty collections
         $data['trending_products'] = collect();
         $data['best_offers_products'] = collect();
         $data['sponsors_products'] = collect();
@@ -43,13 +44,106 @@ class HomeController extends Controller
         // ✅ Get location-aware categories that have active products
         $data['categories'] = $this->getAvailableCategories($lat, $lng, 9);
 
-        // ✅ Debug logging for categories
-        Log::info('Homepage categories', [
-            'lat' => $lat,
-            'lng' => $lng,
-            'categories_count' => $data['categories']->count(),
-            'categories' => $data['categories']->pluck('name')->toArray()
-        ]);
+        // ✅ If location is available, load products (same logic as locationProducts)
+        if ($lat && $lng) {
+            // Find which master polygon user belongs to
+            $insideLocation = MasterLocation::where('is_active', 1)
+                ->where('is_deleted', 0)
+                ->get()
+                ->first(function($location) use ($lat, $lng) {
+                    $polygon = $location->lat_long;
+                    return $this->pointInPolygon($lat, $lng, $polygon);
+                });
+
+            if ($insideLocation) {
+                // Get all vendors inside this polygon
+                $vendors = VendorAdmin::where('status', '1')
+                    ->where('is_active', '1')
+                    ->where('user_type', 'vendor')
+                    ->whereNull('deleted_at')
+                    ->orderBy('order_by', 'asc')
+                    ->get()
+                    ->filter(function ($vendor) use ($insideLocation) {
+                        return $this->pointInPolygon(
+                            $vendor->latitude,
+                            $vendor->longitude,
+                            $insideLocation->lat_long
+                        );
+                    });
+
+                $vendorIds = $vendors->pluck('id');
+
+                if ($vendorIds->count() > 0) {
+                    // Fetch trending products
+                    $data['trending_products'] = Product::with('variants', 'vendor')
+                        ->whereIn('vendor_id', $vendorIds)
+                        ->where('is_deleted', 0)
+                        ->where('is_active', 1)
+                        ->where('top_selling', 1)
+                        ->take(20)
+                        ->get();
+
+                    // Fetch best offers products
+                    $data['best_offers_products'] = Product::with('variants', 'vendor')
+                        ->whereIn('vendor_id', $vendorIds)
+                        ->where('is_deleted', 0)
+                        ->where('is_active', 1)
+                        ->where('best_offers', 1)
+                        ->take(20)
+                        ->get();
+
+                    // Fetch sponsored products
+                    $data['sponsors_products'] = Product::with('variants', 'vendor')
+                        ->whereIn('vendor_id', $vendorIds)
+                        ->where('is_deleted', 0)
+                        ->where('is_active', 1)
+                        ->where('spons_product', 1)
+                        ->take(20)
+                        ->get();
+
+                    // Fetch stores - ensure at least one store renders the section
+                    $data['stores'] = $vendors->where('is_home_request', 2)->map(function ($store) {
+                        if ($store->business_category) {
+                            $ids = explode(',', $store->business_category);
+                            $store->categories = Category::whereIn('id', $ids)->get();
+                        } else {
+                          //  $store->categories = collect();
+                        }
+                        return $store;
+                    })->values(); // Reset keys to ensure proper collection
+
+                    // Fetch category-wise products
+                    $data['categorywiseproducts'] = Category::where('is_deleted', '0')
+                        ->where('is_home', '1')
+                        ->get()
+                        ->map(function ($category) use ($vendorIds) {
+                            $category->products = Product::with('variants', 'vendor')
+                                ->where('category_id', $category->id)
+                                ->where('is_deleted', 0)
+                                ->where('is_active', 1)
+                                ->whereIn('vendor_id', $vendorIds)
+                                ->limit(16)
+                                ->get();
+                            return $category;
+                        })
+                        ->filter(function ($category) {
+                            return $category->products->count() > 0;
+                        })
+                        ->values();
+                }
+            }
+        }
+
+        // ✅ Debug logging
+        // Log::info('Homepage data', [
+        //     'lat' => $lat,
+        //     'lng' => $lng,
+        //     'categories_count' => $data['categories']->count(),
+        //     'trending_count' => $data['trending_products']->count(),
+        //     'best_offers_count' => $data['best_offers_products']->count(),
+        //     'sponsors_count' => $data['sponsors_products']->count(),
+        //     'categorywiseproducts_count' => $data['categorywiseproducts']->count(),
+        // ]);
 
         return view('web.index')->with($data);
     }
@@ -69,12 +163,16 @@ class HomeController extends Controller
             });
 
         if (!$insideLocation) {
+            $emptyCategories = collect();
+            $footerCategoriesHtml = $this->getFooterCategoriesHtml($lat, $lng);
             return response()->json([
-                'trending_html'       => '<p>No products available in your area.</p>',
+                'trending_html'       => '',
                 'best_offers_html'    => '',
                 'sponsors_html'       => '',
                 'stores_html'         => '',
                 'categories_html'     => '',
+                'homepage_categories_html' => view('web.partials.homepage_categories', ['homepageCategories' => $emptyCategories])->render(),
+                'footer_categories_html' => $footerCategoriesHtml,
             ]);
         }
 
@@ -125,11 +223,10 @@ class HomeController extends Controller
                 $ids = explode(',', $store->business_category);
                 $store->categories = Category::whereIn('id', $ids)->get();
             } else {
-                $store->categories = collect();
+              //  $store->categories = collect();
             }
             return $store;
-
-        });
+        })->values(); // Reset keys to ensure proper collection
 
         $categorywiseproducts = Category::where('is_deleted', '0')
             ->where('is_home', '1')
@@ -153,6 +250,12 @@ class HomeController extends Controller
 
 
 
+        // Get location-based categories for homepage slider
+        $categories = $this->getAvailableCategories($lat, $lng, 9);
+        
+        // Get footer categories HTML
+        $footerCategoriesHtml = $this->getFooterCategoriesHtml($lat, $lng);
+
         // 4. ✅ Return updated sections
         return response()->json([
             'trending_html'       => view('web.partials.trending', compact('trending_products'))->render(),
@@ -160,6 +263,8 @@ class HomeController extends Controller
             'sponsors_html'       => view('web.partials.sponsors', compact('sponsors_products'))->render(),
             'stores_html'         => view('web.partials.stores', compact('stores'))->render(),
             'categories_html'     => view('web.partials.categories', compact('categorywiseproducts'))->render(),
+            'homepage_categories_html' => view('web.partials.homepage_categories', ['homepageCategories' => $categories])->render(),
+            'footer_categories_html' => $footerCategoriesHtml,
         ]);
     }
 
@@ -237,6 +342,7 @@ class HomeController extends Controller
             $subcategoryIds = $products->pluck('sub_category_id')->filter()->unique();
 
             $subcategories = Subcategory::where('is_deleted', '0')
+                ->where('is_active', '1')
                 ->whereIn('id', $subcategoryIds)
                 ->get();
 
@@ -488,54 +594,274 @@ class HomeController extends Controller
         if ($cat_id == 0) {
             // All vendor products - find a fallback category for URL generation
             $category = null;
-            $products = $vendor->products;
+            
+            // Use direct Product query - use integer comparison
+            $products = Product::where('vendor_id', $vendor_id)
+                ->where('is_deleted', 0)
+                ->where('is_active', 1)
+                ->whereNotNull('sub_category_id')
+                ->with('variants')
+                ->get();
+
+            // Debug: Log products found
+            Log::info('Products found for vendor (all categories)', [
+                'vendor_id' => $vendor_id,
+                'count' => $products->count(),
+                'product_ids' => $products->pluck('id')->toArray(),
+                'sub_category_ids' => $products->pluck('sub_category_id')->filter()->unique()->toArray()
+            ]);
 
             // Get subcategories that have active products for this vendor
-            $subcategoryIds = $products->where('is_active', 1)->where('is_deleted', 0)->pluck('sub_category_id')->filter()->unique();
-            $subcategories = Subcategory::whereIn('id', $subcategoryIds)
-                ->where('is_deleted', 0)
-                ->with('category') // Eager load category for URL generation
-                ->get();
+            $subcategoryIds = $products->pluck('sub_category_id')
+                ->filter(function($id) {
+                    return !is_null($id) && $id !== '' && $id !== 0;
+                })
+                ->unique()
+                ->values()
+                ->toArray();
+            
+            Log::info('Subcategory IDs extracted from products', [
+                'vendor_id' => $vendor_id,
+                'subcategory_ids' => $subcategoryIds,
+                'count' => count($subcategoryIds),
+                'products_count' => $products->count()
+            ]);
+            
+            if (empty($subcategoryIds)) {
+                Log::warning('No subcategory IDs found from products', [
+                    'vendor_id' => $vendor_id,
+                    'products_count' => $products->count()
+                ]);
+                $subcategories = collect();
+            } else {
+                // First check all subcategories without filters to debug
+                $allSubcategoriesDebug = Subcategory::whereIn('id', $subcategoryIds)->get();
+                Log::info('All subcategories found (without filters - all categories)', [
+                    'count' => $allSubcategoriesDebug->count(),
+                    'ids' => $allSubcategoriesDebug->pluck('id')->toArray(),
+                    'names' => $allSubcategoriesDebug->pluck('sub_cat_name')->toArray(),
+                    'is_active' => $allSubcategoriesDebug->pluck('is_active')->toArray(),
+                    'is_deleted' => $allSubcategoriesDebug->pluck('is_deleted')->toArray(),
+                    'category_ids' => $allSubcategoriesDebug->pluck('category_id')->toArray()
+                ]);
+                
+                // Query subcategories - handle multiple data types for is_active and is_deleted
+                // When cat_id == 0, we want ALL subcategories that have products, regardless of category
+                $subcategories = Subcategory::whereIn('id', $subcategoryIds)
+                    ->where(function($query) {
+                        $query->where('is_deleted', 0)
+                              ->orWhere('is_deleted', '0')
+                              ->orWhereRaw('CAST(is_deleted AS UNSIGNED) = 0');
+                    })
+                    ->where(function($query) {
+                        $query->where('is_active', 1)
+                              ->orWhere('is_active', '1')
+                              ->orWhereRaw('CAST(is_active AS UNSIGNED) = 1');
+                    })
+                    ->with('category')
+                    ->get();
+                
+                // Debug: Check which subcategories were found
+                $foundIds = $subcategories->pluck('id')->toArray();
+                $missingIds = array_diff($subcategoryIds, $foundIds);
+                
+                if (!empty($missingIds)) {
+                    Log::warning('Some subcategories were filtered out (all categories)', [
+                        'missing_ids' => $missingIds,
+                        'found_ids' => $foundIds,
+                        'all_ids' => $subcategoryIds
+                    ]);
+                    
+                    // Check the status of missing subcategories
+                    foreach ($missingIds as $missingId) {
+                        $missingSub = Subcategory::where('id', $missingId)->first();
+                        if ($missingSub) {
+                            Log::info('Missing subcategory details (all categories)', [
+                                'id' => $missingId,
+                                'name' => $missingSub->sub_cat_name,
+                                'is_active' => $missingSub->is_active,
+                                'is_deleted' => $missingSub->is_deleted,
+                                'category_id' => $missingSub->category_id
+                            ]);
+                        }
+                    }
+                }
+                
+                // If still empty, try without active check (for debugging)
+                if ($subcategories->isEmpty()) {
+                    Log::warning('No subcategories found even with IDs', [
+                        'subcategory_ids' => $subcategoryIds,
+                        'trying_without_filters' => true
+                    ]);
+                    // Try without filters to see if subcategories exist
+                    $allSubcategories = Subcategory::whereIn('id', $subcategoryIds)->get();
+                    Log::info('Subcategories without filters', [
+                        'count' => $allSubcategories->count(),
+                        'ids' => $allSubcategories->pluck('id')->toArray(),
+                        'is_active' => $allSubcategories->pluck('is_active')->toArray(),
+                        'is_deleted' => $allSubcategories->pluck('is_deleted')->toArray()
+                    ]);
+                }
+                
+                Log::info('Found subcategories', [
+                    'count' => $subcategories->count(),
+                    'ids' => $subcategories->pluck('id')->toArray(),
+                    'names' => $subcategories->pluck('sub_cat_name')->toArray(),
+                    'categories' => $subcategories->pluck('category_id')->toArray()
+                ]);
+            }
         } else {
             // Products for one category
             $category = Category::findOrFail($cat_id);
-            $products = $vendor->products->where('category_id', $cat_id)->where('is_active', 1)->where('is_deleted', 0);
-
-            // Get subcategories from this category that have active products for this vendor
-            $subcategoryIds = $products->pluck('sub_category_id')->filter()->unique();
-            $subcategories = Subcategory::where('category_id', $cat_id)
-                ->whereIn('id', $subcategoryIds)
+            
+            // Use direct Product query - use integer comparison
+            $products = Product::where('vendor_id', $vendor_id)
+                ->where('category_id', $cat_id)
                 ->where('is_deleted', 0)
+                ->where('is_active', 1)
+                ->whereNotNull('sub_category_id')
+                ->with('variants')
                 ->get();
+
+            // Debug: Log products found
+            Log::info('Products found for vendor (category specific)', [
+                'vendor_id' => $vendor_id,
+                'category_id' => $cat_id,
+                'count' => $products->count(),
+                'product_ids' => $products->pluck('id')->toArray(),
+                'sub_category_ids' => $products->pluck('sub_category_id')->filter()->unique()->toArray()
+            ]);
+
+            // ✅ IMPORTANT: Get ALL subcategories from ALL categories that have products for this vendor
+            // This ensures sidebar shows all subcategories, not just from current category
+            $allVendorProducts = Product::where('vendor_id', $vendor_id)
+                ->where('is_deleted', 0)
+                ->where('is_active', 1)
+                ->whereNotNull('sub_category_id')
+                ->get();
+            
+            // Get all subcategory IDs from all vendor products (across all categories)
+            $allSubcategoryIds = $allVendorProducts->pluck('sub_category_id')
+                ->filter(function($id) {
+                    return !is_null($id) && $id !== '' && $id !== 0;
+                })
+                ->unique()
+                ->values()
+                ->toArray();
+            
+            Log::info('All subcategory IDs from all vendor products', [
+                'vendor_id' => $vendor_id,
+                'subcategory_ids' => $allSubcategoryIds,
+                'count' => count($allSubcategoryIds),
+                'total_products' => $allVendorProducts->count()
+            ]);
+            
+            if (empty($allSubcategoryIds)) {
+                Log::warning('No subcategory IDs found from all vendor products', [
+                    'vendor_id' => $vendor_id,
+                    'total_products' => $allVendorProducts->count()
+                ]);
+                $subcategories = collect();
+            } else {
+                // First, check all subcategories without filters to see what exists
+                $allSubcategories = Subcategory::whereIn('id', $allSubcategoryIds)->get();
+                
+                Log::info('All subcategories found (without filters - all categories)', [
+                    'vendor_id' => $vendor_id,
+                    'category_id' => $cat_id,
+                    'count' => $allSubcategories->count(),
+                    'ids' => $allSubcategories->pluck('id')->toArray(),
+                    'names' => $allSubcategories->pluck('sub_cat_name')->toArray(),
+                    'category_ids' => $allSubcategories->pluck('category_id')->toArray(),
+                    'is_active' => $allSubcategories->pluck('is_active')->toArray(),
+                    'is_deleted' => $allSubcategories->pluck('is_deleted')->toArray()
+                ]);
+                
+                // Query subcategories from ALL categories that have products for this vendor
+                // Don't filter by category_id - show all subcategories in sidebar
+                $subcategories = Subcategory::whereIn('id', $allSubcategoryIds)
+                    ->where(function($query) {
+                        // Check both integer and string/boolean values for is_deleted
+                        $query->where('is_deleted', 0)
+                              ->orWhere('is_deleted', '0')
+                              ->orWhereRaw('CAST(is_deleted AS UNSIGNED) = 0');
+                    })
+                    ->where(function($query) {
+                        // Check both integer and string/boolean values for is_active
+                        $query->where('is_active', 1)
+                              ->orWhere('is_active', '1')
+                              ->orWhereRaw('CAST(is_active AS UNSIGNED) = 1');
+                    })
+                    ->with('category')
+                    ->get();
+                
+                // Check which subcategories were filtered out
+                $foundIds = $subcategories->pluck('id')->toArray();
+                $missingIds = array_diff($allSubcategoryIds, $foundIds);
+                
+                if (!empty($missingIds)) {
+                    Log::warning('Some subcategories were filtered out (all categories)', [
+                        'vendor_id' => $vendor_id,
+                        'category_id' => $cat_id,
+                        'missing_ids' => $missingIds,
+                        'found_ids' => $foundIds,
+                        'all_ids' => $allSubcategoryIds
+                    ]);
+                    
+                    // Check the status of missing subcategories
+                    foreach ($missingIds as $missingId) {
+                        $missingSub = Subcategory::where('id', $missingId)->first();
+                        if ($missingSub) {
+                            Log::info('Missing subcategory details (all categories)', [
+                                'id' => $missingId,
+                                'name' => $missingSub->sub_cat_name,
+                                'is_active' => $missingSub->is_active,
+                                'is_deleted' => $missingSub->is_deleted,
+                                'category_id' => $missingSub->category_id
+                            ]);
+                        } else {
+                            Log::warning('Subcategory not found in database', ['id' => $missingId]);
+                        }
+                    }
+                }
+                
+                Log::info('Found subcategories (all categories for sidebar)', [
+                    'vendor_id' => $vendor_id,
+                    'current_category_id' => $cat_id,
+                    'count' => $subcategories->count(),
+                    'ids' => $subcategories->pluck('id')->toArray(),
+                    'names' => $subcategories->pluck('sub_cat_name')->toArray(),
+                    'category_ids' => $subcategories->pluck('category_id')->toArray()
+                ]);
+            }
         }
         // ✅ Coupons
         $coupons = Coupon::where('created_by_id', $vendor->id)->where('is_active', 1)->where('is_deleted', 0)->get();
 
         // Calculate progress values for dynamic display
-        $cook_amount_needed = 0;
-        $delivery_amount_needed = 0;
-        $cook_progress = 0;
-        $delivery_progress = 0;
+        // Get vendor minimum order values
+        $vendorModel = VendorAdmin::findOrFail($vendor_id);
+        $minimumForCook = $vendorModel->minimum_order_value_for_cook ?? ($vendorModel->minimum_order_for_cook ?? 0);
+        $minimumForDelivery = $vendorModel->minimum_order_value ?? 0;
 
+        // Initialize cart total to 0 for non-logged in users
+        $cartTotal = 0;
+        
+        // If user is logged in, get cart total
         if (auth()->check()) {
             $user_id = auth()->id();
-
-            // Get cart total for this vendor
             $cartTotal = CartItem::join('products', 'cart_items.product_id', '=', 'products.id')
                 ->where('cart_items.user_id', $user_id)
                 ->where('products.vendor_id', $vendor_id)
                 ->sum(DB::raw('cart_items.quantity * cart_items.price'));
-
-            $vendor = VendorAdmin::findOrFail($vendor_id);
-            $minimumForCook = $vendor->minimum_order_value_for_cook ?? ($vendor->minimum_order_for_cook ?? 0);
-            $minimumForDelivery = $vendor->minimum_order_value ?? 0;
-
-            $cook_progress = $minimumForCook > 0 ? min(($cartTotal / $minimumForCook) * 100, 100) : 0;
-            $cook_amount_needed = max($minimumForCook - $cartTotal, 0);
-
-            $delivery_progress = $minimumForDelivery > 0 ? min(($cartTotal / $minimumForDelivery) * 100, 100) : 0;
-            $delivery_amount_needed = max($minimumForDelivery - $cartTotal, 0);
         }
+
+        // Calculate progress values (works for both logged in and non-logged in users)
+        $cook_progress = $minimumForCook > 0 ? min(($cartTotal / $minimumForCook) * 100, 100) : 0;
+        $cook_amount_needed = max($minimumForCook - $cartTotal, 0);
+
+        $delivery_progress = $minimumForDelivery > 0 ? min(($cartTotal / $minimumForDelivery) * 100, 100) : 0;
+        $delivery_amount_needed = max($minimumForDelivery - $cartTotal, 0);
 
         return view('web.explorestore', compact('vendor', 'category', 'subcategories', 'products', 'coupons', 'cook_amount_needed', 'delivery_amount_needed', 'cook_progress', 'delivery_progress'));
     }
@@ -585,57 +911,83 @@ class HomeController extends Controller
         $category    = Category::findOrFail($category_id);
         $subcategory = SubCategory::findOrFail($subcategory_id);
 
-        // ✅ Get only subcategories that have active products from this vendor in the specified category
-        $subcategoryIdsWithProducts = Product::where('vendor_id', $vendor_id)
-            ->where('category_id', $category_id)
+        // ✅ Get ALL subcategories that have active products from this vendor (across all categories)
+        // This ensures sidebar menu shows all subcategories even when viewing a specific one
+        $allSubcategoryIdsWithProducts = Product::where('vendor_id', $vendor_id)
             ->where('is_deleted', 0)
             ->where('is_active', 1)
+            ->whereNotNull('sub_category_id')
             ->pluck('sub_category_id')
             ->unique()
-            ->filter();
+            ->filter()
+            ->values()
+            ->toArray();
 
-        $subcategories = SubCategory::where('category_id', $category_id)
-            ->whereIn('id', $subcategoryIdsWithProducts)
-            ->where('is_deleted', 0)
+        Log::info('Subcategory IDs with products (subcategoryProducts method)', [
+            'vendor_id' => $vendor_id,
+            'category_id' => $category_id,
+            'subcategory_id' => $subcategory_id,
+            'subcategory_ids' => $allSubcategoryIdsWithProducts,
+            'count' => count($allSubcategoryIdsWithProducts)
+        ]);
+
+        // Get all subcategories that have products (for sidebar menu) - handle multiple data types
+        $subcategories = SubCategory::whereIn('id', $allSubcategoryIdsWithProducts)
+            ->where(function($query) {
+                $query->where('is_deleted', 0)
+                      ->orWhere('is_deleted', '0')
+                      ->orWhereRaw('CAST(is_deleted AS UNSIGNED) = 0');
+            })
+            ->where(function($query) {
+                $query->where('is_active', 1)
+                      ->orWhere('is_active', '1')
+                      ->orWhereRaw('CAST(is_active AS UNSIGNED) = 1');
+            })
+            ->with('category')
             ->get();
+        
+        Log::info('Subcategories found (subcategoryProducts method)', [
+            'count' => $subcategories->count(),
+            'ids' => $subcategories->pluck('id')->toArray(),
+            'names' => $subcategories->pluck('sub_cat_name')->toArray()
+        ]);
 
-        // ✅ Products filter
-        $products = $vendor->products()
-            ->with('variants')
+        // ✅ Products filter - use direct Product query for specific subcategory
+        $products = Product::where('vendor_id', $vendor_id)
             ->where('category_id', $category_id)
             ->where('sub_category_id', $subcategory_id)
-            ->where('is_deleted', '0')
-            ->where('is_active', '1')
+            ->where('is_deleted', 0)
+            ->where('is_active', 1)
+            ->with('variants')
             ->get();
 
         //vendor wise coupons
         $coupons = Coupon::where('created_by_id', $vendor->id)->where('is_active', 1)->where('is_deleted', 0)->get();
 
         // Calculate progress values for dynamic display
-        $cook_amount_needed = 0;
-        $delivery_amount_needed = 0;
-        $cook_progress = 0;
-        $delivery_progress = 0;
+        // Get vendor minimum order values
+        $vendorModel = VendorAdmin::findOrFail($vendor_id);
+        $minimumForCook = $vendorModel->minimum_order_value_for_cook ?? ($vendorModel->minimum_order_for_cook ?? 0);
+        $minimumForDelivery = $vendorModel->minimum_order_value ?? 0;
 
+        // Initialize cart total to 0 for non-logged in users
+        $cartTotal = 0;
+        
+        // If user is logged in, get cart total
         if (auth()->check()) {
             $user_id = auth()->id();
-
-            // Get cart total for this vendor
             $cartTotal = CartItem::join('products', 'cart_items.product_id', '=', 'products.id')
                 ->where('cart_items.user_id', $user_id)
                 ->where('products.vendor_id', $vendor_id)
                 ->sum(DB::raw('cart_items.quantity * cart_items.price'));
-
-            $vendorModel = VendorAdmin::findOrFail($vendor_id);
-            $minimumForCook = $vendorModel->minimum_order_value_for_cook ?? ($vendorModel->minimum_order_for_cook ?? 0);
-            $minimumForDelivery = $vendorModel->minimum_order_value ?? 0;
-
-            $cook_progress = $minimumForCook > 0 ? min(($cartTotal / $minimumForCook) * 100, 100) : 0;
-            $cook_amount_needed = max($minimumForCook - $cartTotal, 0);
-
-            $delivery_progress = $minimumForDelivery > 0 ? min(($cartTotal / $minimumForDelivery) * 100, 100) : 0;
-            $delivery_amount_needed = max($minimumForDelivery - $cartTotal, 0);
         }
+
+        // Calculate progress values (works for both logged in and non-logged in users)
+        $cook_progress = $minimumForCook > 0 ? min(($cartTotal / $minimumForCook) * 100, 100) : 0;
+        $cook_amount_needed = max($minimumForCook - $cartTotal, 0);
+
+        $delivery_progress = $minimumForDelivery > 0 ? min(($cartTotal / $minimumForDelivery) * 100, 100) : 0;
+        $delivery_amount_needed = max($minimumForDelivery - $cartTotal, 0);
 
         return view('web.explorestore', compact('vendor', 'category', 'subcategory', 'subcategories', 'products', 'coupons', 'cook_amount_needed', 'delivery_amount_needed', 'cook_progress', 'delivery_progress'));
     }
@@ -649,10 +1001,13 @@ class HomeController extends Controller
 
         $subcategories = SubCategory::where('category_id', $category_id)
             ->where('is_deleted', '0')
+            ->where('is_active', '1')
             ->get();
 
         if (!$lat || !$lng) {
           //  Log::warning("No lat/lng received in request");
+            // ✅ No products means no subcategories should be shown
+            $subcategories = collect();
             return view('web.categorywiseproduct', [
                 'category' => $category,
                 'subcategories' => $subcategories,
@@ -671,6 +1026,8 @@ class HomeController extends Controller
 
         if (!$insideLocation) {
           //  Log::warning("No polygon matched for lat/lng", ['lat' => $lat, 'lng' => $lng]);
+            // ✅ No products means no subcategories should be shown
+            $subcategories = collect();
             return view('web.categorywiseproduct', [
                 'category' => $category,
                 'subcategories' => $subcategories,
@@ -700,6 +1057,10 @@ class HomeController extends Controller
 
         Log::info("Products found:", ['count' => $products->count()]);
 
+        // ✅ Filter subcategories to only show those that have products
+        $subcategoryIdsWithProducts = $products->pluck('sub_category_id')->unique()->filter();
+        $subcategories = $subcategories->whereIn('id', $subcategoryIdsWithProducts);
+
         return view('web.categorywiseproduct', compact('category', 'subcategories', 'products'));
     }
 
@@ -715,10 +1076,13 @@ class HomeController extends Controller
         // Fetch all subcategories for sidebar
         $subcategories = SubCategory::where('category_id', $category_id)
             ->where('is_deleted', '0')
+            ->where('is_active', '1')
             ->get();
 
         // If no lat/lng → return empty
         if (!$lat || !$lng) {
+            // ✅ No products means no subcategories should be shown
+            $subcategories = collect();
             return view('web.categorywiseproduct', [
                 'category' => $category,
                 'subcategory' => $subcategory,
@@ -736,6 +1100,8 @@ class HomeController extends Controller
             });
 
         if (!$insideLocation) {
+            // ✅ No products means no subcategories should be shown
+            $subcategories = collect();
             return view('web.categorywiseproduct', [
                 'category' => $category,
                 'subcategory' => $subcategory,
@@ -755,39 +1121,42 @@ class HomeController extends Controller
 
         $vendorIds = $vendors->pluck('id');
 
-        // ✅ Filter products
-        $products = Product::with(['variants', 'vendor'])
+        // ✅ Get all products for this category to filter subcategories
+        $allCategoryProducts = Product::with(['variants', 'vendor'])
             ->where('category_id', $category_id)
-            ->where('sub_category_id', $subcategory_id)
             ->whereIn('vendor_id', $vendorIds)
             ->where('is_deleted', '0')
             ->where('is_active', '1')
             ->get();
 
+        // ✅ Filter subcategories to only show those that have products
+        $subcategoryIdsWithProducts = $allCategoryProducts->pluck('sub_category_id')->unique()->filter();
+        $subcategories = $subcategories->whereIn('id', $subcategoryIdsWithProducts);
+
+        // ✅ Filter products for specific subcategory
+        $products = $allCategoryProducts->filter(function($product) use ($subcategory_id) {
+            return $product->sub_category_id == $subcategory_id;
+        });
+
         return view('web.categorywiseproduct', compact('category', 'subcategory', 'subcategories', 'products'));
     }
     public function getVendorProgress($vendor_id)
     {
-        if (!auth()->check()) {
-            return response()->json([
-                'cook_progress' => 0,
-                'cook_amount_needed' => 0,
-                'delivery_progress' => 0,
-                'delivery_amount_needed' => 0,
-            ]);
-        }
-
         $vendor = VendorAdmin::findOrFail($vendor_id);
-        $user_id = auth()->id();
-
-        // Get cart total for this vendor
-        $cartTotal = CartItem::join('products', 'cart_items.product_id', '=', 'products.id')
-            ->where('cart_items.user_id', $user_id)
-            ->where('products.vendor_id', $vendor_id)
-            ->sum(DB::raw('cart_items.quantity * cart_items.price'));
-
         $minimumForCook = $vendor->minimum_order_value_for_cook ?? ($vendor->minimum_order_for_cook ?? 0);
         $minimumForDelivery = $vendor->minimum_order_value ?? 0;
+
+        // Initialize cart total to 0 for non-logged in users
+        $cartTotal = 0;
+        
+        // If user is logged in, get cart total
+        if (auth()->check()) {
+            $user_id = auth()->id();
+            $cartTotal = CartItem::join('products', 'cart_items.product_id', '=', 'products.id')
+                ->where('cart_items.user_id', $user_id)
+                ->where('products.vendor_id', $vendor_id)
+                ->sum(DB::raw('cart_items.quantity * cart_items.price'));
+        }
 
         Log::info('Vendor minimums', ['cook' => $minimumForCook, 'delivery' => $minimumForDelivery, 'cartTotal' => $cartTotal]);
 
@@ -953,16 +1322,21 @@ class HomeController extends Controller
                     $categoryIds = Product::whereIn('vendor_id', $vendorIds)
                         ->where('is_active', 1)
                         ->where('is_deleted', 0)
+                        ->distinct() // Ensure distinct category IDs
                         ->pluck('category_id')
                         ->unique()
                         ->filter()
+                        ->values() // Reset array keys
                         ->take($limit); // Limit the number of categories
 
-                    // Return the categories
+                    // Return the categories - ensure unique by ID
                     return Category::whereIn('id', $categoryIds)
                         ->where('is_deleted', 0)
+                        ->distinct() // Ensure distinct categories
                         ->orderBy('id', 'asc')
-                        ->get();
+                        ->get()
+                        ->unique('id') // Double check for uniqueness
+                        ->values(); // Reset array keys
                 }
             }
         }
@@ -970,6 +1344,131 @@ class HomeController extends Controller
         // If no location data or no local vendors found, return empty collection
         // Only show categories when location is known and local vendors exist
         return collect();
+    }
+
+    /**
+     * Get footer categories HTML for AJAX updates
+     */
+    private function getFooterCategoriesHtml($lat, $lng)
+    {
+        // Get all active categories
+        $footerCategories = Category::where('is_active', 1)
+            ->where('is_deleted', 0)
+            ->orderBy('name')
+            ->get();
+
+        // Filter footer categories based on location-vendors with products
+        $filteredFooterCategories = $footerCategories;
+
+        if ($lat && $lng) {
+            // Find vendors in user's location area
+            $insideLocation = MasterLocation::where('is_active', 1)
+                ->where('is_deleted', 0)
+                ->get()
+                ->first(function($location) use ($lat, $lng) {
+                    return $this->pointInPolygon($lat, $lng, $location->lat_long);
+                });
+
+            if ($insideLocation) {
+                // Get vendors inside polygon with active products
+                $vendorsInArea = VendorAdmin::where('status', '1')
+                    ->where('is_active', '1')
+                    ->where('user_type', 'vendor')
+                    ->whereNull('deleted_at')
+                    ->get()
+                    ->filter(function ($vendor) use ($insideLocation) {
+                        return $this->pointInPolygon($vendor->latitude, $vendor->longitude, $insideLocation->lat_long);
+                    });
+
+                $vendorIds = $vendorsInArea->pluck('id');
+
+                if ($vendorIds->count() > 0) {
+                    // Get category IDs that have active products from vendors in user's area
+                    $categoryIdsWithProducts = Product::whereIn('vendor_id', $vendorIds)
+                        ->where('is_active', 1)
+                        ->where('is_deleted', 0)
+                        ->pluck('category_id')
+                        ->unique()
+                        ->filter();
+
+                    // Filter footer categories to only those with products in user's area
+                    $filteredFooterCategories = $footerCategories->filter(function($category) use ($categoryIdsWithProducts) {
+                        return $categoryIdsWithProducts->contains($category->id);
+                    });
+                }
+            }
+        }
+
+        $totalCategories = $filteredFooterCategories->count();
+
+        // Footer layout: same as index.blade.php with 3-row design
+        // First 2 rows: 3 categories each (total 6)
+        // Third row: 3 categories, remaining in dropdown
+        $maxVisibleFirstTwoRows = 6; // 2 rows × 3 categories
+        $maxVisibleThirdRow = 3;    // 3 more categories
+        $maxVisible = $maxVisibleFirstTwoRows + $maxVisibleThirdRow; // 9 total
+
+        // If more than 9 categories:
+        $visibleCategories = $totalCategories > $maxVisible
+            ? $filteredFooterCategories->take($maxVisible - 1)   // show first 8
+            : $filteredFooterCategories;           // else show all
+
+        // From 9th onward goes into dropdown
+        $moreCategories = $totalCategories > $maxVisible
+            ? $filteredFooterCategories->slice($maxVisible - 1)
+            : collect();
+
+        // Generate HTML
+        $html = '<div class="row w-100">';
+        
+        // Visible categories
+        foreach($visibleCategories as $category) {
+            $html .= '<div class="col-md-4 col-6 footer-links">';
+            $html .= '<ul>';
+            $html .= '<li>';
+            $html .= '<a href="' . route('allcategorywiseproduct', $category->id) . '" onclick="return redirectWithLocation(this.href)">';
+            $html .= htmlspecialchars($category->name);
+            $html .= '</a>';
+            $html .= '</li>';
+            $html .= '</ul>';
+            $html .= '</div>';
+        }
+
+        // Dropdown in 9th slot if needed
+        if ($moreCategories->isNotEmpty()) {
+            $html .= '<div class="col-md-4 col-6 footer-links">';
+            $html .= '<ul>';
+            $html .= '<li>';
+            $html .= '<select class="shopmore" onchange="if(this.value) window.location.href=this.value">';
+            $html .= '<option>Show More</option>';
+            foreach($moreCategories as $category) {
+                $html .= '<option value="' . route('allcategorywiseproduct', $category->id) . '">';
+                $html .= htmlspecialchars($category->name);
+                $html .= '</option>';
+            }
+            $html .= '</select>';
+            $html .= '</li>';
+            $html .= '</ul>';
+            $html .= '</div>';
+        }
+
+        // Mobile Show More (visible on small screens)
+        if ($moreCategories->isNotEmpty()) {
+            $html .= '<div class="col-12 d-md-none text-center py-3 shopmore2">';
+            $html .= '<select class="shopmore-mobile" onchange="if(this.value) window.location.href=this.value">';
+            $html .= '<option>Show More</option>';
+            foreach($moreCategories as $category) {
+                $html .= '<option value="' . route('allcategorywiseproduct', $category->id) . '">';
+                $html .= htmlspecialchars($category->name);
+                $html .= '</option>';
+            }
+            $html .= '</select>';
+            $html .= '</div>';
+        }
+
+        $html .= '</div>';
+
+        return $html;
     }
 
     private function getInsideVendors($lat, $lng)
@@ -1030,6 +1529,35 @@ class HomeController extends Controller
         $enquiry->save();
 
         return redirect()->back()->with('success', 'Enquiry sent successfully');
+    }
+
+    /**
+     * Check if a location is within any master location area
+     */
+    public function checkLocationInMaster(Request $request)
+    {
+        $lat = $request->input('latitude');
+        $lng = $request->input('longitude');
+
+        if (!$lat || !$lng) {
+            return response()->json([
+                'is_in_master_area' => false,
+                'message' => 'Invalid location coordinates'
+            ]);
+        }
+
+        // Check if the location is within any master location polygon
+        $insideLocation = MasterLocation::where('is_active', 1)
+            ->where('is_deleted', 0)
+            ->get()
+            ->first(function($location) use ($lat, $lng) {
+                return $this->pointInPolygon($lat, $lng, $location->lat_long);
+            });
+
+        return response()->json([
+            'is_in_master_area' => $insideLocation !== null,
+            'message' => $insideLocation ? 'Location is in a master area' : 'Location is not in any master area'
+        ]);
     }
 
 

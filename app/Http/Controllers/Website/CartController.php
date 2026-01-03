@@ -92,7 +92,8 @@ class CartController extends Controller
 
         if (auth()->check()) {
             [$productId, $variantId] = explode("_", $key);
-            $item = CartItem::where("user_id", auth()->id())
+            $item = CartItem::with("variant.product.vendor")
+                ->where("user_id", auth()->id())
                 ->where("product_id", $productId)
                 ->where("variant_id", $variantId)
                 ->first();
@@ -100,9 +101,42 @@ class CartController extends Controller
             if ($item) {
                 $item->quantity++;
                 $item->save();
+                
+                // Check coupon condition after increment
+                $vendorId = $item->variant->product->vendor_id;
+                $vendorItems = CartItem::with("variant")
+                    ->where("user_id", auth()->id())
+                    ->get()
+                    ->filter(fn($ci) => $ci->variant->product->vendor_id == $vendorId);
+                
+                $vendorSubtotal = $vendorItems->sum(
+                    fn($ci) => $ci->quantity * ($ci->price ?? $ci->variant->variant_selling_price)
+                );
+                
+                // Check if coupon should be auto-removed
+                $vendorCoupons = session("vendor_coupons", []);
+                $couponData = $vendorCoupons[$vendorId] ?? null;
+                $coupon = $couponData ? Coupon::where("code", $couponData["code"])
+                    ->where("created_by_id", $vendorId)
+                    ->first() : null;
+                
+                $couponAutoRemoved = false;
+                $couponRemovalMessage = '';
+                
+                if ($coupon && $vendorSubtotal < $coupon->min_order_amount) {
+                    unset($vendorCoupons[$vendorId]);
+                    session()->put("vendor_coupons", $vendorCoupons);
+                    $couponAutoRemoved = true;
+                    $couponRemovalMessage = "Coupon \"{$coupon->code}\" has been removed because subtotal for {$item->variant->product->vendor->business_name} is below ₹{$coupon->min_order_amount}.";
+                }
             }
 
-            return $this->getCartData();
+            $response = $this->getCartData()->getData(true);
+            if ($couponAutoRemoved) {
+                $response['coupon_auto_removed'] = true;
+                $response['coupon_removal_message'] = $couponRemovalMessage;
+            }
+            return response()->json($response);
         } else {
             $cart = session()->get("cart", []);
             if (isset($cart[$key])) {
@@ -205,12 +239,21 @@ class CartController extends Controller
         }
 
         // Remove coupon only if subtotal is now below minimum
+        $couponAutoRemoved = false;
+        $couponRemovalMessage = '';
         if ($coupon && $nextSubtotal < $coupon->min_order_amount) {
             unset($vendorCoupons[$vendorId]);
             session()->put("vendor_coupons", $vendorCoupons);
+            $couponAutoRemoved = true;
+            $couponRemovalMessage = "Coupon \"{$coupon->code}\" has been removed because subtotal for {$item->variant->product->vendor->business_name} is below ₹{$coupon->min_order_amount}.";
         }
 
-        return $this->getCartData();
+        $response = $this->getCartData()->getData(true);
+        if ($couponAutoRemoved) {
+            $response['coupon_auto_removed'] = true;
+            $response['coupon_removal_message'] = $couponRemovalMessage;
+        }
+        return response()->json($response);
     }
 
     // App\Http\Controllers\CartController.php
@@ -474,14 +517,38 @@ class CartController extends Controller
 
     public function getVendorCoupons(Request $request)
     {
-        $vendorId = $request->vendor_id;
+        $vendorId = (int) $request->vendor_id;
+        $appliedCouponCode = $request->applied_coupon_code;
 
-        $coupons = Coupon::where("created_by_id", $vendorId)
-            ->where("created_by_type", "vendor")
-            ->where("is_active", 1)
-            ->where("is_deleted", 0)
+        // Validate vendor_id is provided and is a positive integer
+        if (!$vendorId || $vendorId <= 0) {
+            $html = view(
+                "web.include.vendor-coupon-modal",
+                ["coupons" => collect([])]
+            )->render();
+            return response()->json(["html" => $html]);
+        }
+
+        // Strictly filter by vendor_id - ensure only this specific vendor's coupons are returned
+        $coupons = Coupon::where("created_by_id", "=", $vendorId)
+            ->where("created_by_type", "=", "vendor")
+            ->where("is_active", "=", 1)
+            ->where("is_deleted", "=", 0)
             ->with(['products', 'categories', 'subcategories']) // Load relationships
             ->get();
+
+        // \Log::info('Coupons fetched for vendor (getVendorCouponsCheckout)', [
+        //     'vendor_id' => $vendorId,
+        //     'coupons_count' => $coupons->count(),
+        //     'coupon_ids' => $coupons->pluck('id')->toArray()
+        // ]);
+
+        // Filter out the applied coupon if provided
+        if ($appliedCouponCode) {
+            $coupons = $coupons->reject(function ($coupon) use ($appliedCouponCode) {
+                return $coupon->code === $appliedCouponCode;
+            });
+        }
 
         // Render partial blade view
         $html = view(
@@ -491,7 +558,50 @@ class CartController extends Controller
 
         return response()->json(["html" => $html]);
     }
+    public function getVendorCouponsCheckout(Request $request)
+    {
+        $vendorId = (int) $request->vendor_id;
+        $appliedCouponCode = $request->applied_coupon_code;
 
+        // Validate vendor_id is provided and is a positive integer
+        if (!$vendorId || $vendorId <= 0) {
+            \Log::info('Invalid vendor_id in getVendorCouponsCheckout', ['vendor_id' => $request->vendor_id]);
+            $html = view(
+                "web.include.vendor-coupon-modal-checkout",
+                ["coupons" => collect([]), "vendorId" => 0]
+            )->render();
+            return response()->json(["html" => $html]);
+        }
+
+        // Strictly filter by vendor_id - ensure only this specific vendor's coupons are returned
+        $coupons = Coupon::where("created_by_id", "=", $vendorId)
+            ->where("created_by_type", "=", "vendor")
+            ->where("is_active", "=", 1)
+            ->where("is_deleted", "=", 0)
+            ->with(['products', 'categories', 'subcategories']) // Load relationships
+            ->get();
+
+        \Log::info('Coupons fetched for vendor', [
+            'vendor_id' => $vendorId,
+            'coupons_count' => $coupons->count(),
+            'coupon_ids' => $coupons->pluck('id')->toArray()
+        ]);
+
+        // Filter out the applied coupon if provided
+        if ($appliedCouponCode) {
+            $coupons = $coupons->reject(function ($coupon) use ($appliedCouponCode) {
+                return $coupon->code === $appliedCouponCode;
+            });
+        }
+
+        // Render partial blade view with vendor_id
+        $html = view(
+            "web.include.vendor-coupon-modal-checkout",
+            compact("coupons", "vendorId")
+        )->render();
+
+        return response()->json(["html" => $html]);
+    }
     public function applyCoupon(Request $request)
     {
         $code = $request->input("code");

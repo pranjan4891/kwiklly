@@ -389,7 +389,7 @@
                            <label for="delivery_range">Dynamic Gift Text </label>
                         </div>
                         <div class="col-6">
-                           <input type="number" class="form-control" value="{{  $vendor->dy_text }}" name="dy_text" id="dy_text">
+                           <input type="text" class="form-control" value="{{  $vendor->dy_text }}" name="dy_text" id="dy_text">
                         </div>
                      </div>
                      <div class="row">

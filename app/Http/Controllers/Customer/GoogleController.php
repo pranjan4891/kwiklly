@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
+use App\Models\CartItem;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class GoogleController extends Controller
@@ -19,7 +21,7 @@ class GoogleController extends Controller
     }
 
     // Handle callback
-    public function handleGoogleCallback()
+    public function handleGoogleCallback(Request $request)
     {
         try {
             $googleUser = Socialite::driver('google')->user();
@@ -56,6 +58,28 @@ class GoogleController extends Controller
 
         // Log the user in
         Auth::login($user, true);
+        $request->session()->regenerate();
+
+        // Migrate session cart
+        $sessionCart = session('cart', []);
+        foreach ($sessionCart as $item) {
+            CartItem::updateOrCreate(
+                [
+                    'user_id' => auth()->id(),
+                    'product_id' => $item['product_id'],
+                    'variant_id' => $item['variant_id'],
+                ],
+                [
+                    'quantity' => DB::raw("quantity + {$item['quantity']}"),
+                    'price' => $item['price']
+                ]
+            );
+        }
+        session()->forget('cart');
+
+        if (!empty($sessionCart)) {
+            return redirect()->route('cart.view');
+        }
 
         // Redirect to intended page
         return redirect()->intended('/');

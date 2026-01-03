@@ -6,104 +6,44 @@
     <title>Kwiklly - Payment Details</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" />
-    <link rel="stylesheet" href="{{ asset('public/assets/website/assets/css/checkoutaddress.css')}}">
-    <link rel="stylesheet" href="{{ asset('public/assets/website/assets/css/paymentsdetails.css')}}">
+    <link rel="stylesheet" href="{{ asset('public/assets/website/CSS/checkoutdelivery.css')}}">    
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <style>
-        .payment-option {
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-        .payment-option:hover {
-            background-color: #f8f9fa;
-        }
-        .payment-option.selected {
-            background-color: #e7f3ff;
-            border-color: #0d6efd;
-        }
-        .payment-note {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-            font-size: 0.9rem;
-        }
-        .phonepe-option {
-            display: flex;
-            align-items: center;
-        }
-        .phonepe-icon {
-            width: 24px;
-            height: 24px;
-            margin-right: 10px;
-            background-color: #6739B5;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        .pay-now-btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #0d6efd;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 15px;
-            cursor: pointer;
-        }
-        .pay-now-btn:hover {
-            background-color: #0b5ed7;
-        }
-        .pay-now-btn:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
-    </style>
 </head>
 <body>
     <section>
-        <div class="container">
-            <div class="row extracartmargin">
+        <div class="container px-3 px-md-4">
+            <div class="row g-3">
                 <!-- Steps Navigation -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div class="d-flex gap-4">
-                        <!-- Step 1 -->
-                        <div class="d-flex align-items-center step-box2 active-step">
-                            <div class="step-circle inactive">
-                                <span>&#10003;</span>
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center extracartmargin">
+                        <!-- Steps -->
+                        <div class="d-flex gap-4">
+                            <!-- Step 1 -->
+                            <div class="d-flex align-items-center step-box2 active-step">
+                                <div class="step-circle inactive" style="background-color: #28a745;"><span style="color: white;">&#10003;</span></div>
+                                <span class="ms-md-2 step-label text-secondary">Shopping Details</span>
                             </div>
-                            <span class="ms-md-2 step-label text-secondary">Shopping Details</span>
-                        </div>
-                        <!-- Step 2 -->
-                        <div class="d-flex align-items-center step-box2 active-step">
-                            <div class="step-circle inactive">
-                                <span>&#10003;</span>
+                            <!-- Step 2 -->
+                            <div class="d-flex align-items-center step-box2 active-step">
+                                <div class="step-circle inactive" style="background-color: #28a745;"><span style="color: white;">&#10003;</span></div>
+                                <span class="ms-md-2 step-label text-secondary">Delivery Address</span>
                             </div>
-                            <span class="ms-md-2 step-label text-secondary">Delivery Address</span>
-                        </div>
-                        <!-- Step 3 -->
-                        <div class="d-flex align-items-center step-box2 active-step">
-                            <div class="step-circle">3</div>
-                            <span class="ms-md-2 step-label fw-bold">Payment Details</span>
+                            <!-- Step 3 -->
+                            <div class="d-flex align-items-center step-box2 active-step">
+                                <div class="step-circle">3</div>
+                                <span class="ms-md-2 step-label fw-bold">Payment Details</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-7">
+                <hr style="border: 1px solid #D8C2BC;" class="my-3">
+            </div>
+            <div class="row g-3">
+                <div class="col-12 col-md-7">
                     <!-- Order Summary -->
-                    <div class="main-content-box">
-                        <div class="order-summary-box">
+                    <div class="main-content-box mb-3">
+                        <div class="p-3">
                             <div class="order-summary-title">Order Summary</div>
 
                             <div class="order-summary-row">
@@ -131,47 +71,54 @@
                             @endif
 
                             <div class="order-summary-row grand-total-row">
-                                <span>Final Amount:</span>
-                                <span>₹{{number_format($order->final_amount, 2)}}</span>
+                                <span><strong>Final Amount:</strong></span>
+                                <span><strong>₹{{number_format($order->final_amount, 2)}}</strong></span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Delivery Address -->
                     <div class="main-content-box">
-                        <div class="order-summary-box">
+                        <div class="p-3">
                             <div class="order-summary-title">Delivery Address</div>
 
                             @if($order->address)
-                            <div class="address-card active">
-                                <div class="address-content">
-                                    <span class="address-type">
-                                        @if(strtolower($order->address->type) === 'office')
-                                            <i class="fas fa-building me-1"></i> Office
+                            <div class="address-card selected-address">
+                                <div class="address-left">
+                                    <span class="address-icon-emoji">
+                                        @if(strtolower($order->address->type) === 'work' || strtolower($order->address->type) === 'office')
+                                            🏢
                                         @else
-                                            <i class="fas fa-home me-1"></i> Home
+                                            🏠
                                         @endif
                                     </span>
-                                    <b>{{ $order->address->name }}</b>
-                                    <p>
-                                        @if($order->address->flat)
-                                            {{ $order->address->flat }},
-                                        @endif
-                                        @if($order->address->area)
-                                            {{ $order->address->area }},
-                                        @endif
-                                        @if($order->address->landmark)
-                                            {{ $order->address->landmark }},
-                                        @endif
-                                        {{ $order->address->pincode }}
-                                    </p>
-                                    <p>{{ $order->address->full_address }}</p>
-                                    <p><i class="fas fa-phone me-2"></i>{{ $order->address->phone }}</p>
-                                    @if($order->address->alt_phone)
-                                        <p><i class="fas fa-phone-alt me-2"></i>Alt: {{ $order->address->alt_phone }}</p>
-                                    @endif
+                                    <div>
+                                        <strong>{{ ucfirst($order->address->type) }}</strong>
+                                        <p>
+                                            {{ $order->address->name }}, 
+                                            @if($order->address->flat)
+                                                {{ $order->address->flat }}, 
+                                            @endif
+                                            @if($order->address->area)
+                                                {{ $order->address->area }}, 
+                                            @endif
+                                            @if($order->address->landmark)
+                                                {{ $order->address->landmark }}, 
+                                            @endif
+                                            {{ $order->address->pincode }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
+                            @if($order->address->full_address)
+                            <div class="mt-2">
+                                <p class="mb-1"><small class="text-muted">{{ $order->address->full_address }}</small></p>
+                                <p class="mb-1"><small><i class="fas fa-phone me-2"></i>{{ $order->address->phone }}</small></p>
+                                @if($order->address->alt_phone)
+                                    <p class="mb-0"><small><i class="fas fa-phone-alt me-2"></i>Alt: {{ $order->address->alt_phone }}</small></p>
+                                @endif
+                            </div>
+                            @endif
                             @else
                             <div class="alert alert-warning">
                                 No delivery address found. Please add an address to continue.
@@ -181,10 +128,10 @@
                     </div>
                 </div>
 
-                <div class="col-md-5">
+                <div class="col-12 col-md-5">
                     <!-- Payment Methods -->
                     <div class="main-content-box">
-                        <div class="payment-methods-box">
+                        <div class="p-3">
                             <div class="order-summary-title">Select Payment Method</div>
 
                             <div class="payment-option" onclick="selectPayment('phonepe')">
@@ -207,7 +154,7 @@
                             </div>
 
                             <!-- Pay Now Button -->
-                            <button class="pay-now-btn" id="pay-now-button">
+                            <button class="pay-now-btn proceed-btn2" id="pay-now-button">
                                 Confirm Order ₹{{number_format($order->final_amount, 2)}}
                             </button>
                         </div>
@@ -216,7 +163,17 @@
             </div>
         </div>
     </section>
-
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container-fluid">
+            <!-- Desktop: Logo + Location & Search -->
+            <div class="d-flex align-items-center w-100 d-md-flex">
+                <a class="navbar-brand" href="{{ route('home')}}">
+                    <img src="{{ asset('public/assets/website/images/logo.png')}}" alt="Logo">
+                </a>
+            </div>
+        </div>
+    </nav>
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <script>
@@ -262,10 +219,11 @@
                 text: 'Are you sure you want to place this order with Cash on Delivery?',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, confirm order!',
-                cancelButtonText: 'Cancel'
+                confirmButtonColor: '#E94412',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Confirm Order',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
                     // User confirmed, process the order
@@ -342,17 +300,25 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Show success message
+                    // Show success message with two buttons
                     Swal.fire({
                         title: 'Order Confirmed!',
                         text: 'Your order has been placed successfully.',
                         icon: 'success',
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'Go to Dashboard'
+                        showDenyButton: true,
+                        showCancelButton: false,
+                        confirmButtonColor: '#E94412',
+                        denyButtonColor: '#6c757d',
+                        confirmButtonText: 'Go to Dashboard',
+                        denyButtonText: 'Go to Home',
+                        reverseButtons: true
                     }).then((result) => {
                         if (result.isConfirmed) {
                             // Redirect to dashboard
                             window.location.href = '{{ route("customer.dashboard") }}';
+                        } else if (result.isDenied) {
+                            // Redirect to home
+                            window.location.href = '{{ route("home") }}';
                         }
                     });
                 } else {
