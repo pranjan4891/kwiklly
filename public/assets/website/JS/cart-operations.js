@@ -165,9 +165,21 @@
                 $.each(items, function (key, item) {
                     let price = parseFloat(item.price);
                     let quantity = parseInt(item.quantity);
-                    let originalPrice = item.original_price || price;
+                    let originalPrice = parseFloat(item.original_price || price);
                     let subtotal = price * quantity;
                     total += subtotal;
+
+                    // Format price to remove .00
+                    let formatPrice = function(amount) {
+                        let num = parseFloat(amount);
+                        // If whole number, return without decimals, else return with decimals but remove .00
+                        let formatted = num % 1 === 0 ? num.toString() : num.toFixed(2);
+                        // Remove .00 if present
+                        return formatted.replace(/\.00$/, '');
+                    };
+                    
+                    let formattedPrice = formatPrice(price);
+                    let formattedOriginalPrice = formatPrice(originalPrice);
 
                     // Escape HTML to prevent XSS and prepare for title attribute
                     let escapedTitle = $('<div>').text(item.title).html();
@@ -179,7 +191,7 @@
                                 <div class="mx-3">
                                     <p class="mb-0" title="${escapedTitle}">${escapedTitle}</p>
                                     <small class="text-success">
-                                        ₹${price} ${price < originalPrice ? `<s class="text-muted">₹${originalPrice}</s>` : ''}
+                                        ₹${formattedPrice} ${price < originalPrice ? `<s class="text-muted">₹${formattedOriginalPrice}</s>` : ''}
                                     </small>
                                 </div>
                             </div>

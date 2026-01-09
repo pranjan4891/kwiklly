@@ -69,30 +69,7 @@
          </div>
       </div>
       <!--Desktop side cart html end  -->
-      <!-- Sidebar -->
-      {{-- <div class="pata-sidebar-overlay" id="pataSidebar">
-         <div class="pata-sidebar">
-            <!-- Header -->
-            <div class="pata-sidebar-header">
-               <span class="pata-back-btn" onclick="closePataSidebar()"><i class="fa-solid fa-arrow-left"></i></span>
-               <h5 class="mb-0">New Address</h5>
-            </div>
-            <!-- BODY -->
-            <div class="p-3 pataoverflow">
-               <!-- Your Location Title -->
-               <div class="pata-location-title">Your Location</div>
-               <div class="pata-location-desc">
-                  Cisf ground, gali no 2, near metro station gate no 3, saket, Delhi
-               </div>
-               <!-- Buttons: Home / Work -->
-               <div class="d-flex justify-content-between pata-tag-buttons mb-3">
-                  <button type="button" id="pataHomeBtn" class="pata-home active">🏠 Home</button>
-                  <button type="button" id="pataWorkBtn" class="pata-work">🏢 Work</button>
-               </div>
-               <!-- Form Start -->
-            </div>
-         </div>
-      </div> --}}
+     
       <!-- mobile side cart html start  -->
       <!-- Cart Overlay -->
       <div class="cart-overlay" id="cartOverlay2" onclick="closeMobileCart();" style="display: none;"></div>

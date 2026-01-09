@@ -833,8 +833,8 @@ a {
 }
 .catename{
     width: 168px;
-    
-    
+
+
 }
 .catename b{
     font-weight: 700;
@@ -1575,14 +1575,14 @@ select.time-boxde:focus {
     .mobile-sidebar.sticky {
         position: relative !important;
     }
-    
+
     /* Desktop/Web view - Fix quantity selector size and spacing */
     .qty-container {
         width: 65px !important;
         margin: 0 5px !important;
         padding: 2px 0 !important;
     }
-    
+
     .qty-btn {
         width: 22px !important;
         height: 22px !important;
@@ -1591,7 +1591,7 @@ select.time-boxde:focus {
         padding: 0 !important;
         margin: 0 !important;
     }
-    
+
     .qty-input {
         width: 21px !important;
         height: 22px !important;
@@ -1599,13 +1599,13 @@ select.time-boxde:focus {
         padding: 0 !important;
         margin: 0 !important;
     }
-    
+
     /* Ensure qty-box has proper spacing in web view */
     .qty-box {
         margin: 0 5px !important;
         padding: 2px 0 !important;
     }
-    
+
     /* Price container spacing for web view */
     .price-container .qty-box {
         margin-right: 8px !important;
@@ -2241,7 +2241,7 @@ select.time-boxde:focus {
   .cart-sidebar.show {
     transform: translateX(0);
   }
-  
+
   /* Cart Overlay */
   .cart-overlay {
     position: fixed;
@@ -2255,18 +2255,18 @@ select.time-boxde:focus {
     visibility: hidden;
     transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
   }
-  
+
   .cart-overlay.show {
     opacity: 1;
     visibility: visible;
   }
-  
+
   /* Ensure cart sidebar content is visible when shown */
   .cart-sidebar.show > div {
     display: flex !important;
     visibility: visible !important;
   }
-  
+
   .cart-sidebar.show h5,
   .cart-sidebar.show .btn-close,
   .cart-sidebar.show .btn-close-cart {
@@ -2415,13 +2415,13 @@ select.time-boxde:focus {
     z-index: 1000;
     flex-shrink: 0;
   }
-  
+
   /* Ensure cart sidebar uses flexbox layout */
   .cart-sidebar {
     display: flex !important;
     flex-direction: column !important;
   }
-  
+
   /* Scrollable content area */
   .cart-scrollable-content {
     flex: 1;
@@ -2429,13 +2429,13 @@ select.time-boxde:focus {
     overflow-x: hidden;
     min-height: 0;
   }
-  
+
   /* Desktop cart sidebar specific styling */
   #cartSidebar {
     display: flex !important;
     flex-direction: column !important;
   }
-  
+
   #cartSidebar .bottom-bar {
     position: relative;
     flex-shrink: 0;
@@ -2445,7 +2445,7 @@ select.time-boxde:focus {
     z-index: 1000;
     padding: 10px 0;
   }
-  
+
   #cartSidebar .cart-scrollable-content {
     flex: 1;
     overflow-y: auto;
@@ -2468,6 +2468,7 @@ select.time-boxde:focus {
         position: relative;
         cursor: pointer;
         line-height: 1.4;
+        min-height: 30px; /* Ensure consistent height for both short and long names */
     }
 
   /* Tooltip for cart item product name */
@@ -2507,28 +2508,47 @@ select.time-boxde:focus {
   .cart-item {
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
   }
 
   .cart-item .totalimg {
-    flex: 1;
+    flex: 0 1 auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
     min-width: 0;
     overflow: hidden;
+    max-width: calc(100% - 102px);
+  }
+
+  .cart-item .totalimg img {
+    flex-shrink: 0;
+    width: 50px;
+    height: auto;
   }
 
   .cart-item .totalimg > div {
-    min-width: 0;
-    flex: 1;
+    min-width: 120px;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 50px;
+    max-width: 100%;
+    overflow: hidden;
   }
 
   .cart-item .sidecartbutton {
-    flex-shrink: 0;
-    width: auto;
-    min-width: 60px !important;
-    max-width: 60px !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    width: 90px !important;
+    min-width: 90px !important;
+    max-width: 90px !important;
+    margin-left: auto;
   }
-  
+
   /* Make quantity buttons smaller - Global */
   .sidecartbutton .btn-danger,
   .sidecartbutton .decrement-btn,
@@ -2545,7 +2565,7 @@ select.time-boxde:focus {
     justify-content: center !important;
     border-radius: 0 !important;
   }
-  
+
   /* Make quantity input smaller - Global */
   .sidecartbutton .quantity-input,
   .sidecartbutton .form-control {
@@ -2560,7 +2580,7 @@ select.time-boxde:focus {
     border-left: none !important;
     border-right: none !important;
   }
-  
+
   /* Reduce input-group size - Global */
   .sidecartbutton.input-group-sm,
   .sidecartbutton.input-group {
@@ -2569,7 +2589,7 @@ select.time-boxde:focus {
     min-width: 60px !important;
     max-width: 60px !important;
   }
-  
+
   .sidecartbutton.input-group-sm > .btn,
   .sidecartbutton.input-group-sm > .form-control,
   .sidecartbutton.input-group > .btn,
@@ -2704,7 +2724,7 @@ select.time-boxde:focus {
         background-color: #e94412;
         border-color: #e94412;
     }
-    
+
     /* Make quantity input smaller in mobile */
     .sidecartbutton .quantity-input {
         padding: 0px !important;
@@ -2718,14 +2738,14 @@ select.time-boxde:focus {
         border-left: none !important;
         border-right: none !important;
     }
-    
+
     /* Reduce input-group size in mobile */
     .sidecartbutton.input-group-sm {
         height: 22px !important;
         min-width: 60px !important;
         max-width: 60px !important;
     }
-    
+
     .sidecartbutton.input-group-sm > .btn,
     .sidecartbutton.input-group-sm > .form-control {
         height: 22px !important;
@@ -3807,7 +3827,10 @@ select.time-boxde:focus {
     }
   }
 
-
+.store-banner-section {
+    padding-top: 45px !important;
+    margin-top: 40px !important;
+}
 
 /* Mobile View Adjustments */
 @media (max-width: 768px) {
@@ -3828,20 +3851,20 @@ select.time-boxde:focus {
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         margin: 0 !important;
     }
-    
+
     /* Prevent navbar from moving on scroll */
     html {
         scroll-behavior: auto;
         -webkit-overflow-scrolling: touch;
     }
-    
+
     /* Add padding to body to prevent content from going under fixed navbar */
     body {
         padding-top: 0;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
     }
-    
+
     /* Prevent iOS Safari address bar from affecting navbar */
     @supports (-webkit-touch-callout: none) {
         .navbar.fixed-top {
@@ -3866,7 +3889,7 @@ select.time-boxde:focus {
         flex-direction: column !important;
         right: 0 !important;
     }
-    
+
     /* Mobile cart header - ensure visibility */
     .cart-header-mobile,
     #cartSidebar2 > div:first-child,
@@ -3880,7 +3903,7 @@ select.time-boxde:focus {
         justify-content: space-between !important;
         background-color: white !important;
     }
-    
+
     /* Mobile cart header h5 - always visible */
     .cart-header-mobile h5,
     .cart-header-mobile h5.fw-bold,
@@ -3896,7 +3919,7 @@ select.time-boxde:focus {
         color: #000 !important;
         font-weight: bold !important;
     }
-    
+
     /* Mobile cart close button - always visible */
     .cart-header-mobile .btn-close-cart,
     #cartSidebar2 .cart-header-mobile .btn-close-cart,
@@ -3920,7 +3943,7 @@ select.time-boxde:focus {
         color: #000 !important;
         line-height: 1 !important;
     }
-    
+
     .cart-header-mobile .btn-close-cart i,
     #cartSidebar2 .btn-close-cart i,
     #cartSidebar2 .cart-header-mobile .btn-close-cart i {
@@ -3930,27 +3953,27 @@ select.time-boxde:focus {
         color: #000 !important;
         font-size: 24px !important;
     }
-    
+
     /* Ensure mobile cart sidebar shows properly when .show class is added */
     #cartSidebar2.show {
         transform: translateX(0) !important;
         right: 0 !important;
     }
-    
+
     #cartSidebar2.show .cart-header-mobile,
     #cartSidebar2.show > div:first-child {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
     }
-    
+
     /* Cart Overlay for Mobile */
     .cart-overlay.show {
         display: block !important;
         opacity: 1 !important;
         visibility: visible !important;
     }
-    
+
     /* Mobile bottom bar styling - Always visible by default */
     #cartSidebar2 .bottom-bar {
         position: relative !important;
@@ -3969,7 +3992,7 @@ select.time-boxde:focus {
         /* Modern browsers with safe area support */
         padding-bottom: calc(12px + max(env(safe-area-inset-bottom, 0px), 50px)) !important;
     }
-    
+
     /* Mobile cart scrollable content - Auto adjust without whitespace */
     #cartSidebar2 .cart-scrollable-content {
         flex: 1 !important;
@@ -3983,7 +4006,7 @@ select.time-boxde:focus {
         -webkit-overflow-scrolling: touch !important;
         scroll-behavior: smooth !important;
     }
-    
+
     /* Mobile cart bottom bar - specific styling - Always visible */
     #cartSidebar2 .mobile-cart-bottom-bar {
         position: relative !important;
@@ -4001,7 +4024,7 @@ select.time-boxde:focus {
         /* Modern browsers with safe area support */
         padding-bottom: calc(12px + max(env(safe-area-inset-bottom, 0px), 50px)) !important;
     }
-    
+
     /* Mobile cart proceed button - ensure it's visible above browser bar - Always visible */
     #cartSidebar2 .mobile-cart-bottom-bar .proceed-btn {
         margin: 0 20px !important;
@@ -4019,7 +4042,7 @@ select.time-boxde:focus {
         -webkit-box-sizing: border-box !important;
         -moz-box-sizing: border-box !important;
     }
-    
+
     /* Ensure cart sidebar maintains proper layout - no whitespace */
     #cartSidebar2 {
         height: 100vh !important;
@@ -4028,25 +4051,25 @@ select.time-boxde:focus {
         max-height: 100dvh !important;
         overflow: hidden !important;
     }
-    
+
     /* Prevent whitespace in cart items wrapper */
     #cartItemsWrapperMobile {
         margin-bottom: 0 !important;
         padding-bottom: 10px !important;
     }
-    
+
     /* Ensure bottom bar stays at bottom on all browsers */
     #cartSidebar2 .mobile-cart-bottom-bar {
         margin-top: auto !important;
     }
-    
+
     /* Fix quantity buttons alignment in mobile view - prevent centering */
     .qty-box,
     .qty-box * {
         text-align: center !important;
         justify-content: flex-start !important;
     }
-    
+
     .qty-box .qty-container,
     .qty-container {
         display: flex !important;
@@ -4057,13 +4080,13 @@ select.time-boxde:focus {
         width: auto !important;
         min-width: 75px;
     }
-    
+
     .qty-box .qty-btn,
     .qty-btn {
         flex-shrink: 0 !important;
         margin: 0 !important;
     }
-    
+
     .price-container .qty-box {
         text-align: left !important;
         align-items: center !important;
@@ -4295,10 +4318,12 @@ select.time-boxde:focus {
         word-wrap: break-word;
         margin-bottom: 0 !important;
         max-width: 100%;
+        width: 100%;
         position: relative;
         cursor: pointer;
-        line-height: 1.3;
+        line-height: 1.4;
         font-size: 14px;
+        min-height: 28px;
     }
 
     /* Mobile tooltip for cart item */
@@ -4340,31 +4365,48 @@ select.time-boxde:focus {
     .cart-item {
         display: flex;
         align-items: flex-start;
-        justify-content: space-between;
-        gap: 8px;
+        justify-content: flex-start;
+        gap: 12px;
         flex-wrap: nowrap;
+        width: 100%;
     }
 
     .cart-item .totalimg {
-        flex: 1;
+        flex: 0 1 auto;
         min-width: 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
         overflow: hidden;
-        max-width: calc(100% - 100px);
+        max-width: calc(100% - 102px);
+    }
+
+    .cart-item .totalimg img {
+        flex-shrink: 0;
+        width: 50px;
+        height: auto;
     }
 
     .cart-item .totalimg > div {
-        min-width: 0;
-        flex: 1;
+        min-width: 164px;
+        flex: 1 1 auto;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 50px;
+        max-width: 100%;
     }
 
     .cart-item .sidecartbutton {
-        flex-shrink: 0;
-        width: auto;
-        min-width: 60px !important;
-        max-width: 60px !important;
+        flex-shrink: 0 !important;
+        flex-grow: 0 !important;
+        width: 90px !important;
+        min-width: 90px !important;
+        max-width: 90px !important;
+        margin-left: auto;
     }
-    
+
     /* Make quantity buttons smaller in mobile view */
     .cart-item .sidecartbutton .btn-danger {
         padding: 2px 4px !important;
@@ -4379,7 +4421,7 @@ select.time-boxde:focus {
         justify-content: center !important;
         border-radius: 0 !important;
     }
-    
+
     /* Make quantity input smaller in mobile view */
     .cart-item .sidecartbutton .quantity-input {
         padding: 0px !important;
@@ -4393,12 +4435,12 @@ select.time-boxde:focus {
         border-left: none !important;
         border-right: none !important;
     }
-    
+
     /* Reduce input-group size in mobile view */
     .cart-item .sidecartbutton.input-group-sm {
         height: 22px !important;
     }
-    
+
     .cart-item .sidecartbutton.input-group-sm > .btn,
     .cart-item .sidecartbutton.input-group-sm > .form-control {
         height: 22px !important;
@@ -4435,7 +4477,7 @@ select.time-boxde:focus {
         gap: 8px;
         flex-wrap: nowrap;
     }
-    
+
     .price-container .price-wrapper {
         display: flex;
         flex-direction: column;
@@ -4446,7 +4488,7 @@ select.time-boxde:focus {
         min-width: 0;
         min-height: 40px; /* Maintain consistent height for 2 lines in mobile */
     }
-    
+
     .price-container .qty-box {
         flex-shrink: 0;
         display: flex;
@@ -4456,7 +4498,7 @@ select.time-boxde:focus {
         margin-right: 8px;
         padding: 2px 0;
     }
-    
+
     /* Fix qty-container alignment in mobile view */
     .qty-box .qty-container,
     .qty-container {
@@ -4469,7 +4511,7 @@ select.time-boxde:focus {
         width: auto !important;
         min-width: 80px;
     }
-    
+
     /* Ensure qty-box doesn't center align */
     .qty-box {
         display: flex !important;
@@ -4479,7 +4521,7 @@ select.time-boxde:focus {
         margin-left: 0 !important;
         margin-right: auto !important;
     }
-    
+
     .price {
         font-weight: bold;
         color: #4CAF50;
@@ -4530,7 +4572,7 @@ select.time-boxde:focus {
         flex-shrink: 0;
         margin: 0;
     }
-    
+
     /* Global fix for quantity container alignment - prevent centering */
     .qty-box {
         display: flex !important;
@@ -4540,7 +4582,7 @@ select.time-boxde:focus {
         margin: 0 5px !important;
         padding: 2px 0 !important;
     }
-    
+
     .qty-box .qty-container,
     .qty-container {
         display: flex !important;
@@ -4583,7 +4625,7 @@ select.time-boxde:focus {
         position: relative;
         padding-bottom: 25px;
     }
-    
+
     /* Mobile Product Image Styling */
     .product-image {
         width: 100%;
@@ -4595,7 +4637,7 @@ select.time-boxde:focus {
         margin: 10px auto 8px;
         padding: 5px;
     }
-    
+
     .product-card .product-image {
         width: 100%;
         max-width: 100%;
@@ -4606,7 +4648,7 @@ select.time-boxde:focus {
         margin: 10px auto 8px;
         padding: 5px;
     }
-    
+
     .extrapadding{
         padding-top:90px;
     }
@@ -4634,7 +4676,7 @@ select.time-boxde:focus {
     .new-cate-promo-box img {
         display: none;
     }
-    
+
     .new-cate-promo-box .btn-light {
         position: absolute;
         top: 50%;
@@ -4821,7 +4863,7 @@ select.time-boxde:focus {
     }
     .catename{
         width: 100%;
-        
+
     }
     .catename b{
         font-weight: 700;
@@ -5119,7 +5161,7 @@ select.time-boxde:focus {
         justify-content: space-between;
         gap: 6px;
     }
-    
+
     .product-card2 .price-container .price-wrapper {
         display: flex;
         flex-direction: column;
@@ -5160,7 +5202,7 @@ select.time-boxde:focus {
         z-index: 100;
         background: #fff;
     }
-    
+
     /* Sticky Mobile Sidebar - Menu Type - Below Header */
     .mobile-sidebar.sticky {
         position: fixed !important;
@@ -5697,7 +5739,7 @@ select.time-boxde:focus {
         -ms-overflow-style: none !important;
         padding: 5px 0;
     }
-    
+
     /* Mobile Category Name Fix */
     .sidebared ul li .side-text {
         color: #002204;
@@ -5717,7 +5759,7 @@ select.time-boxde:focus {
         text-overflow: ellipsis;
         max-height: 2.6em;
     }
-    
+
     .sidebared ul li.active .side-text,
     .sidebared ul li:hover .side-text {
         color: #4CAF50;
@@ -5725,14 +5767,14 @@ select.time-boxde:focus {
         font-size: 12px !important;
         line-height: 1.3 !important;
     }
-    
+
     .sidebared ul li .side-img {
         width: 45px !important;
         height: 45px !important;
         object-fit: contain;
         margin-bottom: 4px;
     }
-    
+
     .sidebared ul li {
         padding: 8px 4px !important;
         min-height: auto;
@@ -5743,14 +5785,82 @@ select.time-boxde:focus {
         padding: 8px 0;
         margin-top: 0;
     }
-    
-    /* Store Page Container - Reduce White Space */
+
+    /* Store Page Container - Fix banner behind header issue */
     .store-page-container {
         padding-top: 15px !important;
         padding-bottom: 15px !important;
         margin-top: 10px !important;
     }
-    
+
+    /* Store banner section - ensure no overlap */
+    .store-banner-section {
+        position: relative;
+        z-index: 1;
+        margin-top: 0;
+        padding-top: 0;
+    }
+
+    /* Desktop: Add padding-top to prevent banner going behind fixed header */
+    @media (min-width: 769px) {
+        .store-banner-section {
+            padding-top: 140px !important;
+            margin-top: 0 !important;
+        }
+
+        .store-page-container {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+    }
+
+    /* Mobile: Add padding-top to prevent banner going behind fixed header - reduced for less white space */
+    @media (max-width: 768px) {
+        .store-banner-section {
+            padding-top: 105px !important;
+            margin-top: 30px !important;
+        }
+
+        .store-page-container {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+
+        /* Mobile slider specific styling - remove extra spacing */
+        .store-mobile-slider {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+            width: 100%;
+        }
+
+        .store-mobile-slider .carousel-inner {
+            margin-top: 0;
+            padding-top: 0;
+        }
+
+        .store-mobile-slider .carousel-item {
+            margin-top: 0;
+            padding-top: 0;
+        }
+
+        .store-mobile-slider img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 0;
+        }
+    }
+
+    .store-banner-section .bannerimg {
+        margin-bottom: 0;
+    }
+
+    .store-banner-section .bannerimg img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
     /* Food Card Mobile Styling */
     .food-card {
         border: 1px solid #FFF1ED;
@@ -5759,18 +5869,18 @@ select.time-boxde:focus {
         padding: 0;
         margin-bottom: 12px;
     }
-    
+
     .food-card .p-3 {
         padding: 12px !important;
     }
-    
+
     .food-card h5 {
         font-size: 15px;
         font-weight: 700;
         line-height: 1.3;
         margin-bottom: 6px;
     }
-    
+
     .frequently-ordered {
         font-size: 12px;
         padding: 4px 8px;
@@ -5778,23 +5888,23 @@ select.time-boxde:focus {
         margin-bottom: 6px;
         display: inline-block;
     }
-    
+
     .food-card .text-muted {
         font-size: 12px;
         line-height: 1.4;
         margin-top: 6px;
         margin-bottom: 0;
     }
-    
+
     .food-img {
         border-radius: 12px 12px 0 0;
     }
-    
+
     .storedetailanchor {
         padding: 0 6px;
         margin-bottom: 12px;
     }
-    
+
     .fixedheight2 {
         height: auto;
         max-height: 600px;
@@ -5803,17 +5913,17 @@ select.time-boxde:focus {
         -ms-overflow-style: none !important;
         padding: 0 8px;
     }
-    
+
     .fixedheight2::-webkit-scrollbar {
         display: none;
     }
-    
+
     /* Store Count Text */
     .col-md-10.col-9 .store16 {
         padding-left: 0;
         padding-right: 0;
     }
-    
+
     .hidecat{
         display: none;
     }
@@ -5867,7 +5977,7 @@ select.time-boxde:focus {
         border-radius: 10px;
         margin-bottom: 15px;
     }
-    
+
     .main-img-det .main-product-det,
     .main-img-det img {
         width: 100%;
@@ -5878,7 +5988,7 @@ select.time-boxde:focus {
         display: block;
         margin: 0 auto;
     }
-    
+
     .thumb-container-det {
         position: relative;
         margin-top: 15px;
@@ -6223,38 +6333,38 @@ select.time-boxde:focus {
  .xyz-info-box {
   padding: 12px !important;
  }
- 
+
  .xyz-info-box img {
   width: 40px !important;
   height: 40px !important;
  }
- 
+
  .coupontext {
   font-size: 12px !important;
   font-weight: 500;
   line-height: 1.3;
  }
- 
+
  .coupontext b {
   font-weight: 700;
   font-size: 12px !important;
  }
- 
+
  .xyz-right-text {
   font-size: 10px !important;
   margin-top: 8px;
   text-align: right;
  }
- 
+
  .xyz-clickable-div {
   margin-top: 8px;
  }
- 
+
  .xyz-progress {
   height: 5px;
   margin-top: 5px;
  }
- 
+
  .xyz-modal {
    position: relative;
    width: 92%;
@@ -6266,7 +6376,7 @@ select.time-boxde:focus {
    padding: 18px 16px;
    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
  }
- 
+
  .xyz-modal h5 {
    font-size: 22px;
    font-weight: 700;
@@ -6274,7 +6384,7 @@ select.time-boxde:focus {
    color: #000;
    padding-right: 35px;
  }
- 
+
  .xyz-close {
    font-size: 32px;
    font-weight: 300;
@@ -6291,11 +6401,11 @@ select.time-boxde:focus {
    cursor: pointer;
    transition: opacity 0.2s;
  }
- 
+
  .xyz-close:hover {
    opacity: 0.7;
  }
- 
+
  .xyz-coupon-row {
    padding: 16px 14px;
    margin-bottom: 14px;
@@ -6303,12 +6413,12 @@ select.time-boxde:focus {
    background-color: #f2f7ff;
    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
  }
- 
+
  .xyz-coupon-row .row {
    margin: 0;
    align-items: flex-start;
  }
- 
+
  .xyz-coupon-row h6 {
    font-size: 19px;
    font-weight: 700;
@@ -6316,23 +6426,23 @@ select.time-boxde:focus {
    line-height: 1.4;
    color: #000;
  }
- 
+
  .xyz-coupon-row h6 strong {
    font-size: 22px;
    color: #000;
  }
- 
+
  .xyz-coupon-row > .row > div:first-child {
    padding-right: 10px;
    padding-left: 0;
  }
- 
+
  .xyz-coupon-row > .row > div:last-child {
    padding-left: 10px;
    padding-right: 0;
    text-align: right;
  }
- 
+
  .xyz-coupon-row div[style*="color: green"] {
    font-size: 15px;
    margin-bottom: 8px;
@@ -6340,7 +6450,7 @@ select.time-boxde:focus {
    color: #3B6939 !important;
    line-height: 1.4;
  }
- 
+
  .xyz-coupon-row small {
    font-size: 14px;
    display: block;
@@ -6348,13 +6458,13 @@ select.time-boxde:focus {
    line-height: 1.5;
    color: #555;
  }
- 
+
  .xyz-coupon-row small b {
    font-weight: 700;
    color: #000;
    font-size: 15px;
  }
- 
+
  .xyz-coupon-logo {
    height: 38px;
    margin-bottom: 10px;
@@ -6362,20 +6472,20 @@ select.time-boxde:focus {
    max-width: 100%;
    object-fit: contain;
  }
- 
+
  .xyz-coupon-row > .row > div:last-child small {
    font-size: 13px;
    color: #666;
    margin-top: 6px;
    font-weight: 500;
  }
- 
+
  .xyz-modal p.text-center {
    font-size: 15px;
    color: #666;
    padding: 20px 0;
  }
- 
+
  .col7xyz
 {
    margin-top:150px;
@@ -6392,7 +6502,7 @@ select.time-boxde:focus {
    padding: 20px 15px;
    backdrop-filter: blur(2px);
  }
- 
+
  /* Very small screens */
  @media (max-width: 480px) {
    .xyz-modal {
@@ -6401,27 +6511,27 @@ select.time-boxde:focus {
      padding: 16px 14px;
      border-radius: 14px;
    }
-   
+
    .xyz-modal h5 {
      font-size: 20px;
      margin-bottom: 16px;
    }
-   
+
    .xyz-coupon-row {
      padding: 14px 12px;
      margin-bottom: 12px;
    }
-   
+
    .xyz-coupon-row h6 strong {
      font-size: 20px;
    }
-   
+
    .xyz-coupon-row > .row > div:first-child,
    .xyz-coupon-row > .row > div:last-child {
      padding-left: 8px;
      padding-right: 8px;
    }
-   
+
    .xyz-coupon-row > .row > div:last-child {
      text-align: right;
    }
@@ -7315,102 +7425,102 @@ select.time-boxde:focus {
         margin-bottom: 20px;
         align-items: flex-start;
     }
-    
+
     .payment-result-container .container {
         padding: 0 10px;
     }
-    
+
     .payment-result-box {
         padding: 30px 20px;
         border-radius: 15px;
         margin: 0 auto;
         max-width: 100%;
     }
-    
+
     .success-icon, .failure-icon {
         width: 90px;
         height: 90px;
         font-size: 45px;
         margin-bottom: 20px;
     }
-    
+
     .success-title, .failure-title {
         font-size: 26px;
         margin-bottom: 12px;
     }
-    
+
     .success-message {
         font-size: 16px;
         margin-bottom: 25px;
     }
-    
+
     .failure-message {
         font-size: 15px;
         padding: 15px;
         margin-bottom: 25px;
     }
-    
+
     .order-info-box {
         padding: 18px 15px;
         margin: 25px 0;
         border-radius: 10px;
     }
-    
+
     .order-info-row {
         flex-direction: column;
         align-items: flex-start;
         gap: 6px;
         padding: 10px 0;
     }
-    
+
     .order-info-label {
         font-size: 14px;
     }
-    
+
     .order-info-value {
         text-align: left;
         width: 100%;
         font-size: 16px;
     }
-    
+
     .order-info-value.address-value {
         max-width: 100%;
         font-size: 13px;
     }
-    
+
     .help-text {
         padding: 15px;
         font-size: 14px;
         margin-top: 20px;
     }
-    
+
     .help-text strong {
         font-size: 15px;
         margin-bottom: 10px;
     }
-    
+
     .help-text ul {
         padding-left: 20px;
         line-height: 1.6;
     }
-    
+
     .help-text li {
         margin-bottom: 6px;
         font-size: 13px;
     }
-    
+
     .action-buttons {
         flex-direction: column;
         gap: 12px;
         margin-top: 25px;
     }
-    
+
     .btn-continue, .btn-orders, .btn-retry, .btn-home {
         width: 100%;
         padding: 12px 20px;
         font-size: 15px;
     }
-    
+
     .btn-continue i, .btn-orders i, .btn-retry i, .btn-home i {
         font-size: 16px;
         margin-right: 6px;
@@ -7425,87 +7535,87 @@ select.time-boxde:focus {
         margin-bottom: 15px;
         align-items: flex-start;
     }
-    
+
     .payment-result-container .container {
         padding: 0 8px;
     }
-    
+
     .payment-result-box {
         padding: 25px 15px;
         border-radius: 12px;
     }
-    
+
     .success-icon, .failure-icon {
         width: 80px;
         height: 80px;
         font-size: 40px;
         margin-bottom: 15px;
     }
-    
+
     .success-title, .failure-title {
         font-size: 22px;
         margin-bottom: 10px;
     }
-    
+
     .success-message {
         font-size: 14px;
         margin-bottom: 20px;
     }
-    
+
     .failure-message {
         font-size: 14px;
         padding: 12px;
         margin-bottom: 20px;
     }
-    
+
     .order-info-box {
         padding: 15px 12px;
         margin: 20px 0;
     }
-    
+
     .order-info-row {
         padding: 8px 0;
         gap: 5px;
     }
-    
+
     .order-info-label {
         font-size: 13px;
     }
-    
+
     .order-info-value {
         font-size: 15px;
     }
-    
+
     .order-info-value.address-value {
         font-size: 12px;
     }
-    
+
     .help-text {
         padding: 12px;
         font-size: 13px;
         margin-top: 15px;
     }
-    
+
     .help-text strong {
         font-size: 14px;
         margin-bottom: 8px;
     }
-    
+
     .help-text li {
         font-size: 12px;
         margin-bottom: 5px;
     }
-    
+
     .action-buttons {
         margin-top: 20px;
         gap: 10px;
     }
-    
+
     .btn-continue, .btn-orders, .btn-retry, .btn-home {
         padding: 11px 18px;
         font-size: 14px;
     }
-    
+
     .btn-continue i, .btn-orders i, .btn-retry i, .btn-home i {
         font-size: 15px;
         margin-right: 5px;

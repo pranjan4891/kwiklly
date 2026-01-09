@@ -2,8 +2,8 @@
 @extends('web.include.main')
 @section('content')
 <!-- first section start  -->
-<section>
-<div class="container py-2 px-3 pt-3 mt-3 store-page-container">
+<section class="store-banner-section">
+<div class="container py-2 px-3 store-page-container">
     <div class="row d-none d-md-flex text-center">
         @if ($banners)
             @foreach ($banners as $banner)
@@ -22,7 +22,7 @@
     </div>
     <!-- Mobile Slider -->
     @if($banners && $banners->count() > 0)
-    <div id="mobileSlider" class="carousel slide d-md-none mt-2" data-bs-ride="carousel" data-bs-interval="2000">
+    <div id="mobileSlider" class="carousel slide d-md-none store-mobile-slider" data-bs-ride="carousel" data-bs-interval="2000">
         <div class="carousel-inner">
             @foreach ($banners as $index => $banner)
                 <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
@@ -39,7 +39,7 @@
     </div>
     @else
     <!-- Fallback if no banners -->
-    <div id="mobileSlider" class="carousel slide d-md-none mt-2" data-bs-ride="carousel" data-bs-interval="2000">
+    <div id="mobileSlider" class="carousel slide d-md-none store-mobile-slider" data-bs-ride="carousel" data-bs-interval="2000">
         <div class="carousel-inner">
             <div class="carousel-item active">
                 <img src="{{ asset('public/assets/website/images/storebanner1.jpg')}}" class="d-block w-100 img-fluid" alt="">
