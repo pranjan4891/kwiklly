@@ -4388,7 +4388,7 @@ select.time-boxde:focus {
     }
 
     .cart-item .totalimg > div {
-        min-width: 164px;
+        min-width: 150px;
         flex: 1 1 auto;
         overflow: hidden;
         display: flex;
