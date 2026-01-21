@@ -188,15 +188,44 @@
                 <form method="POST" action="{{ route('vendor.order.update.status', $vendorOrder->id) }}">
                     @csrf
                     @method('PUT')
+                    @php
+                        $currentStatus = $vendorOrder->delivery_status ?? 'pending';
+                        // Define status hierarchy
+                        $statusHierarchy = [
+                            'pending' => 1,
+                            'packed' => 2,
+                            'shipped' => 3,
+                            'delivered' => 4,
+                            'cancelled' => 5
+                        ];
+                        $currentLevel = $statusHierarchy[$currentStatus] ?? 1;
+                        
+                        // Determine which statuses to disable
+                        $isDisabled = function($status) use ($currentStatus, $statusHierarchy, $currentLevel) {
+                            // Final statuses cannot be changed
+                            if (in_array($currentStatus, ['delivered', 'cancelled'])) {
+                                return true;
+                            }
+                            // Can't go back to previous statuses
+                            $statusLevel = $statusHierarchy[$status] ?? 0;
+                            return $statusLevel < $currentLevel;
+                        };
+                        $isFinalStatus = in_array($currentStatus, ['delivered', 'cancelled']);
+                    @endphp
                     <div class="form-group">
                         <label>Status</label>
-                        <select name="status" class="form-control">
-                            <option value="pending" {{ $vendorOrder->delivery_status == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="packed" {{ $vendorOrder->delivery_status == 'packed' ? 'selected' : '' }}>Packed</option>
-                            <option value="shipped" {{ $vendorOrder->delivery_status == 'shipped' ? 'selected' : '' }}>Shipped</option>
-                            <option value="delivered" {{ $vendorOrder->delivery_status == 'delivered' ? 'selected' : '' }}>Delivered</option>
-                            <option value="cancelled" {{ $vendorOrder->delivery_status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                        <select name="status" class="form-control" {{ $isFinalStatus ? 'disabled' : '' }}>
+                            <option value="pending" {{ $currentStatus == 'pending' ? 'selected' : '' }} {{ $isDisabled('pending') ? 'disabled' : '' }}>Pending</option>
+                            <option value="packed" {{ $currentStatus == 'packed' ? 'selected' : '' }} {{ $isDisabled('packed') ? 'disabled' : '' }}>Packed</option>
+                            <option value="shipped" {{ $currentStatus == 'shipped' ? 'selected' : '' }} {{ $isDisabled('shipped') ? 'disabled' : '' }}>Shipped</option>
+                            <option value="delivered" {{ $currentStatus == 'delivered' ? 'selected' : '' }} {{ $isDisabled('delivered') ? 'disabled' : '' }}>Delivered</option>
+                            <option value="cancelled" {{ $currentStatus == 'cancelled' ? 'selected' : '' }} {{ $isDisabled('cancelled') ? 'disabled' : '' }}>Cancelled</option>
                         </select>
+                        @if($isFinalStatus)
+                            <small class="text-muted">This order status cannot be changed.</small>
+                        @else
+                            <small class="text-muted">You can only move forward in status. Previous statuses are disabled.</small>
+                        @endif
                     </div>
                     <button type="submit" class="btn btn-primary">Update Status</button>
                 </form>

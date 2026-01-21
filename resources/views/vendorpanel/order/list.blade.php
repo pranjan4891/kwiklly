@@ -111,14 +111,38 @@
                                                             {{ $key->fld_city }} - {{ $key->fld_pinocde }}
                                                         </td>
                                                         <td>
+                                                            @php
+                                                                $currentStatus = $key->delivery_status ?? 'pending';
+                                                                // Define status hierarchy
+                                                                $statusHierarchy = [
+                                                                    'pending' => 1,
+                                                                    'packed' => 2,
+                                                                    'shipped' => 3,
+                                                                    'delivered' => 4,
+                                                                    'cancelled' => 5
+                                                                ];
+                                                                $currentLevel = $statusHierarchy[$currentStatus] ?? 1;
+                                                                
+                                                                // Determine which statuses to disable
+                                                                $isDisabled = function($status) use ($currentStatus, $statusHierarchy, $currentLevel) {
+                                                                    // Final statuses cannot be changed
+                                                                    if (in_array($currentStatus, ['delivered', 'cancelled'])) {
+                                                                        return true;
+                                                                    }
+                                                                    // Can't go back to previous statuses
+                                                                    $statusLevel = $statusHierarchy[$status] ?? 0;
+                                                                    return $statusLevel < $currentLevel;
+                                                                };
+                                                            @endphp
                                                             <select class="form-control status-select"
                                                                     data-order-id="{{ $key->vendor_order_id }}"
-                                                                    data-current-status="{{ $key->delivery_status }}">
-                                                                <option value="pending" {{ $key->delivery_status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                                                <option value="packed" {{ $key->delivery_status == 'packed' ? 'selected' : '' }}>Packed</option>
-                                                                <option value="shipped" {{ $key->delivery_status == 'shipped' ? 'selected' : '' }}>Shipped</option>
-                                                                <option value="delivered" {{ $key->delivery_status == 'delivered' ? 'selected' : '' }}>Delivered</option>
-                                                                <option value="cancelled" {{ $key->delivery_status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                                                    data-current-status="{{ $currentStatus }}"
+                                                                    {{ in_array($currentStatus, ['delivered', 'cancelled']) ? 'disabled' : '' }}>
+                                                                <option value="pending" {{ $currentStatus == 'pending' ? 'selected' : '' }} {{ $isDisabled('pending') ? 'disabled' : '' }}>Pending</option>
+                                                                <option value="packed" {{ $currentStatus == 'packed' ? 'selected' : '' }} {{ $isDisabled('packed') ? 'disabled' : '' }}>Packed</option>
+                                                                <option value="shipped" {{ $currentStatus == 'shipped' ? 'selected' : '' }} {{ $isDisabled('shipped') ? 'disabled' : '' }}>Shipped</option>
+                                                                <option value="delivered" {{ $currentStatus == 'delivered' ? 'selected' : '' }} {{ $isDisabled('delivered') ? 'disabled' : '' }}>Delivered</option>
+                                                                <option value="cancelled" {{ $currentStatus == 'cancelled' ? 'selected' : '' }} {{ $isDisabled('cancelled') ? 'disabled' : '' }}>Cancelled</option>
                                                             </select>
                                                         </td>
                                                         <td>
@@ -181,7 +205,6 @@
         </div>
         <!-- END PAGE CONTAINER -->
 
-
 @endsection
 @push('scripts')
 
@@ -197,30 +220,75 @@
 
                 // Handle status change via select dropdown
                 $('.status-select').on('change', function() {
-                    var orderId = $(this).data('order-id');
-                    var newStatus = $(this).val();
-                    var currentStatus = $(this).data('current-status');
+                    var $select = $(this);
+                    
+                    // Check if select is disabled
+                    if ($select.prop('disabled')) {
+                        // Reset to current status
+                        var currentStatus = $select.data('current-status');
+                        $select.val(currentStatus);
+                        showNotification('error', 'This order status cannot be changed.');
+                        return;
+                    }
+                    
+                    var orderId = $select.data('order-id');
+                    var newStatus = $select.val();
+                    var currentStatus = $select.data('current-status');
 
                     if (newStatus === currentStatus) {
                         return; // No change
                     }
+                    
+                    // Check if selected option is disabled
+                    var selectedOption = $select.find('option:selected');
+                    if (selectedOption.prop('disabled')) {
+                        // Reset to current status
+                        $select.val(currentStatus);
+                        showNotification('error', 'Cannot revert order status. You can only move forward in the order process.');
+                        return;
+                    }
 
-                    updateOrderStatus(orderId, newStatus);
+                    updateOrderStatus(orderId, newStatus, $select);
                 });
 
                 // Handle status update via button click
                 $('.update-status-btn').on('click', function() {
                     var orderId = $(this).data('order-id');
-                    var selectElement = $('select[data-order-id="' + orderId + '"]');
-                    var newStatus = selectElement.val();
+                    var $select = $('select[data-order-id="' + orderId + '"]');
+                    
+                    // Check if select is disabled
+                    if ($select.prop('disabled')) {
+                        showNotification('error', 'This order status cannot be changed.');
+                        return;
+                    }
+                    
+                    var newStatus = $select.val();
+                    var currentStatus = $select.data('current-status');
+                    
+                    if (newStatus === currentStatus) {
+                        showNotification('info', 'Order status is already set to ' + newStatus.charAt(0).toUpperCase() + newStatus.slice(1) + '.');
+                        return;
+                    }
+                    
+                    // Check if selected option is disabled
+                    var selectedOption = $select.find('option:selected');
+                    if (selectedOption.prop('disabled')) {
+                        showNotification('error', 'Cannot revert order status. You can only move forward in the order process.');
+                        $select.val(currentStatus); // Reset to current
+                        return;
+                    }
 
-                    updateOrderStatus(orderId, newStatus);
+                    updateOrderStatus(orderId, newStatus, $select);
                 });
 
-                function updateOrderStatus(orderId, status) {
+                function updateOrderStatus(orderId, status, $selectElement) {
                     if (confirm('Are you sure you want to update the order status?')) {
                         // Show loading state
-                        $('button[data-order-id="' + orderId + '"]').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>');
+                        var $updateBtn = $('button[data-order-id="' + orderId + '"]');
+                        var $select = $selectElement || $('select[data-order-id="' + orderId + '"]');
+                        
+                        $updateBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i>');
+                        $select.prop('disabled', true);
 
                         $.ajax({
                             url: '{{ route("vendor.order.update.status", ":id") }}'.replace(":id", orderId),
@@ -241,18 +309,46 @@
                             },
                             error: function(xhr, status, error) {
                                 console.error('Error updating status:', error);
-                                showNotification('error', 'Failed to update order status. Please try again.');
+                                
+                                // Get error message from response
+                                var errorMessage = 'Failed to update order status. Please try again.';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                }
+                                
+                                showNotification('error', errorMessage);
 
-                                // Re-enable buttons
-                                $('button[data-order-id="' + orderId + '"]').prop('disabled', false).html('<i class="fa fa-edit"></i>');
+                                // Re-enable buttons and select
+                                $updateBtn.prop('disabled', false).html('<i class="fa fa-edit"></i>');
+                                $select.prop('disabled', false);
+                                
+                                // Reset select to current status
+                                var currentStatus = $select.data('current-status');
+                                $select.val(currentStatus);
                             }
                         });
+                    } else {
+                        // Reset select to current status if user cancels
+                        if ($selectElement) {
+                            var currentStatus = $selectElement.data('current-status');
+                            $selectElement.val(currentStatus);
+                        }
                     }
                 }
 
                 function showNotification(type, message) {
                     // Simple notification system - you can replace this with your preferred notification library
-                    var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                    var alertClass = 'alert-info';
+                    if (type === 'success') {
+                        alertClass = 'alert-success';
+                    } else if (type === 'error') {
+                        alertClass = 'alert-danger';
+                    } else if (type === 'info') {
+                        alertClass = 'alert-info';
+                    } else if (type === 'warning') {
+                        alertClass = 'alert-warning';
+                    }
+                    
                     var alertHtml = '<div class="alert ' + alertClass + ' alert-dismissable fade in">' +
                         '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>' +
                         '<strong>' + type.charAt(0).toUpperCase() + type.slice(1) + '!</strong> ' + message +

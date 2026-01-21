@@ -121,7 +121,7 @@ class SearchController extends Controller
     {
         return VendorAdmin::where('status', '1')
             ->where('is_active', '1')
-            ->where('user_type', 'vendor')
+            ->whereIn('user_type', ['vendor', 'branch', 'admin'])
             ->whereNull('deleted_at')
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')

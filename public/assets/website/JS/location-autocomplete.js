@@ -121,6 +121,10 @@ function initAutocompleteFieldsNow() {
             
             // Ensure dropdown shows and suggestions are visible
             inputDesktop.addEventListener('input', function() {
+                // Start periodic check when user types
+                if (typeof startPeriodicCheck === 'function') {
+                    startPeriodicCheck();
+                }
                 console.log("Desktop input event triggered, value:", this.value);
                 const inputValue = this.value;
                 
@@ -193,16 +197,24 @@ function initAutocompleteFieldsNow() {
                                 }
                             });
                             
-                            // Style location icons
-                            const icons = item.querySelectorAll('img, .pac-icon');
-                            icons.forEach(function(icon) {
-                                icon.style.width = '20px';
-                                icon.style.height = '20px';
-                                icon.style.marginRight = '12px';
-                                icon.style.opacity = '0.7';
-                                icon.style.verticalAlign = 'middle';
-                                icon.style.display = 'inline-block';
-                            });
+                            // Style location icons and add if missing
+                            let icon = item.querySelector('.pac-icon, img');
+                            if (!icon) {
+                                // Create icon if it doesn't exist
+                                icon = document.createElement('img');
+                                icon.src = window.MARKER_IMAGE_URL || '/loc.png';
+                                icon.className = 'pac-icon';
+                                icon.alt = 'Location';
+                                item.insertBefore(icon, item.firstChild);
+                            }
+                            icon.style.width = '24px';
+                            icon.style.height = '24px';
+                            icon.style.marginRight = '12px';
+                            icon.style.opacity = '1';
+                            icon.style.verticalAlign = 'middle';
+                            icon.style.display = 'inline-block';
+                            icon.style.objectFit = 'contain';
+                            icon.style.flexShrink = '0';
                         });
                         console.log("Desktop input: Forced", items.length, "suggestions to be visible, container display:", window.getComputedStyle(container).display);
                         
@@ -445,6 +457,10 @@ function initAutocompleteFieldsNow() {
             
             // Force show dropdown on mobile when typing
             inputMobile.addEventListener('input', function() {
+                // Start periodic check when user types
+                if (typeof startPeriodicCheck === 'function') {
+                    startPeriodicCheck();
+                }
                 console.log("Mobile input event triggered, value:", this.value);
                 const inputValue = this.value;
                 
@@ -517,16 +533,24 @@ function initAutocompleteFieldsNow() {
                                 }
                             });
                             
-                            // Style location icons
-                            const icons = item.querySelectorAll('img, .pac-icon');
-                            icons.forEach(function(icon) {
-                                icon.style.width = '20px';
-                                icon.style.height = '20px';
-                                icon.style.marginRight = '12px';
-                                icon.style.opacity = '0.7';
-                                icon.style.verticalAlign = 'middle';
-                                icon.style.display = 'inline-block';
-                            });
+                            // Style location icons and add if missing
+                            let icon = item.querySelector('.pac-icon, img');
+                            if (!icon) {
+                                // Create icon if it doesn't exist
+                                icon = document.createElement('img');
+                                icon.src = window.MARKER_IMAGE_URL || '/loc.png';
+                                icon.className = 'pac-icon';
+                                icon.alt = 'Location';
+                                item.insertBefore(icon, item.firstChild);
+                            }
+                            icon.style.width = '24px';
+                            icon.style.height = '24px';
+                            icon.style.marginRight = '12px';
+                            icon.style.opacity = '1';
+                            icon.style.verticalAlign = 'middle';
+                            icon.style.display = 'inline-block';
+                            icon.style.objectFit = 'contain';
+                            icon.style.flexShrink = '0';
                         });
                         
                         // Show attribution at bottom
@@ -650,13 +674,24 @@ function initAutocompleteFieldsNow() {
                                 }
                             });
                             
-                            // Handle icon
-                            const icon = item.querySelector('.pac-icon');
-                            if (icon) {
-                                icon.style.setProperty('display', 'inline-block', 'important');
-                                icon.style.marginRight = '8px';
-                                icon.style.verticalAlign = 'middle';
+                            // Handle icon - add if missing
+                            let icon = item.querySelector('.pac-icon, img');
+                            if (!icon) {
+                                // Create icon if it doesn't exist
+                                icon = document.createElement('img');
+                                icon.src = window.MARKER_IMAGE_URL || '/loc.png';
+                                icon.className = 'pac-icon';
+                                icon.alt = 'Location';
+                                item.insertBefore(icon, item.firstChild);
                             }
+                            icon.style.setProperty('display', 'inline-block', 'important');
+                            icon.style.width = '24px';
+                            icon.style.height = '24px';
+                            icon.style.marginRight = '12px';
+                            icon.style.verticalAlign = 'middle';
+                            icon.style.opacity = '1';
+                            icon.style.objectFit = 'contain';
+                            icon.style.flexShrink = '0';
                             
                             // Remove all <br> tags completely
                             const brTags = item.querySelectorAll('br');
@@ -763,9 +798,28 @@ function initAutocompleteFieldsNow() {
                         
                         const items = container.querySelectorAll('.pac-item');
                         items.forEach(function(item) {
-                            item.style.setProperty('display', 'block', 'important');
+                            item.style.setProperty('display', 'flex', 'important');
                             item.style.setProperty('visibility', 'visible', 'important');
                             item.style.setProperty('opacity', '1', 'important');
+                            item.style.setProperty('align-items', 'center', 'important');
+                            
+                            // Add icon if missing
+                            let icon = item.querySelector('.pac-icon, img');
+                            if (!icon) {
+                                icon = document.createElement('img');
+                                icon.src = window.MARKER_IMAGE_URL || '/loc.png';
+                                icon.className = 'pac-icon';
+                                icon.alt = 'Location';
+                                item.insertBefore(icon, item.firstChild);
+                            }
+                            icon.style.setProperty('display', 'inline-block', 'important');
+                            icon.style.width = '24px';
+                            icon.style.height = '24px';
+                            icon.style.marginRight = '12px';
+                            icon.style.verticalAlign = 'middle';
+                            icon.style.opacity = '1';
+                            icon.style.objectFit = 'contain';
+                            icon.style.flexShrink = '0';
                         });
                         
                         if (typeof showGoogleAttribution === 'function') {
@@ -818,10 +872,15 @@ function ensurePacContainerVisible() {
             if (inputField) {
                 let inputRect = inputField.getBoundingClientRect();
                 pacContainer.style.position = 'fixed';
-                pacContainer.style.top = (inputRect.bottom + window.scrollY) + 'px';
+                
+                // Add gap between search box and suggestion box for both mobile and web view
+                const isMobile = window.innerWidth <= 768;
+                const gap = isMobile ? 8 : 6; // 8px gap for mobile, 6px for web view
+                pacContainer.style.top = (inputRect.bottom + window.scrollY + gap) + 'px';
+                
                 pacContainer.style.left = inputRect.left + 'px';
                 pacContainer.style.width = inputRect.width + 'px';
-                console.log("Positioned pac-container at:", inputRect.left, inputRect.bottom);
+                console.log("Positioned pac-container at:", inputRect.left, inputRect.bottom + gap, isMobile ? '(mobile with gap)' : '(web with gap)');
             }
             
             // Ensure parent popup doesn't clip it
@@ -899,13 +958,49 @@ function ensurePacContainerVisible() {
                         child.style.lineHeight = 'inherit';
                     });
                     
-                    // Handle icon separately
-                    const icon = item.querySelector('.pac-icon');
-                    if (icon) {
-                        icon.style.setProperty('display', 'inline-block', 'important');
-                        icon.style.marginRight = '8px';
-                        icon.style.verticalAlign = 'middle';
+                    // Handle icon separately - add if missing and ensure it's first
+                    let icon = item.querySelector('.pac-icon, img[src*="loc.png"]');
+                    if (!icon || icon.tagName !== 'IMG') {
+                        // Remove any existing non-img icon
+                        const existingIcon = item.querySelector('.pac-icon:not(img)');
+                        if (existingIcon) {
+                            existingIcon.remove();
+                        }
+                        
+                        // Create icon if it doesn't exist
+                        icon = document.createElement('img');
+                        icon.src = window.MARKER_IMAGE_URL || '/loc.png';
+                        icon.className = 'pac-icon';
+                        icon.alt = 'Location';
+                        icon.setAttribute('role', 'img');
+                        icon.setAttribute('aria-label', 'Location icon');
+                        
+                        // Insert at the very beginning of the item
+                        if (item.firstChild) {
+                            item.insertBefore(icon, item.firstChild);
+                        } else {
+                            item.appendChild(icon);
+                        }
+                    } else {
+                        // Ensure icon src is correct - only use loc.png
+                        if (!icon.src || !icon.src.includes('loc.png')) {
+                            icon.src = window.MARKER_IMAGE_URL || '/loc.png';
+                        }
+                        // Ensure icon is first child
+                        if (icon !== item.firstChild) {
+                            item.insertBefore(icon, item.firstChild);
+                        }
                     }
+                    icon.style.setProperty('display', 'inline-block', 'important');
+                    icon.style.setProperty('visibility', 'visible', 'important');
+                    icon.style.width = '24px';
+                    icon.style.height = '24px';
+                    icon.style.marginRight = '12px';
+                    icon.style.verticalAlign = 'middle';
+                    icon.style.opacity = '1';
+                    icon.style.objectFit = 'contain';
+                    icon.style.flexShrink = '0';
+                    icon.style.setProperty('order', '-1', 'important'); // Ensure it appears first in flex layout
                     
                     // Remove all <br> tags completely
                     const brTags = item.querySelectorAll('br');
@@ -1203,8 +1298,29 @@ function setupPacContainerObserver() {
                                 node.style.overflowX = 'hidden';
                                 node.style.position = 'fixed';
                                 
-                                // Ensure items are visible
+                                // Ensure items are visible and have icons
                                 setTimeout(function() {
+                                    // Add icons to all pac-items
+                                    const items = node.querySelectorAll('.pac-item');
+                                    items.forEach(function(item) {
+                                        let icon = item.querySelector('.pac-icon, img');
+                                        if (!icon) {
+                                            icon = document.createElement('img');
+                                            icon.src = window.MARKER_IMAGE_URL || '/loc.png';
+                                            icon.className = 'pac-icon';
+                                            icon.alt = 'Location';
+                                            item.insertBefore(icon, item.firstChild);
+                                        }
+                                        icon.style.setProperty('display', 'inline-block', 'important');
+                                        icon.style.width = '24px';
+                                        icon.style.height = '24px';
+                                        icon.style.marginRight = '12px';
+                                        icon.style.verticalAlign = 'middle';
+                                        icon.style.opacity = '1';
+                                        icon.style.objectFit = 'contain';
+                                        icon.style.flexShrink = '0';
+                                    });
+                                    
                                     ensurePacContainerVisible();
                                     if (typeof showGoogleAttribution === 'function') {
                                         showGoogleAttribution(node);
@@ -1235,6 +1351,27 @@ function setupPacContainerObserver() {
                                 container.style.zIndex = '100000002';
                                 
                                 setTimeout(function() {
+                                    // Add icons to all pac-items
+                                    const items = container.querySelectorAll('.pac-item');
+                                    items.forEach(function(item) {
+                                        let icon = item.querySelector('.pac-icon, img');
+                                        if (!icon) {
+                                            icon = document.createElement('img');
+                                            icon.src = window.MARKER_IMAGE_URL || '/loc.png';
+                                            icon.className = 'pac-icon';
+                                            icon.alt = 'Location';
+                                            item.insertBefore(icon, item.firstChild);
+                                        }
+                                        icon.style.setProperty('display', 'inline-block', 'important');
+                                        icon.style.width = '24px';
+                                        icon.style.height = '24px';
+                                        icon.style.marginRight = '12px';
+                                        icon.style.verticalAlign = 'middle';
+                                        icon.style.opacity = '1';
+                                        icon.style.objectFit = 'contain';
+                                        icon.style.flexShrink = '0';
+                                    });
+                                    
                                     ensurePacContainerVisible();
                                     if (typeof showGoogleAttribution === 'function') {
                                         showGoogleAttribution(container);
@@ -1248,6 +1385,47 @@ function setupPacContainerObserver() {
                             }
                         });
                     }
+                    
+                    // Also watch for pac-items being added directly
+                    if (node.classList && node.classList.contains('pac-item')) {
+                        let icon = node.querySelector('.pac-icon, img');
+                        if (!icon) {
+                            icon = document.createElement('img');
+                            icon.src = window.MARKER_IMAGE_URL || '/loc.png';
+                            icon.className = 'pac-icon';
+                            icon.alt = 'Location';
+                            node.insertBefore(icon, node.firstChild);
+                        }
+                        icon.style.setProperty('display', 'inline-block', 'important');
+                        icon.style.width = '24px';
+                        icon.style.height = '24px';
+                        icon.style.marginRight = '12px';
+                        icon.style.verticalAlign = 'middle';
+                        icon.style.opacity = '1';
+                        icon.style.objectFit = 'contain';
+                        icon.style.flexShrink = '0';
+                    }
+                    
+                    // Also check for pac-items inside added nodes
+                    const pacItems = node.querySelectorAll ? node.querySelectorAll('.pac-item') : [];
+                    pacItems.forEach(function(item) {
+                        let icon = item.querySelector('.pac-icon, img');
+                        if (!icon) {
+                            icon = document.createElement('img');
+                            icon.src = window.MARKER_IMAGE_URL || '/loc.png';
+                            icon.className = 'pac-icon';
+                            icon.alt = 'Location';
+                            item.insertBefore(icon, item.firstChild);
+                        }
+                        icon.style.setProperty('display', 'inline-block', 'important');
+                        icon.style.width = '24px';
+                        icon.style.height = '24px';
+                        icon.style.marginRight = '12px';
+                        icon.style.verticalAlign = 'middle';
+                        icon.style.opacity = '1';
+                        icon.style.objectFit = 'contain';
+                        icon.style.flexShrink = '0';
+                    });
                 });
             }
         });
@@ -1259,28 +1437,49 @@ function setupPacContainerObserver() {
         subtree: true
     });
     
-    // Also periodically check (fallback) - more frequent
-    setInterval(function() {
-        const popup = document.getElementById("addpopPopup");
-        const isPopupOpen = popup && (popup.classList.contains('addpop-desktop-active') || popup.classList.contains('addpop-mobile-active'));
+    // Store interval ID for cleanup - only run when user is actively searching
+    let periodicCheckInterval = null;
+    let lastInputTime = 0;
+    
+    // Function to start periodic check only when user is typing
+    function startPeriodicCheck() {
+        // Clear existing interval if any
+        if (periodicCheckInterval) {
+            clearInterval(periodicCheckInterval);
+        }
         
-        let pacContainers = document.querySelectorAll('.pac-container');
-        console.log("Periodic check: Found", pacContainers.length, "pac-containers, popup open:", isPopupOpen);
+        // Update last input time
+        lastInputTime = Date.now();
         
-        if (pacContainers.length > 0) {
-            pacContainers.forEach(function(container) {
+        // Only run periodic check when popup is open and user is typing
+        periodicCheckInterval = setInterval(function() {
+            const popup = document.getElementById("addpopPopup");
+            const isPopupOpen = popup && (popup.classList.contains('addpop-desktop-active') || popup.classList.contains('addpop-mobile-active'));
+            
+            // Stop checking if popup is closed
+            if (!isPopupOpen) {
+                clearInterval(periodicCheckInterval);
+                periodicCheckInterval = null;
+                return;
+            }
+            
+            // Stop checking if user hasn't typed in last 3 seconds
+            const timeSinceLastInput = Date.now() - lastInputTime;
+            if (timeSinceLastInput > 3000) {
+                clearInterval(periodicCheckInterval);
+                periodicCheckInterval = null;
+                return;
+            }
+            
+            let pacContainers = document.querySelectorAll('.pac-container');
+            
+            if (pacContainers.length > 0) {
+                pacContainers.forEach(function(container) {
                 let computedStyle = window.getComputedStyle(container);
                 
                 if (isPopupOpen) {
                     // Popup is open - ensure container is visible
                     if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden' || computedStyle.opacity === '0' || container.offsetHeight === 0) {
-                        console.log("Pac-container hidden but popup open, fixing...", {
-                            display: computedStyle.display,
-                            visibility: computedStyle.visibility,
-                            opacity: computedStyle.opacity,
-                            height: container.offsetHeight
-                        });
-                        
                         // Force show
                         container.classList.add('pac-container-visible');
                         container.style.setProperty('display', 'block', 'important');
@@ -1294,6 +1493,27 @@ function setupPacContainerObserver() {
                         container.style.overflowX = 'hidden';
                         container.style.position = 'fixed';
                         
+                        // Add icons to all pac-items before ensuring visibility
+                        const items = container.querySelectorAll('.pac-item');
+                        items.forEach(function(item) {
+                            let icon = item.querySelector('.pac-icon, img');
+                            if (!icon) {
+                                icon = document.createElement('img');
+                                icon.src = window.MARKER_IMAGE_URL || '/loc.png';
+                                icon.className = 'pac-icon';
+                                icon.alt = 'Location';
+                                item.insertBefore(icon, item.firstChild);
+                            }
+                            icon.style.setProperty('display', 'inline-block', 'important');
+                            icon.style.width = '24px';
+                            icon.style.height = '24px';
+                            icon.style.marginRight = '12px';
+                            icon.style.verticalAlign = 'middle';
+                            icon.style.opacity = '1';
+                            icon.style.objectFit = 'contain';
+                            icon.style.flexShrink = '0';
+                        });
+                        
                         ensurePacContainerVisible();
                         
                         // Show attribution
@@ -1305,14 +1525,32 @@ function setupPacContainerObserver() {
                         container.classList.add('pac-container-visible');
                         ensurePacContainerVisible();
                         
-                        // Ensure items are visible
+                        // Ensure items are visible and have icons
                         const items = container.querySelectorAll('.pac-item');
-                        console.log("Periodic check: Found", items.length, "pac-items in visible container");
                         items.forEach(function(item) {
-                            item.style.setProperty('display', 'block', 'important');
+                            item.style.setProperty('display', 'flex', 'important');
                             item.style.setProperty('visibility', 'visible', 'important');
                             item.style.setProperty('opacity', '1', 'important');
+                            item.style.setProperty('align-items', 'center', 'important');
                             item.style.color = '#333';
+                            
+                            // Add icon if missing
+                            let icon = item.querySelector('.pac-icon, img');
+                            if (!icon) {
+                                icon = document.createElement('img');
+                                icon.src = window.MARKER_IMAGE_URL || '/loc.png';
+                                icon.className = 'pac-icon';
+                                icon.alt = 'Location';
+                                item.insertBefore(icon, item.firstChild);
+                            }
+                            icon.style.setProperty('display', 'inline-block', 'important');
+                            icon.style.width = '24px';
+                            icon.style.height = '24px';
+                            icon.style.marginRight = '12px';
+                            icon.style.verticalAlign = 'middle';
+                            icon.style.opacity = '1';
+                            icon.style.objectFit = 'contain';
+                            icon.style.flexShrink = '0';
                         });
                         
                         if (typeof showGoogleAttribution === 'function') {
@@ -1337,7 +1575,6 @@ function setupPacContainerObserver() {
                 const isMobile = window.innerWidth <= 768;
                 let activeInput = isMobile ? document.getElementById("autocomplete-mobile") : document.getElementById("autocomplete");
                 if (activeInput && activeInput.value && activeInput.value.length > 0) {
-                    console.log("Input has value but no pac-container, ensuring autocomplete is active");
                     // Trigger input event to force autocomplete
                     activeInput.dispatchEvent(new Event('input', { bubbles: true }));
                     activeInput.dispatchEvent(new Event('keydown', { bubbles: true }));
@@ -1350,7 +1587,55 @@ function setupPacContainerObserver() {
                 }
             }
         }
-    }, 200);
+    }, 500); // Reduced frequency to 500ms instead of 200ms
+    }
+    
+    // Function to stop periodic check
+    function stopPeriodicCheck() {
+        if (periodicCheckInterval) {
+            clearInterval(periodicCheckInterval);
+            periodicCheckInterval = null;
+        }
+    }
+    
+    // Add event listeners to input fields to start/stop periodic check
+    const inputDesktop = document.getElementById("autocomplete");
+    const inputMobile = document.getElementById("autocomplete-mobile");
+    
+    if (inputDesktop) {
+        inputDesktop.addEventListener('input', function() {
+            startPeriodicCheck();
+        });
+        inputDesktop.addEventListener('blur', function() {
+            setTimeout(stopPeriodicCheck, 2000); // Stop after 2 seconds of blur
+        });
+    }
+    
+    if (inputMobile) {
+        inputMobile.addEventListener('input', function() {
+            startPeriodicCheck();
+        });
+        inputMobile.addEventListener('blur', function() {
+            setTimeout(stopPeriodicCheck, 2000); // Stop after 2 seconds of blur
+        });
+    }
+    
+    // Stop periodic check when popup closes
+    const popupElement = document.getElementById("addpopPopup");
+    if (popupElement) {
+        // Use MutationObserver to detect when popup closes
+        const popupObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName === 'class') {
+                    const isOpen = popupElement.classList.contains('addpop-desktop-active') || popupElement.classList.contains('addpop-mobile-active');
+                    if (!isOpen) {
+                        stopPeriodicCheck();
+                    }
+                }
+            });
+        });
+        popupObserver.observe(popupElement, { attributes: true, attributeFilter: ['class'] });
+    }
 }
 
 // Make functions globally accessible IMMEDIATELY (before Google Maps API loads)

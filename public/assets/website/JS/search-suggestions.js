@@ -1,6 +1,7 @@
 /**
  * Search Suggestions Handler
  * Handles search box autocomplete suggestions for both desktop and mobile
+ * Fetches products from vendors, branches, and admins based on user location
  */
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -42,6 +43,68 @@ document.addEventListener("DOMContentLoaded", function() {
             return params;
         }
 
+        // Prevent body scroll when suggestions are shown (mobile only)
+        let savedScrollPosition = 0;
+        function preventBodyScroll(prevent) {
+            if (window.innerWidth < 768 && searchBoxId === 'mobile-search-box') { // Mobile only
+                if (prevent) {
+                    // Save current scroll position
+                    savedScrollPosition = window.pageYOffset || document.documentElement.scrollTop || 0;
+                    document.body.classList.add('suggestions-open');
+                    document.body.style.top = `-${savedScrollPosition}px`;
+                    document.body.style.position = 'fixed';
+                    document.body.style.width = '100%';
+                    // Prevent navbar from scrolling
+                    const navbar = document.querySelector('.navbar');
+                    if (navbar) {
+                        navbar.style.position = 'fixed';
+                        navbar.style.top = '0';
+                        navbar.style.left = '0';
+                        navbar.style.right = '0';
+                        navbar.style.zIndex = '1050';
+                    }
+                } else {
+                    document.body.classList.remove('suggestions-open');
+                    document.body.style.top = '';
+                    document.body.style.position = '';
+                    document.body.style.width = '';
+                    // Restore scroll position
+                    if (savedScrollPosition !== undefined && savedScrollPosition !== null) {
+                        window.scrollTo(0, savedScrollPosition);
+                        savedScrollPosition = 0;
+                    }
+                }
+            }
+        }
+        
+        // Position mobile suggestions box below search form
+        function positionMobileSuggestions() {
+            if (searchBoxId === 'mobile-search-box' && window.innerWidth < 768) {
+                const form = document.getElementById(formId);
+                const searchBox = document.getElementById(searchBoxId);
+                if (form && searchBox && suggestionsBox && !suggestionsBox.classList.contains('d-none')) {
+                    const formRect = form.getBoundingClientRect();
+                    // Position suggestions below search form using fixed positioning
+                    suggestionsBox.style.position = 'fixed';
+                    suggestionsBox.style.top = `${formRect.bottom + 5}px`;
+                    suggestionsBox.style.left = `${formRect.left}px`;
+                    suggestionsBox.style.width = `${formRect.width}px`;
+                    suggestionsBox.style.maxWidth = `${formRect.width}px`;
+                    suggestionsBox.style.right = 'auto';
+                    suggestionsBox.style.zIndex = '10001';
+                }
+            }
+        }
+        
+        // Reposition on window resize
+        if (searchBoxId === 'mobile-search-box') {
+            window.addEventListener('resize', function() {
+                if (!suggestionsBox.classList.contains('d-none')) {
+                    positionMobileSuggestions();
+                }
+            });
+        }
+
         // Load last searches from localStorage
         function showLastSearches() {
             let lastSearches = JSON.parse(localStorage.getItem("lastSearches")) || [];
@@ -56,12 +119,19 @@ document.addEventListener("DOMContentLoaded", function() {
                     li.addEventListener("click", () => {
                         searchBox.value = item;
                         suggestionsBox.classList.add("d-none");
+                        preventBodyScroll(false);
                     });
                     suggestionsBox.appendChild(li);
                 });
                 suggestionsBox.classList.remove("d-none");
+                preventBodyScroll(true);
+                // Position suggestions box below search form (mobile only)
+                if (searchBoxId === 'mobile-search-box') {
+                    setTimeout(() => positionMobileSuggestions(), 10);
+                }
             } else {
                 suggestionsBox.classList.add("d-none");
+                preventBodyScroll(false);
             }
         }
 
@@ -76,6 +146,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
+            // Fetch suggestions from backend API
+            // Backend returns products from vendors, branches, and admins filtered by location
             let searchSuggestionsUrl = window.SEARCH_SUGGESTIONS_URL || '/search/suggestions';
             fetch(`${searchSuggestionsUrl}?q=${encodeURIComponent(query)}${getSuggestionLocationParams()}`)
                 .then(res => res.json())
@@ -100,8 +172,14 @@ document.addEventListener("DOMContentLoaded", function() {
                         });
 
                         suggestionsBox.classList.remove("d-none");
+                        preventBodyScroll(true);
+                        // Position suggestions box below search form (mobile only)
+                        if (searchBoxId === 'mobile-search-box') {
+                            setTimeout(() => positionMobileSuggestions(), 10);
+                        }
                     } else {
                         suggestionsBox.classList.add("d-none");
+                        preventBodyScroll(false);
                     }
                 })
                 .catch(err => {
@@ -127,7 +205,21 @@ document.addEventListener("DOMContentLoaded", function() {
         document.addEventListener("click", function(e) {
             if (!form.contains(e.target)) {
                 suggestionsBox.classList.add("d-none");
+                preventBodyScroll(false);
             }
         });
+        
+        // Also hide suggestions and restore scroll on blur (mobile)
+        if (searchBoxId === 'mobile-search-box') {
+            searchBox.addEventListener("blur", function() {
+                // Delay to allow click events to fire first
+                setTimeout(() => {
+                    if (!form.contains(document.activeElement)) {
+                        suggestionsBox.classList.add("d-none");
+                        preventBodyScroll(false);
+                    }
+                }, 200);
+            });
+        }
     }
 });

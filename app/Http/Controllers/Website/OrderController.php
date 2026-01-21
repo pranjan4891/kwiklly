@@ -57,6 +57,18 @@ class OrderController extends Controller
                 ], 400);
             }
 
+            // ✅ Stock validation before proceeding
+            foreach ($cartItems as $cartItem) {
+                $variant = $cartItem->variant;
+                if (!$variant || $variant->stock < $cartItem->quantity) {
+                    $available = $variant?->stock ?? 0;
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Only {$available} qty available for {$cartItem->product->title}."
+                    ], 422);
+                }
+            }
+
 
             // Group cart items by vendor ID from the product relationship
             $groupedCart = $cartItems->groupBy(function($item) {
@@ -220,6 +232,11 @@ class OrderController extends Controller
                     ];
 
                     $orderItem = OrderItem::create($orderItemData);
+
+                    // ✅ Decrease stock
+                    if ($cartItem->variant) {
+                        $cartItem->variant->decrement('stock', $cartItem->quantity);
+                    }
 
                 }
             }

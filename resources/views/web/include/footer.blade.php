@@ -285,7 +285,7 @@
         window.SEARCH_SUGGESTIONS_URL = "{{ route('search.suggestions') }}";
         window.EXPLORE_STORE_URL = "{{ route('explorestore', ['vendor_id' => ':vendor_id', 'cat_id' => 0]) }}";
         window.CART_ICON_URL = "{{ asset('public/assets/website/images/cart.svg') }}";
-        window.MARKER_IMAGE_URL = "{{ asset('public/marker.png') }}";
+        window.MARKER_IMAGE_URL = "{{ asset('public/loc.png') }}";
         window.HOME_URL = "{{ url('/') }}";
         window.IS_LOGGED_IN = {{ auth()->check() ? 'true' : 'false' }};
     </script>

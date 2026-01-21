@@ -11,7 +11,7 @@
 <section class="registrationspace">
    <div class="container register-section">
       <div class="row align-items-center">
-         <div class="col-md-6 text-center position-relative my-4">
+         <div class="col-md-6 col-12 text-center position-relative my-4">
             <div class="image-container">
                <div class="green-bg"></div>
                <img src="{{ asset('public/assets/website/images/registerimg2.png')}}" class="main-image" alt="Seller">
@@ -31,7 +31,7 @@
                </div>
             </div>
          </div>
-         <div class="col-md-6 my-4">
+         <div class="col-md-6 col-12 my-4">
             <div class="form-section">
                <h3 id="form-heading">Register Today</h3>
                <form id="multiStepForm" enctype="multipart/form-data">
@@ -60,7 +60,7 @@
    <div class="steps-container">
       <h2><strong>Follow These 4 Simple Steps to Get Started.</strong></h2>
       <div class="row mt-4">
-         <div class="col-md-6 mt-5">
+         <div class="col-md-6 col-12 mt-5">
             <div class="step-box">
                <div class="step-number">01</div>
                <div class="step-title py-3">Vendor Registration</div>
@@ -73,7 +73,7 @@
                </ul>
             </div>
          </div>
-         <div class="col-md-6 mt-5">
+         <div class="col-md-6 col-12 mt-5">
             <div class="step-box">
                <div class="step-number">02</div>
                <div class="step-title py-3">Verification of Documents</div>
@@ -86,7 +86,7 @@
                </ul>
             </div>
          </div>
-         <div class="col-md-6 mt-5">
+         <div class="col-md-6 col-12 mt-5">
             <div class="step-box">
                <div class="step-number">03</div>
                <div class="step-title py-3">Verification of Documents</div>
@@ -99,7 +99,7 @@
                </ul>
             </div>
          </div>
-         <div class="col-md-6 mt-5">
+         <div class="col-md-6 col-12 mt-5">
             <div class="step-box">
                <div class="step-number">04</div>
                <div class="step-title py-3">Verification of Documents</div>
@@ -125,10 +125,10 @@
                <div class="cta-text">
                   <h2>Start Selling Now</h2>
                   <p>For any questions or concerns, feel free to contact us.</p>
-                  <button class="cta-btn">Contact Us</button>
+                  <button class="cta-btn" id="newconOpen">Contact Us</button>
                </div>
                <div class="cta-image">
-                  <img src="{{ asset('public/assets/website/images/ctaimage.png')}}" alt="Fruits Basket">
+                  <img src="{{ asset('public/assets/website/images/ctaimage.png')}}" alt="Fruits Basket" class="img-fluid">
                </div>
             </div>
          </div>

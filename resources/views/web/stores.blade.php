@@ -1,6 +1,11 @@
 
 @extends('web.include.main')
+
 @section('content')
+
+<style>
+    
+</style>
 <!-- first section start  -->
 <section class="store-banner-section">
 <div class="container py-2 px-3 store-page-container">
@@ -138,9 +143,9 @@
           <div class="col-md-12 col-12">
             <div class="cta-section">
                 <div class="cta-text">
-                    <h2>Start Selling Now</h2>
-                    <p>For any questions or concerns, feel free to contact us.</p>
-                    <button class="cta-btn">Contact Us</button>
+                    <h2>Start Selling with us </h2>
+                    <!--<p>For any questions or concerns, feel free to contact us.</p>-->
+                    <button class="cta-btn" id="newconOpen">Contact Us</button>
                 </div>
                 <div class="cta-image">
                     <img src="{{ asset('public/assets/website/images/ctaimage.png')}}" alt="Fruits Basket">

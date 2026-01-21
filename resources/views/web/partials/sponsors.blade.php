@@ -1,8 +1,181 @@
 @if ($sponsors_products->isNotEmpty())
 
+<style>
+/* ===============================
+   PRODUCT CARD BASE
+================================ */
+.product-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+}
+
+/* ===============================
+   DISCOUNT LABEL
+================================ */
+.discount-label {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    background: #e6f7ed;
+    color: #1a8f4b;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 6px;
+    border-radius: 0px;
+    border-bottom-right-radius: 7px;
+    z-index: 2;
+}
+
+/* ===============================
+   PRODUCT IMAGE
+================================ */
+.product-image {
+    width: 100%;
+    height: 140px;
+    object-fit: contain;
+    padding: 10px;
+}
+
+/* ===============================
+   TEXT SPACING
+================================ */
+.cardpadding {
+    padding: 0 10px;
+}
+
+/* ===============================
+   PRODUCT TITLE
+================================ */
+.product-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+    line-height: 1.2;
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ===============================
+   PRODUCT INFO (90 gm etc)
+================================ */
+.product-info {
+    font-size: 12px;
+    color: #777;
+    margin-top: 2px;
+}
+
+/* ===============================
+   PRICE SECTION
+================================ */
+.price-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.price-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.price {
+    font-size: 15px;
+    font-weight: 700;
+    color: #4CAF50 !important;
+}
+
+.original-price {
+    font-size: 12px;
+    color: #999;
+    text-decoration: line-through;
+}
+
+/* ===============================
+   ADD / QTY BUTTONS
+================================ */
+
+
+/* ===============================
+   QTY BOX
+================================ */
+.owl-stage{
+    padding-left: 0px !important;
+}
+
+/* ===============================
+   STORE INFO
+================================ */
+.store-info {
+    font-size: 11px;
+    color: #777;
+    padding: 6px 10px 10px;
+}
+
+.store-info a {
+    color: black;
+    text-decoration: none;
+}
+
+/* ===============================
+   MOBILE RESPONSIVE
+================================ */
+@media (max-width: 576px) {
+
+    .product-image {
+        height: 120px;
+    }
+
+    .product-title {
+        font-size: 13px;
+    }
+
+    .product-info {
+        font-size: 11px;
+    }
+
+    .price {
+        font-size: 14px;
+    }
+
+    .original-price {
+        font-size: 11px;
+    }
+
+    .add-btn {
+        font-size: 12px;
+        padding: 3px 8px;
+    }
+
+    .qty-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 16px;
+    }
+
+    .qty-input {
+        width: 26px;
+        font-size: 12px;
+    }
+
+    .discount-label {
+        font-size: 10px;
+        padding: 2px 5px;
+    }
+}
+    
+    
+</style>
 {{-- {{dd($sponsors_products)}} --}}
 <div class="container mt-4">
-      <h4 class="pb-3 pt-4 headingclass">Sponsored Products</h4>
+      <h4 class="pb-3  headingclass">Sponsored Products</h4>
       <div class="owl-carousel owl-theme mb-4">
          @foreach ($sponsors_products as $product)
             @php $defaultVariant = $product->variants->first(); @endphp
@@ -77,7 +250,7 @@
                                 @if ($hasMultipleVariants)
                                     <button class="add-btn d-flex flex-column align-items-center position-relative"
                                             onclick="openPopup({{ $product->id }})">
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center newimg">
                                             Add
                                             <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                         </div>

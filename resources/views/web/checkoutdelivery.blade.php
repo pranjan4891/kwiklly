@@ -25,7 +25,7 @@
             .xyz-modal-overlay {
                 z-index: 9999999 !important;
             }
-            
+
             /* Coupon Modal Styles - Match Home Page Design */
             .xyz-modal-overlay {
                 position: fixed;
@@ -39,7 +39,7 @@
                 align-items: center;
                 z-index: 9999999;
             }
-            
+
             .xyz-modal {
                 background: #fff;
                 border-radius: 15px;
@@ -50,14 +50,14 @@
                 max-height: 90vh;
                 overflow-y: auto;
             }
-            
+
             .xyz-modal h5 {
                 font-size: 20px;
                 font-weight: 700;
                 margin-bottom: 20px;
                 color: #000;
             }
-            
+
             /* Close Button */
             .xyz-close {
                 background: none;
@@ -65,7 +65,7 @@
                 font-size: 24px;
                 cursor: pointer;
             }
-            
+
             /* Coupon Row Styling - Match Home Page */
             .xyz-coupon-row {
                 background-color: #f2f7ff;
@@ -73,27 +73,27 @@
                 padding: 15px;
                 margin-bottom: 15px;
             }
-            
+
             .xyz-coupon-row h6 {
                 font-size: 18px;
                 font-weight: 700;
                 color: #000;
                 margin-bottom: 8px;
             }
-            
+
             .xyz-coupon-row h6 strong {
                 font-size: 20px;
                 color: #000;
             }
-            
+
             .xyz-coupon-row .col-7 {
                 padding-right: 10px;
             }
-            
+
             .xyz-coupon-row .col-5 {
                 padding-left: 10px;
             }
-            
+
             .xyz-coupon-row div[style*="color: #3B6939"],
             .xyz-coupon-row div[style*="color: green"] {
                 color: #3B6939 !important;
@@ -101,36 +101,36 @@
                 font-weight: 500;
                 margin-bottom: 6px;
             }
-            
+
             .xyz-coupon-row small {
                 font-size: 12px;
                 color: #666;
                 display: block;
                 margin-bottom: 4px;
             }
-            
+
             .xyz-coupon-row small b {
                 font-weight: 600;
                 color: #000;
             }
-            
+
             .xyz-coupon-row .text-end {
                 text-align: right;
             }
-            
+
             .xyz-coupon-row .text-end small {
                 color: #333;
                 font-weight: 500;
                 font-size: 11px;
             }
-            
+
             .xyz-coupon-logo {
                 height: auto;
                 max-width: 50px;
                 margin-bottom: 10px;
                 object-fit: contain;
             }
-            
+
             .apply-coupon-btn {
                 text-decoration: none !important;
                 background-color: #E94412 !important;
@@ -148,24 +148,24 @@
                 z-index: 99999999 !important;
                 position: relative !important;
             }
-            
+
             .apply-coupon-btn:hover {
                 background-color: #d63a0f !important;
                 transform: translateY(-1px) !important;
                 box-shadow: 0 4px 12px rgba(233, 68, 18, 0.4) !important;
             }
-            
+
             .apply-coupon-btn:active {
                 transform: translateY(0) !important;
                 box-shadow: 0 2px 6px rgba(233, 68, 18, 0.3) !important;
             }
-            
+
             .xyz-coupon-applied-on {
                 margin-top: 12px;
                 padding-top: 10px;
                 border-top: 1px solid #e0e0e0;
             }
-            
+
             /* Modal Animation */
             @keyframes slideDown {
                 from {
@@ -177,7 +177,7 @@
                     transform: translateY(0);
                 }
             }
-            
+
             /* Mobile improvements for coupon modal */
             @media (max-width: 768px) {
                 .xyz-modal {
@@ -186,101 +186,101 @@
                     padding: 16px 14px !important;
                     margin: 10px !important;
                 }
-                
+
                 .xyz-modal h5 {
                     font-size: 18px !important;
                     margin-bottom: 12px !important;
                 }
-                
+
                 .xyz-coupon-row {
                     padding: 14px 12px !important;
                     margin-bottom: 12px !important;
                 }
-                
+
                 .xyz-coupon-row .row {
                     margin: 0 !important;
                 }
-                
+
                 .xyz-coupon-row .col-7,
                 .xyz-coupon-row .col-5 {
                     padding-left: 8px !important;
                     padding-right: 8px !important;
                 }
-                
+
                 .xyz-coupon-row h6 {
                     font-size: 18px !important;
                     margin-bottom: 6px !important;
                 }
-                
+
                 .xyz-coupon-row h6 strong {
                     font-size: 20px !important;
                 }
-                
+
                 .xyz-coupon-row div[style*="color: #3B6939"] {
                     font-size: 12px !important;
                 }
-                
+
                 .xyz-coupon-row small {
                     font-size: 11px !important;
                 }
-                
+
                 .xyz-coupon-logo {
                     max-width: 45px !important;
                     height: auto !important;
                     margin-bottom: 8px !important;
                 }
-                
+
                 .apply-coupon-btn {
                     font-size: 13px !important;
                     padding: 10px 20px !important;
                     border-radius: 50px !important;
                 }
-                
+
                 .apply-coupon-btn:hover {
                     background-color: #d63a0f !important;
                     transform: translateY(-1px) !important;
                     box-shadow: 0 4px 12px rgba(233, 68, 18, 0.4) !important;
                 }
-                
+
                 .xyz-coupon-applied-on {
                     margin-top: 10px !important;
                     padding-top: 8px !important;
                 }
-                
+
                 .xyz-coupon-applied-on small {
                     font-size: 10px !important;
                     line-height: 1.5 !important;
                 }
             }
-            
+
             @media (max-width: 480px) {
                 .xyz-modal {
                     width: 98% !important;
                     padding: 14px 12px !important;
                 }
-                
+
                 .xyz-coupon-row {
                     padding: 12px 10px !important;
                 }
-                
+
                 .xyz-coupon-row .col-7 {
                     width: 100% !important;
                     margin-bottom: 12px;
                 }
-                
+
                 .xyz-coupon-row .col-5 {
                     width: 100% !important;
                     text-align: left !important;
                 }
-                
+
                 .xyz-coupon-row h6 strong {
                     font-size: 18px !important;
                 }
-                
+
                 .xyz-coupon-logo {
                     max-width: 40px !important;
                 }
-                
+
                 .apply-coupon-btn {
                     font-size: 12px !important;
                     padding: 8px 18px !important;
@@ -288,11 +288,11 @@
                 }
             }
         </style>
-       
+
         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     </head>
-  
+
     <body>
 
         <section>
@@ -407,7 +407,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <!--- Delivery Progress (Conditional) --->
                                         <div id="delivery-progress-section-{{ $businessId }}" style="display: none;">
                                             <div class="d-flex align-items-center mb-2" style="margin-top: {{ isset($businessId) ? '12px' : '0' }};">
@@ -423,7 +423,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="xyz-right-text" id="progress-footer-{{ $businessId }}" style="display: none; margin-top: 12px;">*Progress Bar will reset in next order</div>
                                     </div>
                                 </div>
@@ -454,7 +454,7 @@
                                     </button>
                                 </div>
                                 @endif
-                                
+
                                 {{-- Applied Coupon Details - Separate div below the button --}}
                                 @php
                                     $appliedCoupon = isset($vendorCoupons[$vendorData['business_id']]) && !empty($vendorCoupons[$vendorData['business_id']]) ? $vendorCoupons[$vendorData['business_id']] : null;
@@ -738,7 +738,7 @@
                         $('#cart-count').text(res.count);
                         // Use selective update instead of full re-render
                         updateCartQuantities(res.cart, vendorCoupons);
-                        
+
                         // Check if coupon was auto-removed
                         if (res.coupon_auto_removed) {
                             Swal.fire({
@@ -790,7 +790,7 @@
                                         $('#cart-count').text(res2.count);
                                         // Use selective update instead of full re-render
                                         updateCartQuantities(res2.cart, vendorCoupons);
-                                        
+
                                         // Remove coupon display from page if coupon was removed
                                         const vendorId = res2.vendor_id || res.vendor_id;
                                         if (vendorId && (!vendorCoupons[vendorId] || !vendorCoupons[vendorId].code)) {
@@ -799,7 +799,7 @@
                                                 $appliedCouponSection.hide().html('');
                                             }
                                         }
-                                        
+
                                         // Show coupon removed message
                                         Swal.fire({
                                             icon: 'info',
@@ -826,7 +826,7 @@
                         $('#cart-count').text(res.count);
                         // Use selective update instead of full re-render
                         updateCartQuantities(res.cart, vendorCoupons);
-                        
+
                         // Check if coupon was auto-removed
                         if (res.coupon_auto_removed) {
                             // Remove coupon display from page
@@ -837,7 +837,7 @@
                                     $appliedCouponSection.hide().html('');
                                 }
                             }
-                            
+
                             Swal.fire({
                                 icon: 'info',
                                 title: 'Coupon Removed',
@@ -873,7 +873,7 @@
                 // Apply coupon handler function (can be called directly)
                 window.applyCouponHandler = function(couponCode, vendorId) {
                     console.log('applyCouponHandler called:', { couponCode, vendorId });
-                    
+
                     if (!vendorId || vendorId <= 0) {
                         Swal.fire({
                             icon: 'error',
@@ -883,7 +883,7 @@
                         });
                         return;
                     }
-                    
+
                     if (!couponCode || couponCode.trim() === '') {
                         Swal.fire({
                             icon: 'error',
@@ -893,10 +893,10 @@
                         });
                         return;
                     }
-                    
+
                     vendorId = parseInt(vendorId);
                     couponCode = couponCode.trim();
-                    
+
                     // Close modal
                     if (typeof window.hideModal === 'function') {
                         window.hideModal(vendorId);
@@ -905,7 +905,7 @@
                             $(this).css('display', 'none');
                         });
                     }
-                    
+
                     // Show loading
                     Swal.fire({
                         title: 'Applying Coupon...',
@@ -915,7 +915,7 @@
                             Swal.showLoading();
                         }
                     });
-                    
+
                     $.ajax({
                         url: '{{ route("coupon.apply") }}',
                         method: 'POST',
@@ -927,10 +927,10 @@
                         success: function (response) {
                             console.log('Coupon apply response:', response);
                             Swal.close();
-                            
+
                             if (response.success) {
                                 vendorCoupons = response.vendor_coupons || {};
-                                
+
                                 if (response.updated_cart && response.updated_cart.cart) {
                                     renderCartSections(response.updated_cart.cart, vendorCoupons);
                                     updateOrderSummary(response.updated_cart.cart, vendorCoupons);
@@ -941,7 +941,7 @@
                                         updateOrderSummary(res.cart, vendorCoupons);
                                     });
                                 }
-                                
+
                                 setTimeout(() => {
                                     Swal.fire({
                                         icon: 'success',
@@ -965,9 +965,9 @@
                         error: function (xhr) {
                             console.error('Error applying coupon:', xhr);
                             Swal.close();
-                            
+
                             let errorMessage = 'Error applying coupon. Please try again.';
-                            
+
                             if (xhr.status === 401) {
                                 errorMessage = 'Please login to apply coupons.';
                             } else if (xhr.status === 422) {
@@ -985,7 +985,7 @@
                                     errorMessage = response.message || errorMessage;
                                 } catch(e) {}
                             }
-                            
+
                             setTimeout(() => {
                                 Swal.fire({
                                     icon: 'error',
@@ -997,7 +997,7 @@
                         }
                     });
                 };
-                
+
                 // Apply coupon button - FIXED (using event delegation)
                 $(document).on('click', '.apply-coupon-btn', function (e) {
                     console.log('Apply button clicked - handler triggered');
@@ -1007,7 +1007,7 @@
                     // Get coupon code and vendor ID from data attributes
                     let couponCode = $(this).attr('data-code') || $(this).data('code');
                     let vendorId = $(this).attr('data-vendor-id') || $(this).data('vendor-id');
-                    
+
                     // Try to get vendorId from parent modal if not found
                     if (!vendorId) {
                         const $modal = $(this).closest('[id^="couponModalxyz-"]');
@@ -1019,7 +1019,7 @@
                             }
                         }
                     }
-                    
+
                     console.log('Apply coupon clicked:', { couponCode, vendorId, element: this });
 
                     // Validate vendorId and couponCode
@@ -1033,7 +1033,7 @@
                         });
                         return;
                     }
-                    
+
                     if (!couponCode || couponCode.trim() === '') {
                         console.error('Invalid couponCode:', couponCode);
                         Swal.fire({
@@ -1083,7 +1083,7 @@
                         success: function (response) {
                             console.log('Coupon apply response:', response);
                             Swal.close();
-                            
+
                             if (response.success) {
                                 // ✅ Update global coupon state with the new structure
                                 vendorCoupons = response.vendor_coupons || {};
@@ -1127,9 +1127,9 @@
                             console.error('Error applying coupon:', xhr);
                             console.error('Response text:', xhr.responseText);
                             Swal.close();
-                            
+
                             let errorMessage = 'Error applying coupon. Please try again.';
-                            
+
                             if (xhr.status === 401) {
                                 errorMessage = 'Please login to apply coupons.';
                             } else if (xhr.status === 422) {
@@ -1151,7 +1151,7 @@
                                     console.error('Error parsing response:', e);
                                 }
                             }
-                            
+
                             // Show error message after modal closes
                             setTimeout(() => {
                                 Swal.fire({
@@ -1337,14 +1337,14 @@
                             // ✅ Conditionally show/hide progress sections
                             const hasMinOrder = minOrder && minOrder > 0;
                             const hasMinOrderForCook = res.min_order_for_cook && parseFloat(res.min_order_for_cook) > 0;
-                            
+
                             // Show/hide delivery progress section
                             if (hasMinOrder) {
                                 $(`#delivery-progress-section-${vendorId}`).show();
                             } else {
                                 $(`#delivery-progress-section-${vendorId}`).hide();
                             }
-                            
+
                             // Show/hide cook progress section
                             if (hasMinOrderForCook) {
                                 const cartTotal = parseFloat($(`#cartTotal-${vendorId}`).val()) || 0;
@@ -1353,7 +1353,7 @@
                             } else {
                                 $(`#cook-progress-section-${vendorId}`).hide();
                             }
-                            
+
                             // Show/hide main progress section and footer
                             if (hasMinOrder || hasMinOrderForCook) {
                                 $(`#progress-section-${vendorId}`).show();
@@ -1361,17 +1361,17 @@
                             } else {
                                 $(`#progress-section-${vendorId}`).hide();
                             }
-                            
+
                             // Update delivery progress if min order exists
                             if (hasMinOrder) {
                                 const cartTotal = parseFloat($(`#cartTotal-${vendorId}`).val()) || 0;
                                 const remaining = Math.max(minOrder - cartTotal, 0);
                                 const progressPercent = minOrder > 0 ? Math.min((cartTotal / minOrder) * 100, 100) : 0;
-                                
+
                                 let textHtml = remaining > 0
                                     ? `Add items worth ₹<b>${remaining.toFixed(2)}</b> more to get free delivery`
                                     : `<span class="text-success fw-semibold">You unlocked FREE delivery 🎉</span>`;
-                                
+
                                 $(`#delivery-progress-text-${vendorId}`).html(textHtml);
                                 $(`#delivery-progress-bar-${vendorId}`).css("width", progressPercent + "%");
                             }
@@ -1389,7 +1389,7 @@
             function updateCartQuantities(groupedCart, vendorCoupons = {}) {
                 // Store the current cart for later use
                 window.currentCart = groupedCart;
-                
+
                 // Store current cart structure
                 const currentCartKeys = {};
                 $('.vendor-section').each(function() {
@@ -1404,13 +1404,13 @@
                 // Check if cart structure changed
                 const newCartKeys = {};
                 let structureChanged = false;
-                
+
                 $.each(groupedCart, function(businessName, items) {
                     const firstKey = Object.keys(items)[0];
                     const vendorId = items[firstKey]?.business_id;
                     newCartKeys[vendorId] = Object.keys(items);
-                    
-                    if (!currentCartKeys[vendorId] || 
+
+                    if (!currentCartKeys[vendorId] ||
                         JSON.stringify(currentCartKeys[vendorId].sort()) !== JSON.stringify(newCartKeys[vendorId].sort())) {
                         structureChanged = true;
                     }
@@ -1427,14 +1427,14 @@
                     const firstKey = Object.keys(items)[0];
                     const vendorId = items[firstKey]?.business_id;
                     const vendorSlug = businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                    
+
                     $.each(items, function(key, item) {
                         // Update quantity input - find input that is sibling of increment/decrement button with same data-key
                         // Try multiple selectors to ensure we find the input
                         const $qtyInput = $(`.increment-btn[data-key="${key}"]`).siblings('.quantity-input')
                             .add($(`.decrement-btn[data-key="${key}"]`).siblings('.quantity-input'))
                             .first();
-                        
+
                         if ($qtyInput.length) {
                             $qtyInput.val(item.quantity);
                         } else {
@@ -1457,10 +1457,10 @@
 
                     const couponDiscount = vendorCoupons[vendorId]?.discount ?? 0;
                     const cartTotal = subtotal - couponDiscount;
-                    
+
                     // Calculate saved amount
                     const savedAmount = originalTotal - subtotal;
-                    
+
                     // Update hidden inputs
                     $(`#cartTotal-${vendorId}`).val(cartTotal.toFixed(2));
                     $(`#subtotal-${vendorId}`).val(subtotal.toFixed(2));
@@ -1468,17 +1468,30 @@
 
                     // Update bill summary display - find the strong tag that shows total
                     const $vendorSection = $(`.vendor-section[data-vendor-id="${vendorId}"]`);
-                    $vendorSection.find('.d-flex.align-items-center.p-3.mb-2 .fw-bold.ms-2').text(`₹${cartTotal.toFixed(2)}`);
+                    // Find the bill summary header div (could be p-3 or p-3 mb-2)
+                    const $billHeader = $vendorSection.find('.d-flex.align-items-center').has('h6:contains("Bill Summary")');
                     
+                    if ($billHeader.length) {
+                        // Check if strong tag exists, if not create it
+                        let $strongTag = $billHeader.find('strong.ms-2');
+                        if ($strongTag.length === 0) {
+                            // Create the strong tag after the h6
+                            $billHeader.find('h6.fw-bold').after(`<strong class="ms-2">₹${cartTotal.toFixed(2)}</strong>`);
+                        } else {
+                            // Update existing strong tag
+                            $strongTag.text(`₹${cartTotal.toFixed(2)}`);
+                        }
+                    }
+
                     // Update item charge in bill summary
                     const $billSummary = $(`#billSummary-${vendorSlug}`);
                     if ($billSummary.length) {
                         // Update item charge
-                        const itemChargeHtml = savedAmount > 0 
+                        const itemChargeHtml = savedAmount > 0
                             ? `₹${subtotal.toFixed(2)} <s class="text-muted">₹${originalTotal.toFixed(2)}</s>`
                             : `₹${subtotal.toFixed(2)}`;
                         $billSummary.find('li:first-child span:last-child').html(itemChargeHtml);
-                        
+
                         // Update coupon discount (hide if 0 or not applied)
                         // Find coupon li - it could be at different positions depending on saved amount
                         let $couponLi = $billSummary.find('li').filter(function() {
@@ -1493,7 +1506,7 @@
                         } else {
                             $couponLi.hide();
                         }
-                        
+
                         // Update applied coupon display section (separate from button)
                         const $appliedCouponSection = $(`#applied-coupon-section-${vendorId}`);
                         if ($appliedCouponSection.length) {
@@ -1527,7 +1540,7 @@
                                 $appliedCouponSection.hide().html('');
                             }
                         }
-                        
+
                         // Update saved amount
                         const $saveBox = $billSummary.find('.save-box');
                         if (savedAmount > 0) {
@@ -1536,10 +1549,10 @@
                             $saveBox.hide();
                         }
                     }
-                    
+
                     // Update grand total in bill summary
                     $(`#totalCharge-${vendorId}`).text(`₹${cartTotal.toFixed(2)}`);
-                    
+
                     // Update delivery charges via AJAX (to check minimum order)
                     // Use IIFE to capture current values properly
                     (function(currentVendorId, currentCartTotal, currentVendorSlug, currentBusinessName) {
@@ -1554,22 +1567,35 @@
                                 if (res.success) {
                                     // Get latest cart total from hidden input (in case it changed)
                                     const latestCartTotal = parseFloat($(`#cartTotal-${currentVendorId}`).val()) || currentCartTotal;
-                                    
+
                                     let deliveryCharge = parseFloat(res.delivery_charge) || 0;
                                     const minOrderValue = parseFloat(res.min_order_amount) || 0;
-                                    
+
                                     // If cart total >= min order, delivery is free
                                     if (latestCartTotal >= minOrderValue) {
                                         deliveryCharge = 0;
                                     }
-                                    
+
                                     // Update delivery charge display
                                     $(`#deliveryCharge-${currentVendorId}`).text(`₹${deliveryCharge.toFixed(2)}`);
-                                    
+
                                     // Update grand total with delivery charge
                                     const finalTotal = latestCartTotal + deliveryCharge;
                                     $(`#totalCharge-${currentVendorId}`).text(`₹${finalTotal.toFixed(2)}`);
                                     
+                                    // Update bill summary header with final total (including delivery charge)
+                                    const $vendorSectionForDelivery = $(`.vendor-section[data-vendor-id="${currentVendorId}"]`);
+                                    const $billHeaderForDelivery = $vendorSectionForDelivery.find('.d-flex.align-items-center').has('h6:contains("Bill Summary")');
+                                    
+                                    if ($billHeaderForDelivery.length) {
+                                        let $strongTagForDelivery = $billHeaderForDelivery.find('strong.ms-2');
+                                        if ($strongTagForDelivery.length === 0) {
+                                            $billHeaderForDelivery.find('h6.fw-bold').after(`<strong class="ms-2">₹${finalTotal.toFixed(2)}</strong>`);
+                                        } else {
+                                            $strongTagForDelivery.text(`₹${finalTotal.toFixed(2)}`);
+                                        }
+                                    }
+
                                     // Update saved amount after delivery charge calculation
                                     const $vendorSection = $(`.vendor-section[data-vendor-id="${currentVendorId}"]`);
                                     const $billSummary = $vendorSection.find(`#billSummary-${currentVendorSlug}`);
@@ -1589,30 +1615,30 @@
                                             $saveBox.hide();
                                         }
                                     }
-                                    
+
                                     // Update delivery progress bar
                                     const remaining = Math.max(minOrderValue - latestCartTotal, 0);
                                     const progressPercent = minOrderValue > 0 ? Math.min((latestCartTotal / minOrderValue) * 100, 100) : 0;
-                                    
+
                                     let textHtml = remaining > 0
                                         ? `Add items worth ₹<b>${remaining.toFixed(2)}</b> more to get free delivery`
                                         : `<span class="text-success fw-semibold">You unlocked FREE delivery 🎉</span>`;
-                                    
+
                                     $(`#delivery-progress-text-${currentVendorId}`).html(textHtml);
                                     $(`#delivery-progress-bar-${currentVendorId}`).css("width", progressPercent + "%");
-                                    
+
                                     // Update cook progress bar if data is available
                                     if (res.min_order_for_cook) {
                                         const cookThreshold = parseFloat(res.min_order_for_cook);
                                         const dyText = res.dy_text || 'free Gift';
                                         updateCookProgress(currentVendorId, latestCartTotal, cookThreshold, dyText);
                                     }
-                                    
+
                                     // Update express delivery label
                                     $(`.express-label-${currentVendorId}`).text(
                                         `Get order in 20 min (Min ₹${minOrderValue}, Delivery ₹${deliveryCharge.toFixed(2)})`
                                     );
-                                    
+
                                     // Enable/disable express delivery radio based on cart total
                                     const $expressRadio = $(`#express20-${currentVendorId}`);
                                     if ($expressRadio.length) {
@@ -1622,7 +1648,7 @@
                                             $expressRadio.prop('disabled', true);
                                         }
                                     }
-                                    
+
                                 }
                             },
                             error: function(xhr) {
@@ -1725,7 +1751,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <!--- Delivery Progress (Conditional) --->
                                         <div id="delivery-progress-section-${vendorId}" style="display: none;">
                                             <div class="d-flex align-items-center mb-2" style="margin-top: 12px;">
@@ -1741,7 +1767,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="xyz-right-text" id="progress-footer-${vendorId}" style="display: none; margin-top: 12px;">*Progress Bar will reset in next order</div>
                                     </div>
                                 </div>
@@ -1759,7 +1785,7 @@
                                 </button>
                             </div>
                         `;
-                        
+
                         // Applied Coupon Details - Separate div below the button
                         html += `
                             <div class="mb-3" id="applied-coupon-section-${vendorId}" style="display: ${vendorCoupons[vendorId] ? 'block' : 'none'};">
@@ -1848,11 +1874,11 @@
                                     let deliveryCharge = parseFloat(res.delivery_charge) || 0;
                                     const minOrderForCook = parseFloat(res.min_order_for_cook) || 0;
                                     const cartTotal = subtotal - couponDiscount;
-                                    
+
                                     // ✅ Conditionally show/hide progress sections
                                     const hasMinOrder = minOrderValue > 0;
                                     const hasMinOrderForCook = minOrderForCook > 0;
-                                    
+
                                     // Show/hide delivery progress section
                                     if (hasMinOrder) {
                                         $(`#delivery-progress-section-${vendorId}`).show();
@@ -1868,7 +1894,7 @@
                                     } else {
                                         $(`#delivery-progress-section-${vendorId}`).hide();
                                     }
-                                    
+
                                     // Show/hide cook progress section
                                     if (hasMinOrderForCook) {
                                         $(`#cook-progress-section-${vendorId}`).show();
@@ -1876,7 +1902,7 @@
                                     } else {
                                         $(`#cook-progress-section-${vendorId}`).hide();
                                     }
-                                    
+
                                     // Show/hide main progress section and footer
                                     if (hasMinOrder || hasMinOrderForCook) {
                                         $(`#progress-section-${vendorId}`).show();
@@ -1909,7 +1935,7 @@
                             }
                         });
                     });
-                    
+
                     // Add "Proudly sponsored by BLUE DART" section only once at the end
                     html += `
                         <div class="delivery-card mt-4">
@@ -1944,7 +1970,7 @@
                                     // Check if response contains coupons (not "No coupons available" message)
                                     const tempDiv = $('<div>').html(res.html);
                                     const hasCoupons = tempDiv.find('.xyz-coupon-row').length > 0;
-                                    
+
                                     if (hasCoupons) {
                                         $(`#coupons-section-${vendorId}`).show();
                                     }
@@ -1962,7 +1988,7 @@
                     const vendorId = $(this).data('vendor-id');
                     const $container = $(`#deliveryOptions-${vendorId}`);
                     const $btn = $(this);
-                    
+
                     if (!$container.data('loaded')) {
                         // Load and show delivery options automatically
                         // Build options dynamically from DB slots
@@ -2047,7 +2073,7 @@
 
                         $container.html(html).data('loaded', true).show();
                         $btn.html('<i class="fa fa-clock me-1"></i> Hide Delivery Time');
-                        
+
                         // Fetch vendor's min_order_amount + delivery_charge dynamically
                         $.ajax({
                             url: "{{ route('minimum.order.amount') }}",
@@ -2101,24 +2127,24 @@
                                     // ✅ Conditionally show/hide progress sections
                                     const hasMinOrder = minOrder && minOrder > 0;
                                     const hasMinOrderForCook = res.min_order_for_cook && parseFloat(res.min_order_for_cook) > 0;
-                                    
+
                                     // Show/hide delivery progress section
                                     if (hasMinOrder) {
                                         $(`#delivery-progress-section-${vendorId}`).show();
                                         const cartTotal = parseFloat($(`#cartTotal-${vendorId}`).val()) || 0;
                                         const remaining = Math.max(minOrder - cartTotal, 0);
                                         const progressPercent = minOrder > 0 ? Math.min((cartTotal / minOrder) * 100, 100) : 0;
-                                        
+
                                         let textHtml = remaining > 0
                                             ? `Add items worth ₹<b>${remaining.toFixed(2)}</b> more to get free delivery`
                                             : `<span class="text-success fw-semibold">You unlocked FREE delivery 🎉</span>`;
-                                        
+
                                         $(`#delivery-progress-text-${vendorId}`).html(textHtml);
                                         $(`#delivery-progress-bar-${vendorId}`).css("width", progressPercent + "%");
                                     } else {
                                         $(`#delivery-progress-section-${vendorId}`).hide();
                                     }
-                                    
+
                                     // Show/hide cook progress section
                                     if (hasMinOrderForCook) {
                                         const cartTotal = parseFloat($(`#cartTotal-${vendorId}`).val()) || 0;
@@ -2127,7 +2153,7 @@
                                     } else {
                                         $(`#cook-progress-section-${vendorId}`).hide();
                                     }
-                                    
+
                                     // Show/hide main progress section and footer
                                     if (hasMinOrder || hasMinOrderForCook) {
                                         $(`#progress-section-${vendorId}`).show();
@@ -2353,7 +2379,7 @@
                 $.ajax({
                     url: '{{ route("coupon.vendorwise.checkout") }}',
                     method: 'GET',
-                    data: { 
+                    data: {
                         vendor_id: vendorId,
                         applied_coupon_code: appliedCouponCode
                     },
@@ -2372,27 +2398,27 @@
                             }).animate({
                                 'opacity': '1'
                             }, 300);
-                            
+
                             // Bind click handlers directly to buttons after modal loads
                             setTimeout(function() {
                                 const applyButtons = modal.find('.apply-coupon-btn');
                                 console.log('Apply buttons found in modal:', applyButtons.length);
-                                
+
                                 applyButtons.each(function() {
                                     const $btn = $(this);
                                     const code = $btn.attr('data-code') || $btn.data('code');
                                     const vid = $btn.attr('data-vendor-id') || $btn.data('vendor-id') || vendorId;
-                                    
+
                                     console.log('Binding button click handler:', { code, vendorId: vid });
-                                    
+
                                     // Remove any existing handlers and bind new one
                                     $btn.off('click.applyCoupon').on('click.applyCoupon', function(e) {
                                         e.preventDefault();
                                         e.stopPropagation();
                                         e.stopImmediatePropagation();
-                                        
+
                                         console.log('Button clicked directly:', { code, vendorId: vid });
-                                        
+
                                         // Call the handler function
                                         if (typeof window.applyCouponHandler === 'function') {
                                             window.applyCouponHandler(code, vid);
@@ -2405,10 +2431,10 @@
                                                 confirmButtonColor: '#E94412'
                                             });
                                         }
-                                        
+
                                         return false;
                                     });
-                                    
+
                                     // Ensure button is clickable
                                     $btn.css({
                                         'pointer-events': 'auto',
@@ -2446,7 +2472,7 @@
                     });
                 }
             };
-            
+
             // Also keep the local function for backward compatibility
             function hideModal(vendorId) {
                 window.hideModal(vendorId);
@@ -2465,7 +2491,7 @@
                         if (response.success) {
                             // ✅ Update global coupon state
                             vendorCoupons = response.vendor_coupons || {};
-                            
+
                             // ✅ Ensure the vendor entry is completely removed if no coupon
                             if (!vendorCoupons[vendorId] || !vendorCoupons[vendorId].code) {
                                 delete vendorCoupons[vendorId];
@@ -2474,7 +2500,7 @@
                             // ✅ Re-render sections with updated cart data
                             renderCartSections(response.updated_cart.cart, vendorCoupons);
                             updateOrderSummary(response.updated_cart.cart, vendorCoupons);
-                            
+
                             // Remove coupon display from page
                             const $appliedCouponSection = $(`#applied-coupon-section-${vendorId}`);
                             if ($appliedCouponSection.length) {
@@ -2643,7 +2669,7 @@
                     }
                 });
             }
-            
+
             function proceedWithOrder() {
                 console.log("proceedWithOrder() called");
 

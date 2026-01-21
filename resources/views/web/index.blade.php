@@ -81,7 +81,7 @@
             @endphp
             @if ($categoryBanner)
                <div class="new-cate-promo-box" style="background-image: url('{{ asset('public/' . $categoryBanner['desktop_image']) }}');">
-                  <a href="{{$categoryBanner['banner_url']}}" class="btn btn-light" onclick="return redirectWithLocation(this.href)">Order Now</a>
+                  <a href="{{$categoryBanner['banner_url']}}" class="btn btn-light" onclick="return redirectWithLocation(this.href)">Know More</a>
                </div>      
             @endif               
          </div>
@@ -127,7 +127,7 @@
       <div class="col-md-4">
          <div class="new-cate-promo-box" style="background-image: url('{{ asset('public/' . $categoryBanner['desktop_image']) }}');">
             @if ($categoryBanner)
-               <a href="{{$categoryBanner['banner_url']}}" class="btn btn-light" onclick="return redirectWithLocation(this.href)">Order Now</a>
+               <a href="{{$categoryBanner['banner_url']}}" class="btn btn-light" onclick="return redirectWithLocation(this.href)">Know More</a>
             @endif
          </div>
       </div>

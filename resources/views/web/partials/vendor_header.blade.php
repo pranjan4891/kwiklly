@@ -2,38 +2,33 @@
     use Carbon\Carbon;
 
     $currentDay = $currentDay ?? now()->format('l');
-    $currentTime = now()->format('h:i A');
+    $tz = config('app.timezone'); // "Asia/Kolkata"
+    $now = Carbon::now($tz);
+    $currentTimeData = null;
     $isOpen = false;
-
+    
     if ($selectedVendor && $selectedVendor->store_time) {
-        $storeTimes = is_string($selectedVendor->store_time)
-            ? json_decode($selectedVendor->store_time, true)
-            : $selectedVendor->store_time;
-
-        if (is_array($storeTimes)) {
-            foreach ($storeTimes as $day) {
-                if (strtolower($day['day_name']) === strtolower($currentDay)) {
-                    // If day is marked closed
-                    if (isset($day['status']) && $day['status'] == "0") {
-                        $isOpen = false;
-                        break;
-                    }
-
-                    if (!empty($day['startTime']) && !empty($day['endTime'])) {
-                        $start = Carbon::parse($day['startTime']);
-                        $end   = Carbon::parse($day['endTime']);
-                        $now   = Carbon::now();
-
-                        if ($end->greaterThan($start)) {
-                            // Normal hours
-                            $isOpen = $now->between($start, $end);
-                        } else {
-                            // Overnight hours (e.g. 9 PM to 2 AM)
-                            $isOpen = $now->greaterThanOrEqualTo($start) || $now->lessThanOrEqualTo($end);
-                        }
-                    }
+        $decoded = is_array($selectedVendor->store_time) 
+            ? $selectedVendor->store_time 
+            : json_decode($selectedVendor->store_time, true);
+        
+        if (is_array($decoded)) {
+            foreach ($decoded as $time) {
+                if (($time['day_name'] ?? '') === $currentDay) {
+                    $currentTimeData = $time;
+                    break;
                 }
             }
+        }
+        
+        // Check if store is currently open
+        if ($currentTimeData && ($currentTimeData['status'] ?? '0') === '1') {
+            $start = Carbon::parse($currentTimeData['startTime'], $tz)->setDate($now->year, $now->month, $now->day);
+            $end   = Carbon::parse($currentTimeData['endTime'], $tz)->setDate($now->year, $now->month, $now->day);
+            if ($end->lessThanOrEqualTo($start)) {
+                $end->addDay(); // handle overnight
+            }
+            $isOpen = $now->between($start, $end);
         }
     }
 @endphp
@@ -45,7 +40,11 @@
 
         <div class="time-container">
             <div class="time-boxde">
-                {{ $currentDay }} {{ $isOpen ? $currentTime : 'Closed' }}
+                @if ($currentTimeData && ($currentTimeData['status'] ?? '0') === '1')
+                    {{ $currentDay }} {{ $currentTimeData['startTime'] ?? '' }} - {{ $currentTimeData['endTime'] ?? '' }}
+                @else
+                    {{ $currentDay }} Closed
+                @endif
             </div>
                   @if($branches && count($branches) > 0)
                 <select name="branch" id="brnch" class="time-boxde" onchange="changeBranch(this.value)">

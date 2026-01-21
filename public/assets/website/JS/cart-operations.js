@@ -2,6 +2,8 @@
  * Cart Operations Handler
  * Handles cart add, increment, decrement operations
  */
+ 
+ 
 
 (function() {
     'use strict';
@@ -58,6 +60,10 @@
                         openCart();
                     }
                     if (window.updateProgress) window.updateProgress();
+                },
+                error: function (xhr) {
+                    let msg = xhr?.responseJSON?.message || 'Unable to add item. Please try again.';
+                    alert(msg);
                 }
             });
         });
@@ -65,26 +71,35 @@
         // INCREMENT
         $(document).on('click', '.increment-btn', function () {
             let key = $(this).data('key');
-            $.post(window.CART_INCREMENT_URL || '/cart/increment', {
-                _token: document.querySelector('meta[name="csrf-token"]')?.content || '',
-                key: key
-            }, function (res) {
-                $('.cart-count').text(res.count);
-                if (typeof loadSideCartItems === "function") {
-                    loadSideCartItems(res.cart);
-                }
-
-                // Find quantity from grouped cart
-                let updatedQty = null;
-                $.each(res.cart, function (businessName, items) {
-                    if (items[key]) {
-                        updatedQty = items[key].quantity;
+            $.ajax({
+                url: window.CART_INCREMENT_URL || '/cart/increment',
+                type: 'POST',
+                data: {
+                    _token: document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    key: key
+                },
+                success: function (res) {
+                    $('.cart-count').text(res.count);
+                    if (typeof loadSideCartItems === "function") {
+                        loadSideCartItems(res.cart);
                     }
-                });
 
-                if (updatedQty !== null) {
-                    $(`[data-key="${key}"]`).find('.quantity-input').val(updatedQty);
-                    if (window.updateProgress) window.updateProgress();
+                    // Find quantity from grouped cart
+                    let updatedQty = null;
+                    $.each(res.cart, function (businessName, items) {
+                        if (items[key]) {
+                            updatedQty = items[key].quantity;
+                        }
+                    });
+
+                    if (updatedQty !== null) {
+                        $(`[data-key="${key}"]`).find('.quantity-input').val(updatedQty);
+                        if (window.updateProgress) window.updateProgress();
+                    }
+                },
+                error: function (xhr) {
+                    let msg = xhr?.responseJSON?.message || 'Quantity cannot be increased.';
+                    alert(msg);
                 }
             });
         });
@@ -177,15 +192,15 @@
                         // Remove .00 if present
                         return formatted.replace(/\.00$/, '');
                     };
-                    
+
                     let formattedPrice = formatPrice(price);
                     let formattedOriginalPrice = formatPrice(originalPrice);
 
                     // Escape HTML to prevent XSS and prepare for title attribute
                     let escapedTitle = $('<div>').text(item.title).html();
-                    
+
                     html += `
-                        <div class="cart-item d-flex align-items-center justify-content-between border-bottom py-2 p-3">
+                        <div class="cart-item d-flex align-items-center justify-content-between border-bottom py-2">
                             <div class="d-flex align-items-center totalimg">
                                 <img src="${item.image}" alt="${escapedTitle}" style="width:50px;">
                                 <div class="mx-3">
@@ -195,7 +210,7 @@
                                     </small>
                                 </div>
                             </div>
-                            <div class="input-group input-group-sm sidecartbutton" style="width: 90px;">
+                            <div class="input-group input-group-sm sidecartbutton" style="width: 90px; padding-top: 11px;">
                                 <button class="btn btn-danger decrement-btn" data-key="${key}">-</button>
                                 <input type="text" class="form-control text-center quantity-input" value="${quantity}" disabled>
                                 <button class="btn btn-danger increment-btn" data-key="${key}">+</button>
@@ -254,7 +269,7 @@
         } else {
             $('.proceed-btn').html(`Login to Proceed <span class="rupee-symbol-sidecart ms-2">(₹ ${formattedTotal}/-)</span>`);
         }
-        
+
         if ($('.grand-total-box strong').length) {
             $('.grand-total-box strong').html(`₹${grandTotal}`);
         }

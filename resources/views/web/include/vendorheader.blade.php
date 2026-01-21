@@ -25,11 +25,21 @@
     .cart-btn a {
     font-size: 16px;
     font-weight: 400;
-    margin: 0px 0px 0px a0px;
+    margin: 0px 0px 0px 0px;
     text-decoration: none;
     color: #ffffff;
     transition: color 0.3s;
 }
+    .mobile-top {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        padding: 0 10px;
+    }
+    .navbar-brand img {
+        max-width: 100%;
+        height: auto;
+    }
  }
 </style>
 

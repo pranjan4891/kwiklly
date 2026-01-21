@@ -185,7 +185,44 @@ class OrderController extends Controller
             ->where('vendor_id', $vendorId)
             ->firstOrFail();
 
-        $vendorOrder->update(['delivery_status' => $request->status]);
+        $currentStatus = $vendorOrder->delivery_status ?? 'pending';
+        $newStatus = $request->status;
+
+        // Prevent status reversal - can't go back to previous statuses
+        $statusHierarchy = [
+            'pending' => 1,
+            'packed' => 2,
+            'shipped' => 3,
+            'delivered' => 4,
+            'cancelled' => 5
+        ];
+
+        $currentLevel = $statusHierarchy[$currentStatus] ?? 1;
+        $newLevel = $statusHierarchy[$newStatus] ?? 0;
+
+        // Final statuses cannot be changed
+        if (in_array($currentStatus, ['delivered', 'cancelled'])) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Order status cannot be changed. This order is already ' . ucfirst($currentStatus) . '.'
+                ], 422);
+            }
+            return redirect()->back()->with('error', 'Order status cannot be changed. This order is already ' . ucfirst($currentStatus) . '.');
+        }
+
+        // Prevent going back to previous statuses
+        if ($newLevel < $currentLevel) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot revert order status. You can only move forward in the order process.'
+                ], 422);
+            }
+            return redirect()->back()->with('error', 'Cannot revert order status. You can only move forward in the order process.');
+        }
+
+        $vendorOrder->update(['delivery_status' => $newStatus]);
 
         // Update main order status based on all vendor orders
         $order = $vendorOrder->order;

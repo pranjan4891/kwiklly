@@ -1,25 +1,207 @@
 <!-- Location Error Modal -->
-<div class="modal fade" id="locationErrorModal" tabindex="-1" aria-labelledby="locationErrorModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content location-error-modal">
-            <div class="modal-header location-error-header">
-                <h5 class="modal-title" id="locationErrorModalLabel">Service Not Available</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body location-error-body text-center">
-                <div class="mb-4">
-                    <i class="fas fa-exclamation-triangle location-error-icon"></i>
-                </div>
-                <h4 class="location-error-title mb-3">Sorry!</h4>
-                <p class="location-error-text mb-3">We currently don't provide service in your selected area.</p>
-                <p class="location-error-text mb-4">Please change your location to an area where we provide service.</p>
-                <button class="btn location-error-btn" onclick="openLocationPopup()">
-                    <i class="fas fa-map-marker-alt me-2"></i> Change Location
-                </button>
-            </div>
+
+  <style>
+    /* ===============================
+       MODAL CENTER FIX (SAFE)
+    =============================== */
+    .modal.show {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .modal {
+      z-index: 1055;
+    }
+
+    .modal-backdrop {
+      z-index: 1050;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+      padding-right: 0 !important;
+    }
+
+    /* ===============================
+       MODAL WIDTH
+    =============================== */
+    .locerr-dialog {
+      width: 100%;
+      max-width: 420px;
+      padding: 16px;
+      margin: 0;
+    }
+
+    /* ===============================
+       MODAL CARD
+    =============================== */
+    .locerr-modal {
+      border-radius: 18px;
+      border: none;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+      background: #fff;
+    }
+
+    /* ===============================
+       HEADER
+    =============================== */
+    .locerr-header {
+      position: relative;
+    }
+
+    .locerr-header .btn-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 2;
+    }
+
+    /* ===============================
+       BODY
+    =============================== */
+    .locerr-body {
+      padding: 28px 24px 34px;
+    }
+
+    /* ===============================
+       ICON
+    =============================== */
+    .locerr-icon-wrap {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 18px;
+      background: linear-gradient(135deg, #ff6a00, #ff3d00);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .locerr-icon-wrap i {
+      font-size: 34px;
+      color: #fff;
+    }
+
+    /* ===============================
+       TEXT
+    =============================== */
+    .locerr-title {
+      font-size: clamp(18px, 4vw, 22px);
+      font-weight: 700;
+      color: #222;
+      margin-bottom: 6px;
+    }
+
+    .locerr-desc {
+      font-size: 15px;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    .locerr-subdesc {
+      font-size: 14px;
+      color: #777;
+      margin-bottom: 22px;
+    }
+
+    /* ===============================
+       BUTTON
+    =============================== */
+    .locerr-btn {
+      background: linear-gradient(135deg, #ff6a00, #ff3d00);
+      color: #fff;
+      font-weight: 600;
+      padding: 12px;
+      border-radius: 28px;
+      border: none;
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+
+    .locerr-btn:hover {
+      background: linear-gradient(135deg, #e85c00, #d93700);
+      transform: translateY(-2px);
+      color: #fff;
+    }
+
+    /* Desktop button */
+    @media (min-width: 576px) {
+      .locerr-btn {
+        width: auto;
+        padding: 12px 32px;
+      }
+    }
+
+    /* ===============================
+       FOOTER TEXT
+    =============================== */
+    .locerr-footer {
+      font-size: 13px;
+      color: #999;
+      margin-top: 16px;
+    }
+
+    /* ===============================
+       SMALL MOBILE
+    =============================== */
+    @media (max-width: 360px) {
+      .locerr-icon-wrap {
+        width: 72px;
+        height: 72px;
+      }
+
+      .locerr-icon-wrap i {
+        font-size: 28px;
+      }
+
+      .locerr-body {
+        padding: 22px 18px 26px;
+      }
+    }
+  </style>
+<div class="modal fade" id="locationErrorModal" tabindex="-1"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+
+  <div class="modal-dialog modal-dialog-centered locerr-dialog">
+    <div class="modal-content locerr-modal">
+
+      <div class="locerr-header">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body locerr-body text-center">
+
+        <div class="locerr-icon-wrap">
+          <i class="fas fa-location-crosshairs"></i>
         </div>
+
+        <h4 class="locerr-title">Service Not Available 😔</h4>
+
+        <p class="locerr-desc">
+          We’re not delivering to this location yet.
+        </p>
+
+        <p class="locerr-subdesc">
+          Please select a nearby area where service is available.
+        </p>
+
+        <button class="btn locerr-btn w-100 w-sm-auto"
+                onclick="openLocationPopup()">
+          <i class="fas fa-map-marker-alt me-2"></i> Change Location
+        </button>
+
+        <p class="locerr-footer">
+          Coming soon to your area ❤️
+        </p>
+
+      </div>
     </div>
+  </div>
 </div>
+
 
 <script>
     function openLocationPopup() {

@@ -1,4 +1,169 @@
 
+// Prevent scroll to top on mobile view - PREVENT BEFORE IT HAPPENS
+(function() {
+    'use strict';
+    
+    function isMobileView() {
+        return window.innerWidth < 768;
+    }
+    
+    // Initialize only on mobile
+    if (!isMobileView()) {
+        // Re-check on resize
+        window.addEventListener('resize', function() {
+            if (isMobileView() && !window.mobileScrollFixInitialized) {
+                initMobileScrollFix();
+            }
+        });
+        return;
+    }
+    
+    function initMobileScrollFix() {
+        if (window.mobileScrollFixInitialized) return;
+        window.mobileScrollFixInitialized = true;
+        
+        // Save scroll position
+        let savedScrollPosition = 0;
+        let isLockingScroll = false;
+        
+        // Prevent scroll restoration
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        
+        // Save scroll position continuously
+        function saveScrollPosition() {
+            if (!isLockingScroll) {
+                savedScrollPosition = window.pageYOffset || document.documentElement.scrollTop || 0;
+            }
+        }
+        
+        // Update saved position on scroll (only if not locking)
+        let scrollTimeout;
+        window.addEventListener('scroll', function() {
+            if (!isLockingScroll) {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(saveScrollPosition, 50);
+            } else {
+                // If scroll is locked, immediately restore position
+                window.scrollTo(0, savedScrollPosition);
+            }
+        }, { passive: false }); // NOT passive - we need to prevent scroll
+        
+        // Save initial position
+        saveScrollPosition();
+        
+        // PREVENT scroll BEFORE it happens - lock scroll during clicks
+        document.addEventListener('click', function(e) {
+            if (!isMobileView()) return;
+            
+            // Save scroll position BEFORE any action
+            savedScrollPosition = window.pageYOffset || document.documentElement.scrollTop || 0;
+            
+            // Lock scroll position
+            isLockingScroll = true;
+            
+            const target = e.target;
+            const clickable = target.closest('button, .btn, .add-btn, .qty-btn, .increment-btn, .decrement-btn, a, [onclick], [role="button"]');
+            
+            // Handle anchor links with href="#"
+            const link = target.closest('a');
+            if (link) {
+                const href = link.getAttribute('href');
+                
+                if (href === '#' || href === '#!') {
+                    // Only prevent if it's not a modal/dropdown trigger
+                    if (!link.hasAttribute('data-bs-toggle') && 
+                        !link.hasAttribute('data-toggle') && 
+                        !link.hasAttribute('data-bs-target') &&
+                        !link.hasAttribute('data-target')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Execute onclick if exists
+                        if (link.onclick) {
+                            link.onclick(e);
+                        }
+                        
+                        // Unlock after a delay
+                        setTimeout(function() {
+                            isLockingScroll = false;
+                        }, 100);
+                        return false;
+                    }
+                }
+            }
+            
+            // For all clickable elements, lock scroll for a short period
+            if (clickable) {
+                // Keep scroll locked for 200ms to prevent any scroll jumps
+                setTimeout(function() {
+                    const currentScroll = window.pageYOffset || document.documentElement.scrollTop || 0;
+                    // If scroll changed, restore it immediately
+                    if (Math.abs(currentScroll - savedScrollPosition) > 10) {
+                        window.scrollTo(0, savedScrollPosition);
+                    }
+                    // Unlock after ensuring position is maintained
+                    setTimeout(function() {
+                        isLockingScroll = false;
+                    }, 50);
+                }, 200);
+            } else {
+                // Unlock immediately if not a clickable element
+                setTimeout(function() {
+                    isLockingScroll = false;
+                }, 100);
+            }
+        }, true); // Use capture phase - intercept EARLIEST
+        
+        // Prevent scroll on form submissions
+        document.addEventListener('submit', function(e) {
+            if (!isMobileView()) return;
+            
+            saveScrollPosition();
+            isLockingScroll = true;
+            
+            // Unlock after form submission
+            setTimeout(function() {
+                const currentScroll = window.pageYOffset || document.documentElement.scrollTop || 0;
+                if (Math.abs(currentScroll - savedScrollPosition) > 10) {
+                    window.scrollTo(0, savedScrollPosition);
+                }
+                isLockingScroll = false;
+            }, 100);
+        }, true);
+        
+        // Continuous monitoring - prevent any unwanted scroll to top
+        let lastScrollCheck = 0;
+        setInterval(function() {
+            if (!isMobileView()) return;
+            
+            const currentScroll = window.pageYOffset || document.documentElement.scrollTop || 0;
+            
+            // If scroll jumped to top unexpectedly, restore immediately
+            if (currentScroll < 50 && savedScrollPosition > 100 && !isLockingScroll) {
+                isLockingScroll = true;
+                window.scrollTo(0, savedScrollPosition);
+                setTimeout(function() {
+                    isLockingScroll = false;
+                }, 100);
+            } else if (currentScroll > 0 && !isLockingScroll) {
+                // Update saved position if scroll is valid
+                savedScrollPosition = currentScroll;
+            }
+            
+            lastScrollCheck = currentScroll;
+        }, 20); // Check every 20ms for very fast response
+    }
+    
+    // Initialize immediately
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMobileScrollFix);
+    } else {
+        initMobileScrollFix();
+    }
+})();
+
 // side cart quantity increaser start
 document.addEventListener("DOMContentLoaded", function () {
   const inputGroups = document.querySelectorAll(".input-group");
@@ -8,14 +173,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const incrementBtn = group.querySelector(".increment-btn");
     const quantityInput = group.querySelector(".quantity-input");
 
-    decrementBtn.addEventListener("click", function () {
+    decrementBtn.addEventListener("click", function (e) {
+      if (window.innerWidth < 768) {
+        e.preventDefault();
+      }
       let value = parseInt(quantityInput.value);
       if (value > 1) {
         quantityInput.value = value - 1;
       }
     });
 
-    incrementBtn.addEventListener("click", function () {
+    incrementBtn.addEventListener("click", function (e) {
+      if (window.innerWidth < 768) {
+        e.preventDefault();
+      }
       let value = parseInt(quantityInput.value);
       quantityInput.value = value + 1;
     });
@@ -131,40 +302,55 @@ if (mobileCartCount) {
 
 // category slider
 $(document).ready(function () {
-   $(".new-cate-owl-carousel").owlCarousel({
+
+    /* ===============================
+       CATEGORY SLIDER
+    ================================ */
+    $(".new-cate-owl-carousel").owlCarousel({
         loop: true,
-        margin: 10,
+        margin: 12,
         nav: true,
         dots: false,
-        navText: [
-            "<span class='cate-custom-prev'><i class='fa fa-chevron-left'></i></span>",
-            "<span class='cate-custom-next'><i class='fa fa-chevron-right'></i></span>"
-        ],
+        navText: ["", ""],
         responsive: {
-            320: { items: 2.4 },
+            0: { items: 2.4 },
             600: { items: 4 },
             1000: { items: 4 }
         }
     });
 
-    // Move navigation buttons to the right
-    $(".cate-owl-carousel .owl-nav").addClass("cate-owl-nav");
-});
-// slider for mobile screen
-$(document).ready(function(){
-    $(".owl-carousel").owlCarousel({
-        loop:true,
-        margin:10,
-        dots:false,
-        nav:true,
-        navText: ['<i class="fas fa-chevron-left"></i>', '<i class="fas fa-chevron-right"></i>'],
-        responsive:{
-            320: { items: 2.2 },
-            600:{ items:3, nav:false },
-            1000:{ items:4, nav:true }
-        }
+    $(".new-cate-owl-carousel").addClass("cate-slider");
+
+    /* ===============================
+       PRODUCT / COMMON SLIDERS
+    ================================ */
+    $(".owl-carousel").not(".new-cate-owl-carousel").each(function () {
+
+        const $carousel = $(this);
+        const itemCount = $carousel.find(".item").length;
+
+        $carousel.toggleClass("single-item-carousel", itemCount === 1);
+
+        $carousel.owlCarousel({
+            loop: false,
+            dots: false,
+            nav: itemCount > 1,
+            navText: ["", ""],
+            mouseDrag: itemCount > 1,
+            touchDrag: itemCount > 1,
+            pullDrag: itemCount > 1,
+            responsive: {
+                0: { items: 2 },
+                600: { items: 3 },
+                1000: { items: 4 }
+            }
+        });
+
+        $carousel.addClass("beauty-slider");
     });
+
 });
+
 
 // button converter and pop up for product quantity
 function convertToQty(button) {
@@ -266,3 +452,19 @@ function changeQty(button, change) {
     });
     }
   });
+  
+  
+  $(document).ready(function(){
+    $(".owl-carousel").owlCarousel({
+        loop:true,
+        margin:10,
+        dots:false,
+        nav:true,
+        navText: ['<i class="fas fa-chevron-left"></i>', '<i class="fas fa-chevron-right"></i>'],
+        responsive:{
+            320: { items: 2.2 }, // 2 full products + 1/3 in mobile view
+            600:{ items:3, nav:false },
+            1000:{ items:4, nav:true }
+        }
+    });
+});

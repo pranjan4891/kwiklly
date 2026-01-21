@@ -15,10 +15,10 @@
       <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
    </head>
    <body>
-      <!-- Desktop side cart html start  -->
+      <!-- Desktop sidebar cart start  -->
       <div class="cart-sidebar position-fixed top-0 end-0 bg-white shadow" style="width: 25%; height: 100vh; z-index: 1050; display: flex; flex-direction: column; transition: all 0.3s;" id="cartSidebar">
          <div class="d-flex justify-content-between align-items-center p-3" style="box-shadow: 0 2px 2px rgb(0 0 0 / 25%);background-color: white;z-index: 999; flex-shrink: 0;">
-            <h5 class="fw-bold"> <i class="fa-solid fa-arrow-left me-3" onclick="document.getElementById('cartSidebar').classList.remove('show')"></i>My Cart</h5>
+            <h5 class="fw-bold"> <i class="fa-solid fa-arrow-left me-3" onclick="document.getElementById('cartSidebar').classList.remove('show')"></i>My Carts</h5>
             <button class="btn-close" onclick="document.getElementById('cartSidebar').classList.remove('show')"></button>
 
          </div>
@@ -68,9 +68,33 @@
             <div class="proceed-btn"></div>
          </div>
       </div>
-      <!--Desktop side cart html end  -->
-     
+      <!--Desktop sidebar cart end -->
+      <!-- Sidebar -->
+      {{-- <div class="pata-sidebar-overlay" id="pataSidebar">
+         <div class="pata-sidebar">
+            <!-- Header -->
+            <div class="pata-sidebar-header">
+               <span class="pata-back-btn" onclick="closePataSidebar()"><i class="fa-solid fa-arrow-left"></i></span>
+               <h5 class="mb-0">New Address</h5>
+            </div>
+            <!-- BODY -->
+            <div class="p-3 pataoverflow">
+               <!-- Your Location Title -->
+               <div class="pata-location-title">Your Location</div>
+               <div class="pata-location-desc">
+                  Cisf ground, gali no 2, near metro station gate no 3, saket, Delhi
+               </div>
+               <!-- Buttons: Home / Work -->
+               <div class="d-flex justify-content-between pata-tag-buttons mb-3">
+                  <button type="button" id="pataHomeBtn" class="pata-home active">🏠 Home</button>
+                  <button type="button" id="pataWorkBtn" class="pata-work">🏢 Work</button>
+               </div>
+               <!-- Form Start -->
+            </div>
+         </div>
+      </div> --}}
       <!-- mobile side cart html start  -->
+      
       <!-- Cart Overlay -->
       <div class="cart-overlay" id="cartOverlay2" onclick="closeMobileCart();" style="display: none;"></div>
       
@@ -159,10 +183,10 @@
                   <button type="submit" class="search-btn my-1">
                   <i class="fas fa-search"></i>
                   </button>
-                  <!-- Mobile Suggestions Dropdown -->
+                  <!-- Mobile Suggestions Dropdown new-->
                   <ul id="mobile-suggestions-box"
                       class="list-group position-absolute w-100 d-none"
-                      style="top: 100%; z-index: 10001;"></ul>
+                      style="top: 100%; z-index: 10001; "></ul>
                </form>
             </div>
          </div>

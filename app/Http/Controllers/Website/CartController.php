@@ -13,6 +13,7 @@ use App\Models\VendorAdmin;
 use App\Models\WalletTransaction;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
@@ -29,6 +30,14 @@ class CartController extends Controller
             "product.featureImage"
         )->findOrFail($request->variant_id);
 
+        // ✅ Stock guard: prevent adding more than available
+        if ($variant->stock <= 0) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Product is out of stock."
+            ], 422);
+        }
+
         if (auth()->check()) {
             $userId = auth()->id();
 
@@ -36,6 +45,16 @@ class CartController extends Controller
                 ->where("product_id", $request->product_id)
                 ->where("variant_id", $request->variant_id)
                 ->first();
+
+            $existingQty = $cartItem?->quantity ?? 0;
+            $newTotal = $existingQty + $request->quantity;
+
+            if ($newTotal > $variant->stock) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Only {$variant->stock} qty available."
+                ], 422);
+            }
 
             if ($cartItem) {
                 $cartItem->quantity += $request->quantity;
@@ -55,6 +74,16 @@ class CartController extends Controller
         } else {
             $cart = session()->get("cart", []);
             $key = $request->product_id . "_" . $request->variant_id;
+
+            $existingQty = $cart[$key]["quantity"] ?? 0;
+            $newTotal = $existingQty + $request->quantity;
+
+            if ($newTotal > $variant->stock) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Only {$variant->stock} qty available."
+                ], 422);
+            }
 
             if (isset($cart[$key])) {
                 $cart[$key]["quantity"] += $request->quantity;
@@ -99,30 +128,38 @@ class CartController extends Controller
                 ->first();
 
             if ($item) {
+                // Stock guard
+                if (($item->quantity + 1) > ($item->variant->stock ?? 0)) {
+                    return response()->json([
+                        "status" => "error",
+                        "message" => "Only {$item->variant->stock} qty available."
+                    ], 422);
+                }
+
                 $item->quantity++;
                 $item->save();
-                
+
                 // Check coupon condition after increment
                 $vendorId = $item->variant->product->vendor_id;
                 $vendorItems = CartItem::with("variant")
                     ->where("user_id", auth()->id())
                     ->get()
                     ->filter(fn($ci) => $ci->variant->product->vendor_id == $vendorId);
-                
+
                 $vendorSubtotal = $vendorItems->sum(
                     fn($ci) => $ci->quantity * ($ci->price ?? $ci->variant->variant_selling_price)
                 );
-                
+
                 // Check if coupon should be auto-removed
                 $vendorCoupons = session("vendor_coupons", []);
                 $couponData = $vendorCoupons[$vendorId] ?? null;
                 $coupon = $couponData ? Coupon::where("code", $couponData["code"])
                     ->where("created_by_id", $vendorId)
                     ->first() : null;
-                
+
                 $couponAutoRemoved = false;
                 $couponRemovalMessage = '';
-                
+
                 if ($coupon && $vendorSubtotal < $coupon->min_order_amount) {
                     unset($vendorCoupons[$vendorId]);
                     session()->put("vendor_coupons", $vendorCoupons);
@@ -140,6 +177,16 @@ class CartController extends Controller
         } else {
             $cart = session()->get("cart", []);
             if (isset($cart[$key])) {
+                // Need variant for stock check
+                [$productId, $variantId] = explode("_", $key);
+                $variant = ProductVariant::find($variantId);
+                if ($variant && ($cart[$key]["quantity"] + 1) > $variant->stock) {
+                    return response()->json([
+                        "status" => "error",
+                        "message" => "Only {$variant->stock} qty available."
+                    ], 422);
+                }
+
                 $cart[$key]["quantity"]++;
                 session()->put("cart", $cart);
             }
@@ -534,10 +581,15 @@ class CartController extends Controller
             ->where("created_by_type", "=", "vendor")
             ->where("is_active", "=", 1)
             ->where("is_deleted", "=", 0)
+            ->where(function($query) {
+                // Filter out expired coupons
+                $query->whereNull('expires_at')
+                      ->orWhere('expires_at', '>', now());
+            })
             ->with(['products', 'categories', 'subcategories']) // Load relationships
             ->get();
 
-        // \Log::info('Coupons fetched for vendor (getVendorCouponsCheckout)', [
+        // \Illuminate\Support\Facades\Log::info('Coupons fetched for vendor (getVendorCouponsCheckout)', [
         //     'vendor_id' => $vendorId,
         //     'coupons_count' => $coupons->count(),
         //     'coupon_ids' => $coupons->pluck('id')->toArray()
@@ -565,7 +617,7 @@ class CartController extends Controller
 
         // Validate vendor_id is provided and is a positive integer
         if (!$vendorId || $vendorId <= 0) {
-            \Log::info('Invalid vendor_id in getVendorCouponsCheckout', ['vendor_id' => $request->vendor_id]);
+            \Illuminate\Support\Facades\Log::info('Invalid vendor_id in getVendorCouponsCheckout', ['vendor_id' => $request->vendor_id]);
             $html = view(
                 "web.include.vendor-coupon-modal-checkout",
                 ["coupons" => collect([]), "vendorId" => 0]
@@ -578,10 +630,15 @@ class CartController extends Controller
             ->where("created_by_type", "=", "vendor")
             ->where("is_active", "=", 1)
             ->where("is_deleted", "=", 0)
+            ->where(function($query) {
+                // Filter out expired coupons
+                $query->whereNull('expires_at')
+                      ->orWhere('expires_at', '>', now());
+            })
             ->with(['products', 'categories', 'subcategories']) // Load relationships
             ->get();
 
-        \Log::info('Coupons fetched for vendor', [
+        \Illuminate\Support\Facades\Log::info('Coupons fetched for vendor', [
             'vendor_id' => $vendorId,
             'coupons_count' => $coupons->count(),
             'coupon_ids' => $coupons->pluck('id')->toArray()

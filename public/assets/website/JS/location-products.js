@@ -297,15 +297,44 @@ function initializeOwlCarousels() {
     $('.owl-carousel').not('.new-cate-owl-carousel').removeClass('owl-loaded owl-hidden');
     $('.owl-carousel').not('.new-cate-owl-carousel').find('.owl-stage-outer, .owl-stage, .owl-item').remove();
 
-    $('.owl-carousel').not('.new-cate-owl-carousel').owlCarousel({
-        loop: false,
-        margin: 10,
-        nav: true,
-        responsive: {
-            0: { items: 2 },
-            600: { items: 3 },
-            1000: { items: 4 }
+    $('.owl-carousel').not('.new-cate-owl-carousel').each(function() {
+        var $carousel = $(this);
+        var itemCount = $carousel.find('.item').length;
+        
+        // Determine responsive settings based on item count
+        var responsiveSettings = {
+            0: { items: 2, stagePadding: 15, margin: 10 },
+            480: { items: 2, stagePadding: 15, margin: 10 },
+            600: { items: 3, nav: false, margin: 12 },
+            768: { items: 3, nav: true, margin: 15 },
+            1000: { items: 4, nav: true, margin: 15 }
+        };
+        
+        // If only one item, adjust settings to maintain proper width
+        if (itemCount === 1) {
+            responsiveSettings = {
+                0: { items: 2, stagePadding: 0, margin: 10, nav: false, center: false },
+                480: { items: 2, stagePadding: 0, margin: 10, nav: false, center: false },
+                600: { items: 4, nav: false, margin: 12, center: false },
+                768: { items: 4, nav: false, margin: 15, center: false },
+                1000: { items: 4, nav: false, margin: 15, center: false }
+            };
+            // Add class to identify single-item carousel
+            $carousel.addClass('single-item-carousel');
         }
+        
+        $carousel.owlCarousel({
+            loop: false,
+            margin: 10,
+            dots: false,
+            nav: itemCount > 1, // Only show nav if more than 1 item
+            navText: ['<i class="fas fa-chevron-left"></i>', '<i class="fas fa-chevron-right"></i>'],
+            mouseDrag: itemCount > 1, // Disable drag if only 1 item
+            touchDrag: itemCount > 1,
+            pullDrag: itemCount > 1,
+            freeDrag: false,
+            responsive: responsiveSettings
+        });
     });
 }
 
