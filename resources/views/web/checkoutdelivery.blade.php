@@ -2673,8 +2673,13 @@
             function proceedWithOrder() {
                 console.log("proceedWithOrder() called");
 
+                // Get the current grand total from the order summary
+                const grandTotalText = $('.final-price').text().replace('₹', '').trim();
+                const grandTotal = parseFloat(grandTotalText) || 0;
+
                 const data = {
                     _token: '{{ csrf_token() }}',
+                    grand_total: grandTotal,
                     vendors: {}
                 };
 

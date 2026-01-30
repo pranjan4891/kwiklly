@@ -118,9 +118,9 @@
                 <li class="has-submenu">
                     <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Product</span></a>
                     <ul class="list-unstyled">
-                        <li><a href="{{route('admin.product.create')}}">Add Product</a></li>
+                        <!-- <li><a href="{{route('admin.product.create')}}">Add Product</a></li> -->
                         <li><a href="{{route('admin.products')}}">Display Product</a></li>
-                        <li><a href="{{route('admin.products.importcsv')}}">Import Products</a></li>
+                        <!-- <li><a href="{{route('admin.products.importcsv')}}">Import Products</a></li> -->
                         <li><a href="{{route('admin.products.export')}}">Export Products</a></li>
                     </ul>
                 </li>

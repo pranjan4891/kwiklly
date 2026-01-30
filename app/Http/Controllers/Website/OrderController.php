@@ -29,6 +29,7 @@ class OrderController extends Controller
         // Validate the request
         $request->validate([
             'vendors' => 'required|array',
+            'grand_total' => 'required|numeric|min:0',
         ]);
 
         DB::beginTransaction();
@@ -81,6 +82,9 @@ class OrderController extends Controller
             // Calculate totals - USE THE PRICE FROM CART ITEM, not from product/variant
             $totals = $this->calculateOrderTotals($groupedCart, $user);
 
+            // Use the grand_total from frontend instead of calculated final_amount
+            $finalAmount = $request->grand_total;
+
 
             // Check wallet balance if used
             $walletUsed = $totals['wallet_used'] ?? 0;
@@ -102,7 +106,7 @@ class OrderController extends Controller
                 'coupon_id' => $totals['coupon_id'],
                 'coupon_discount' => $totals['coupon_discount'],
                 'wallet_used' => $walletUsed,
-                'final_amount' => $totals['final_amount'],
+                'final_amount' => $finalAmount,
                 'status' => 'pending',
                 'created_at' => now(),
                 'updated_at' => now(),
