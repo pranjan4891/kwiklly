@@ -164,10 +164,9 @@
                             <button class="add-btn-detail" disabled>Unavailable</button>
                         @else
                             @if (!$inCart)
-                                <button class="add-btn-detail"
+                                <button class="add-btn-detail add-btn"
                                         data-product-id="{{ $product->id }}"
-                                        data-variant-id="{{ $firstVariant->id }}"
-                                        onclick="addToCart(this)">
+                                        data-variant-id="{{ $firstVariant->id }}">
                                     Add
                                     <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                 </button>
@@ -208,12 +207,20 @@
                 @endforeach
             @endif
 
-            <!-- Description -->
+            @if($product->information && trim($product->information) !== '')
+            <!-- Product Information (HTML from DB, safe tags only) -->
+            <h5 class="detailheading">Product Information</h5>
+            <div class="desc-det">
+                {!! \App\Helpers\StoreHelper::safeHtml($product->information) !!}
+            </div>
+            @endif
+
+            <!-- Description (HTML from DB, safe tags only) -->
             <h5 class="detailheading">Products Description</h5>
             <div class="desc-det">
-                {!! $product->description ?? 'No description available.'!!}
-                @if($product->disclaimer)
-                <span class="extra-det">{! $product->disclaimer !}</span>
+                {!! \App\Helpers\StoreHelper::safeHtml($product->description ?? '') ?: 'No description available.' !!}
+                @if($product->disclaimer && trim($product->disclaimer) !== '')
+                <span class="extra-det">{!! \App\Helpers\StoreHelper::safeHtml($product->disclaimer) !!}</span>
                 @endif
                 <span class="show-more-det">Show More +</span>
             </div>
@@ -249,14 +256,13 @@
                     <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
                 </button>
             @else
-                @if (!$defaultVariant)
-                    <button class="add-btn-mobile" disabled>Unavailable</button>
-                @else
-                    @if (!$inCart)
-                        <button class="add-btn-mobile"
+                    @if (!$defaultVariant)
+                        <button class="add-btn-mobile" disabled>Unavailable</button>
+                    @else
+                        @if (!$inCart)
+                        <button class="add-btn-mobile add-btn"
                                 data-product-id="{{ $product->id }}"
-                                data-variant-id="{{ $firstVariant->id }}"
-                                onclick="addToCart(this)">
+                                data-variant-id="{{ $firstVariant->id }}">
                             Add
                             <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                         </button>

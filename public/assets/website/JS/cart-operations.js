@@ -93,7 +93,8 @@
                     });
 
                     if (updatedQty !== null) {
-                        $(`[data-key="${key}"]`).find('.quantity-input').val(updatedQty);
+                        $(this).closest('.qty-box').find('.quantity-input').val(updatedQty);
+                        $(this).closest('.qty-container').find('.quantity-input').val(updatedQty);
                         if (window.updateProgress) window.updateProgress();
                     }
                 },
@@ -135,10 +136,10 @@
                         </button>
                     `);
                 } else {
-                    // Update qty in UI
+                    // Update qty in UI (support .qty-box and .qty-container)
                     $.each(res.cart, function (business, items) {
                         if (items[key]) {
-                            $(`[data-key="${key}"] .quantity-input`).val(items[key].quantity);
+                            $('[data-key="' + key + '"]').closest('.qty-box, .qty-container').find('.quantity-input').val(items[key].quantity);
                         }
                     });
                 }

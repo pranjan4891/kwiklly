@@ -270,12 +270,29 @@ class HomeController extends Controller
 
     public function getProductVariants($id)
     {
-        $product = Product::with('variants')->findOrFail($id);
+        $product = Product::with(['variants', 'featureImage'])->findOrFail($id);
+
+        $image = asset('public/assets/website/images/default.png');
+        if ($product->featureImage && $product->featureImage->feature_image) {
+            $image = asset('public/' . $product->featureImage->feature_image);
+        }
+
+        // Return variants with stock so modal can show variant-wise quantity and availability
+        $variants = $product->variants->map(function ($v) {
+            return [
+                'id' => $v->id,
+                'variant_name' => $v->variant_name ?? '',
+                'attributes' => $v->attributes,
+                'variant_actual_price' => $v->variant_actual_price,
+                'variant_selling_price' => $v->variant_selling_price,
+                'stock' => (int) $v->stock,
+            ];
+        });
 
         return response()->json([
             'product_name' => $product->title,
-            'image' =>  asset('public/' . $product->featureImage->feature_image),
-            'variants' => $product->variants
+            'image' => $image,
+            'variants' => $variants,
         ]);
     }
 

@@ -42,35 +42,41 @@
                 let html = '';
                 data.variants.forEach(variant => {
                     const attr = JSON.parse(variant.attributes || '{}');
-                    const volume = attr.Volume || '';
+                    const volume = attr.Volume || attr['Memory Size'] || attr.Color || attr.RAM || '';
                     const actual = variant.variant_actual_price;
                     const selling = variant.variant_selling_price;
+                    const stock = parseInt(variant.stock, 10) || 0;
 
                     const key = `${productId}_${variant.id}`;
                     let qtyBoxHtml = '';
 
-                    // Check if this variant exists in cart
+                    // Variant-wise quantity in cart
                     let qty = findQtyInCart(key);
 
                     if (qty > 0) {
+                        const canIncrement = qty < stock;
                         qtyBoxHtml = `
                             <div class="qty-container">
                                 <button class="qty-btn minus decrement-btn" data-key="${key}">−</button>
-                                <input type="text" class="qty-input quantity-input" value="${qty}" readonly>
-                                <button class="qty-btn plus increment-btn" data-key="${key}">+</button>
+                                <input type="text" class="qty-input quantity-input" value="${qty}" readonly title="In cart: ${qty}">
+                                <button class="qty-btn plus increment-btn" data-key="${key}" ${!canIncrement ? 'disabled' : ''}>+</button>
                             </div>
+                            ${stock > 0 ? `<small class="text-muted d-block mt-1">Stock: ${stock}</small>` : ''}
                         `;
                     } else {
-                        qtyBoxHtml = `
+                        const outOfStock = stock <= 0;
+                        qtyBoxHtml = outOfStock
+                            ? `<span class="text-muted small">Out of stock</span>`
+                            : `
                             <button class="add-btn btn btn-sm btn-outline-success"
                                 data-product-id="${productId}"
                                 data-variant-id="${variant.id}">
                                 Add <i class="fas fa-shopping-cart ms-1"></i>
                             </button>
+                            <small class="text-muted d-block mt-1">Stock: ${stock}</small>
                         `;
                     }
 
-                    // Get variant name, fallback to empty string if not available
                     const variantName = variant.variant_name || '';
                     const displayTitle = variantName 
                         ? `${data.product_name} (${variantName})` 
@@ -87,9 +93,10 @@
                                         <span class="original-price text-decoration-line-through">₹ ${actual}</span>
                                         <span class="price fw-bold">₹ ${selling}</span>
                                     </div>
+                                    ${qty > 0 ? `<small class="text-success">In cart: ${qty}</small>` : ''}
                                 </div>
                             </div>
-                            <div class="qty-box" data-product-id="${productId}" data-variant-id="${variant.id}">
+                            <div class="qty-box" data-product-id="${productId}" data-variant-id="${variant.id}" data-key="${key}">
                                 ${qtyBoxHtml}
                             </div>
                         </div>

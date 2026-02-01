@@ -8,6 +8,23 @@ use Illuminate\Support\Collection;
 class StoreHelper
 {
     /**
+     * Output HTML from DB (description, disclaimer, information) with only safe tags allowed.
+     * Use in Blade as: {!! \App\Helpers\StoreHelper::safeHtml($product->description) !!}
+     *
+     * @param string|null $html
+     * @param string|null $allowedTags
+     * @return string
+     */
+    public static function safeHtml(?string $html, ?string $allowedTags = null): string
+    {
+        if ($html === null || trim($html) === '') {
+            return '';
+        }
+        $allowed = $allowedTags ?? '<p><br><strong><b><em><i><u><ul><ol><li><a><span><div><h1><h2><h3><h4><h5><h6><table><tr><td><th><tbody><thead><img>';
+        return strip_tags($html, $allowed);
+    }
+
+    /**
      * Check if vendor store is open right now.
      *
      * Accepts: array, JSON string, Collection or null.

@@ -43,7 +43,8 @@ class ProductController extends Controller
 
     public function getByCategory(Request $request)
     {
-        $subs = Subcategory::where('category_id', $request->category_id)->get();
+        $subs = Subcategory::where('category_id', $request->category_id)->where('is_active', 1)
+                ->where('is_deleted', 0)->get();
         return response()->json($subs);
     }
 
@@ -72,6 +73,7 @@ class ProductController extends Controller
         $product->slug = Str::slug($request->title . '-' . uniqid());
         $product->category_id = $request->category_id;
         $product->sub_category_id = $request->sub_category_id;
+        $product->is_physical = $request->has('is_physical') ? 1 : 0; // Assuming all products are physical
         $product->description = $request->description;
         $product->disclaimer = $request->disclaimer;
         $product->information = $request->information;
@@ -137,6 +139,7 @@ class ProductController extends Controller
         $product->slug = Str::slug($request->title . '-' . uniqid());
         $product->category_id = $request->category_id;
         $product->sub_category_id = $request->sub_category_id;
+        $product->is_physical = $request->has('is_physical') ? 1 : 0;
         $product->description = $request->description;
         $product->disclaimer = $request->disclaimer;
         $product->information = $request->information;
