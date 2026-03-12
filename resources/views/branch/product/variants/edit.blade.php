@@ -11,7 +11,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h3 class="panel-title">{{ $variant->variant_name }}</h3></div>
                 <div class="panel-body">
-                    <form class="form-horizontal" method="POST" action="{{ route('branch.product.variant.update', $variant->id) }}">
+                    <form class="form-horizontal" method="POST" action="{{ route('branch.product.variant.update', $variant->id) }}" enctype="multipart/form-data">
                         @csrf
 
 
@@ -65,6 +65,24 @@
                             </div>
                         </div>
                         @endforeach
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Variant Images</label>
+                            <div class="col-md-6">
+                                @if($variant->images->isNotEmpty())
+                                    <div class="mb-3">
+                                        @foreach($variant->images as $img)
+                                            <span class="d-inline-block mr-2 mb-2" style="position:relative;">
+                                                <img src="{{ asset('public/' . $img->image_path) }}" alt="" style="max-height:60px; max-width:80px; object-fit:contain; border:1px solid #ddd;">
+                                                <a href="{{ route('branch.product.variant.image.delete', $img->id) }}" class="btn btn-xs btn-danger" style="position:absolute; top:-8px; right:-8px;" onclick="return confirm('Remove this image?')">×</a>
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                <input type="file" name="images[]" class="form-control" accept="image/*" multiple>
+                                <small class="text-muted">Add more images. Existing images above can be removed with ×.</small>
+                            </div>
+                        </div>
 
                         <div class="form-group">
                             <div class="col-md-offset-2 col-md-6">

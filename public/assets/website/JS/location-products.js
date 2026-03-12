@@ -38,9 +38,12 @@ function updateLocation(fullAddress, place = null, lat = null, lng = null, isAut
         selectedLocationEl.innerText = "📍 " + fullAddress;
     }
 
-    // Show short in header
+    // Show short in header (mobile: max 32 chars + ".." for single line)
     if (headerLocationDesktop) headerLocationDesktop.innerHTML = shortAddress;
-    if (headerLocationMobile) headerLocationMobile.innerHTML = shortAddress;
+    if (headerLocationMobile) {
+        let mobileText = typeof getShortAddressMobile === 'function' ? getShortAddressMobile(fullAddress, place) : (shortAddress.length > 32 ? shortAddress.substring(0, 32) + ".." : shortAddress);
+        headerLocationMobile.innerHTML = mobileText;
+    }
 
     if (typeof closeAddpop === 'function') {
         closeAddpop();

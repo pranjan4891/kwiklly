@@ -57,6 +57,9 @@
                     @php
                         // Point in polygon function (same as HomeController)
                         function pointInPolygon($lat, $lng, $polygon) {
+                            if (is_array($polygon)) {
+                                $polygon = json_encode($polygon);
+                            }
                             $inside = false;
                             $x = $lng;
                             $y = $lat;
@@ -85,40 +88,41 @@
                         $filteredFooterCategories = $footerCategories;
 
                         if ($lat && $lng) {
-                            // Find vendors in user's location area
-                            $masterLocations = \App\Models\MasterLocation::where('is_active', 1)->where('is_deleted', 0)->get();
-
-                            $insideLocation = $masterLocations->first(function($location) use ($lat, $lng) {
-                                return pointInPolygon($lat, $lng, $location->lat_long);
-                            });
-
-                            if ($insideLocation) {
-                                // Get vendors inside polygon with active products
-                                $vendorsInArea = \App\Models\VendorAdmin::where('status', '1')
-                                    ->where('is_active', '1')
-                                    ->where('user_type', 'vendor')
-                                    ->whereNull('deleted_at')
-                                    ->get()
-                                    ->filter(function ($vendor) use ($insideLocation) {
-                                        return pointInPolygon($vendor->latitude, $vendor->longitude, $insideLocation->lat_long);
-                                    });
-
-                                $vendorIds = $vendorsInArea->pluck('id');
-
-                                if ($vendorIds->count() > 0) {
-                                    // Get category IDs that have active products from vendors in user's area
-                                    $categoryIdsWithProducts = \App\Models\Product::whereIn('vendor_id', $vendorIds)
-                                        ->where('is_active', 1)
-                                        ->where('is_deleted', 0)
-                                        ->pluck('category_id')
-                                        ->unique()
-                                        ->filter();
-
-                                    // Filter footer categories to only those with products in user's area
-                                    $filteredFooterCategories = $footerCategories->filter(function($category) use ($categoryIdsWithProducts) {
-                                        return $categoryIdsWithProducts->contains($category->id);
-                                    });
+                            // 1) Delivery location: vendors/branches whose delivery area contains user's point
+                            $deliveryLocations = \App\Models\DeliveryLocation::where('is_active', 1)->where('is_deleted', 0)->whereNotNull('delivery_lat_long')->get();
+                            $vendorIds = collect();
+                            foreach ($deliveryLocations as $loc) {
+                                $polygon = $loc->delivery_lat_long;
+                                if (empty($polygon)) continue;
+                                $points = is_array($polygon) ? $polygon : (json_decode($polygon, true) ?: []);
+                                if (count($points) < 3) continue;
+                                if (pointInPolygon($lat, $lng, $polygon)) {
+                                    $vendorIds->push($loc->vendor_id);
                                 }
+                            }
+                            $vendorIds = $vendorIds->unique()->values();
+                            // Master location fallback commented - ab sirf delivery location se dikhaye
+                            // if ($vendorIds->isEmpty()) {
+                            //     $masterLocations = \App\Models\MasterLocation::where('is_active', 1)->where('is_deleted', 0)->get();
+                            //     $insideLocation = $masterLocations->first(function($loc) use ($lat, $lng) {
+                            //         return pointInPolygon($lat, $lng, $loc->lat_long);
+                            //     });
+                            //     if ($insideLocation) {
+                            //         $vendorIds = \App\Models\VendorAdmin::where('status', '1')->where('is_active', '1')->whereNull('deleted_at')->whereNotNull('latitude')->whereNotNull('longitude')->get()->filter(function ($v) use ($insideLocation) {
+                            //             return pointInPolygon($v->latitude, $v->longitude, $insideLocation->lat_long);
+                            //         })->pluck('id')->values();
+                            //     }
+                            // }
+                            if ($vendorIds->count() > 0) {
+                                $categoryIdsWithProducts = \App\Models\Product::whereIn('vendor_id', $vendorIds)
+                                    ->where('is_active', 1)
+                                    ->where('is_deleted', 0)
+                                    ->pluck('category_id')
+                                    ->unique()
+                                    ->filter();
+                                $filteredFooterCategories = $footerCategories->filter(function($category) use ($categoryIdsWithProducts) {
+                                    return $categoryIdsWithProducts->contains($category->id);
+                                });
                             }
                         }
 

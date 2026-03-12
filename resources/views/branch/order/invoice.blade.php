@@ -495,10 +495,7 @@
                             </td>
                             <td>
                                 <div class="product-title">
-                                    {{ $product->title }}
-                                    @if($variant)
-                                        ({{ $variant->variant_name ?? 'Standard' }})
-                                    @endif
+                                    {{ $product->title }}{{ $variant && ($variant->variant_name ?? null) ? ' - ' . $variant->variant_name : '' }}
                                     <br>
                                     <span style="font-size: 8px; color: #2874f0; font-weight: bold;">Include GST</span>
                                 </div>

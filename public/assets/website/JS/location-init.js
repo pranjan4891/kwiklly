@@ -63,8 +63,9 @@ window.addEventListener("DOMContentLoaded", () => {
             if (headerLocationDesktop && typeof getShortAddress === 'function') {
                 headerLocationDesktop.innerHTML = getShortAddress(loc.fullAddress);
             }
-            if (headerLocationMobile && typeof getShortAddress === 'function') {
-                headerLocationMobile.innerHTML = getShortAddress(loc.fullAddress);
+            if (headerLocationMobile) {
+                let mobileText = typeof getShortAddressMobile === 'function' ? getShortAddressMobile(loc.fullAddress) : (loc.shortAddress && loc.shortAddress.length > 32 ? loc.shortAddress.substring(0, 32) + ".." : (loc.shortAddress || loc.fullAddress || ""));
+                headerLocationMobile.innerHTML = mobileText;
             }
             if (selectedLocationEl) selectedLocationEl.innerText = "📍 " + loc.fullAddress;
 

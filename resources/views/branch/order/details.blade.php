@@ -89,8 +89,8 @@
                             <tbody>
                                 @forelse($vendorOrder->orderItems as $item)
                                     <tr>
-                                        <td>{{ $item->product->title ?? 'N/A' }}</td>
-                                        <td>{{ $item->variant ? implode(' | ', array_filter([$item->variant->size ?? '', $item->variant->color ?? '', $item->variant->material ?? ''])) : 'N/A' }}</td>
+                                        <td>{{ ($item->product->title ?? 'N/A') . ($item->variant && $item->variant->variant_name ? ' - ' . $item->variant->variant_name : '') }}</td>
+                                        <td>{{ $item->variant ? implode(' | ', array_filter([$item->variant->size ?? '', $item->variant->color ?? '', $item->variant->material ?? '', $item->variant->variant_name ?? ''])) : 'N/A' }}</td>
                                         <td>{{ $item->quantity ?? 0 }}</td>
                                         <td>₹{{ number_format($item->price ?? 0, 2) }}</td>
                                         <td>₹{{ number_format(($item->price ?? 0) * ($item->quantity ?? 0), 2) }}</td>

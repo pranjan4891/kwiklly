@@ -134,7 +134,7 @@
                         <tbody>
                             @forelse($vendorOrder->orderItems as $item)
                                 <tr>
-                                    <td>{{ $item->product->title ?? 'N/A' }}</td>
+                                    <td>{{ ($item->product->title ?? 'N/A') . ($item->variant && $item->variant->variant_name ? ' - ' . $item->variant->variant_name : '') }}</td>
                                     <td>
                                         @if($item->variant)
                                             @php

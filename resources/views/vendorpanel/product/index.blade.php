@@ -52,9 +52,8 @@
 
                                         <td><a href="{{ route('vendor.product.variant.create', $product->id) }}" class="btn btn-primary btn-sm" title="Edit">
                                                 <i class="fa fa-plus"></i> Add Inventory
-                                            </a></td>
-
-                                        <td>
+                                            </a>
+                                        </td>
 
                                         <td>
                                             @if ($product->is_active)

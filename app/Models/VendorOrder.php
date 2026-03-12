@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class VendorOrder extends Model
 {
@@ -22,6 +23,7 @@ class VendorOrder extends Model
         'final_amount',
         'delivery_status',
         'delivery_partner_id',
+        'delivery_distance_km',
     ];
 
     public function order(): BelongsTo
@@ -42,5 +44,16 @@ class VendorOrder extends Model
     public function deliverySlot()
     {
         return $this->belongsTo(DeliverySlot::class);
+    }
+
+    public function deliveryPartner(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryPartner::class);
+    }
+
+    /** One payment record per vendor_order for delivery boy km-wise payout */
+    public function deliveryPartnerPayment(): HasOne
+    {
+        return $this->hasOne(DeliveryPartnerPayment::class);
     }
 }

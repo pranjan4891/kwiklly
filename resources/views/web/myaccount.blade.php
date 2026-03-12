@@ -362,6 +362,8 @@
 
     <form id="addAddressForm">
         <input type="hidden" name="type" id="addAddressType" value="home">
+        <input type="hidden" name="latitude" id="addLatitude" value="">
+        <input type="hidden" name="longitude" id="addLongitude" value="">
         
         <div class="pata-input my-2">
              <select id="addAddressTypeSelect" name="type" class="form-control" required>
@@ -406,6 +408,8 @@
 
     <form id="addressForm">
         <input type="hidden" id="addressId" name="id" value="">
+        <input type="hidden" name="latitude" id="editLatitude" value="">
+        <input type="hidden" name="longitude" id="editLongitude" value="">
         <div class="pata-input my-2">
              <select id="addressType" name="type" class="form-control" required>
                 <option value="home">Home</option>
@@ -605,10 +609,13 @@
            document.querySelector('#addressForm [name=flat]').value = data.flat;
            document.querySelector('#addressForm [name=landmark]').value = data.landmark || '';
            document.querySelector('#addressForm [name=pincode]').value = data.pincode;
+           document.getElementById('editLatitude').value = data.latitude || '';
+           document.getElementById('editLongitude').value = data.longitude || '';
            document.querySelector('#addressForm [name=name]').value = data.name;
            document.querySelector('#addressForm [name=phone]').value = data.phone || '';
            document.querySelector('#addressForm [name=alt_phone]').value = data.alt_phone || '';
            document.getElementById("editAddressPopup").style.display = "flex";
+           setTimeout(function() { initEditAddressAutocomplete(); }, 100);
        })
        .catch(error => {
            Swal.fire('Error!', 'Unable to load address.', 'error');
@@ -731,10 +738,10 @@
        if (form) {
            form.reset();
            document.getElementById('addAddressType').value = 'home';
+           document.getElementById('addLatitude').value = '';
+           document.getElementById('addLongitude').value = '';
            const typeSelect = document.getElementById('addAddressTypeSelect');
-           if (typeSelect) {
-               typeSelect.value = 'home';
-           }
+           if (typeSelect) typeSelect.value = 'home';
        }
    }
 
@@ -835,7 +842,43 @@
                const pincodeInput = form.querySelector('input[name="pincode"]');
                if (pincodeInput) pincodeInput.value = postalCode;
            }
+           var lat = place.geometry && place.geometry.location ? place.geometry.location.lat() : null;
+           var lng = place.geometry && place.geometry.location ? place.geometry.location.lng() : null;
+           if (lat != null && lng != null) {
+               document.getElementById('addLatitude').value = lat;
+               document.getElementById('addLongitude').value = lng;
+           }
        }
+   }
+
+   // Edit address: init autocomplete and capture lat/lng
+   function initEditAddressAutocomplete() {
+       const input = document.getElementById('autocomplete');
+       if (!input) return;
+       if (typeof google === 'undefined' || typeof google.maps === 'undefined') return;
+       if (window.editAddressAutocomplete) {
+           google.maps.event.clearInstanceListeners(window.editAddressAutocomplete);
+       }
+       window.editAddressAutocomplete = new google.maps.places.Autocomplete(input, {
+           types: ['geocode'],
+           componentRestrictions: { country: 'in' }
+       });
+       window.editAddressAutocomplete.addListener('place_changed', function() {
+           var place = window.editAddressAutocomplete.getPlace();
+           if (!place.geometry) return;
+           var lat = place.geometry.location.lat();
+           var lng = place.geometry.location.lng();
+           document.getElementById('editLatitude').value = lat;
+           document.getElementById('editLongitude').value = lng;
+           var locality = '', postalCode = '';
+           for (var i = 0; i < place.address_components.length; i++) {
+               var c = place.address_components[i];
+               if (c.types[0] === 'locality') locality = c.long_name;
+               if (c.types[0] === 'postal_code') postalCode = c.long_name;
+           }
+           if (locality) document.querySelector('#addressForm [name=area]').value = locality;
+           if (postalCode) document.querySelector('#addressForm [name=pincode]').value = postalCode;
+       });
    }
 
 </script>

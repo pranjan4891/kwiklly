@@ -553,6 +553,8 @@ class CustomerController extends Controller
             'flat' => 'required|string|max:255',
             'landmark' => 'nullable|string|max:255',
             'pincode' => 'required|string|max:10',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:15',
             'alt_phone' => 'nullable|string|max:15',

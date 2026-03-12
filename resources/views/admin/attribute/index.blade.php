@@ -41,6 +41,17 @@
                             </div>
 
                             <div class="form-group">
+                                <label for="type" class="control-label col-lg-2">Type *</label>
+                                <div class="col-lg-5">
+                                    <select class="form-control" name="type" id="type" required>
+                                        <option value="text" {{ old('type', 'text') == 'text' ? 'selected' : '' }}>Text (Size, Memory, Quantity, etc.)</option>
+                                        <option value="color" {{ old('type') == 'color' ? 'selected' : '' }}>Color (Image per value)</option>
+                                    </select>
+                                    <small class="text-muted">Use "Color" when each value needs an image (e.g. color swatch). Use "Text" for Size, Memory, RAM, etc.</small>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <label for="is_active" class="control-label col-lg-2">Status</label>
                                 <div class="col-lg-5">
                                     <select class="form-control" name="is_active" id="is_active">
@@ -76,6 +87,7 @@
                             <tr>
                                 <th>S No.</th>
                                 <th>Attribute Name</th>
+                                <th>Type</th>
                                 <th>Status</th>
                                 <th>Date</th>
                                 <th>Action</th>
@@ -86,6 +98,11 @@
                                 <tr>
                                     <td>{{ $key + 1 }}</td>
                                     <td>{{ $attribute->name }}</td>
+                                    <td>
+                                        <span class="label label-{{ ($attribute->type ?? 'text') == 'color' ? 'info' : 'default' }}">
+                                            {{ ($attribute->type ?? 'text') == 'color' ? 'Color' : 'Text' }}
+                                        </span>
+                                    </td>
                                     <td>
                                         <span class="label label-{{ $attribute->is_active ? 'success' : 'danger' }}">
                                             {{ $attribute->is_active ? 'Active' : 'Inactive' }}
@@ -112,6 +129,13 @@
                                                     <div class="form-group">
                                                         <label>Attribute Name</label>
                                                         <input type="text" name="name" class="form-control" value="{{ $attribute->name }}" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Type</label>
+                                                        <select name="type" class="form-control" required>
+                                                            <option value="text" {{ ($attribute->type ?? 'text') == 'text' ? 'selected' : '' }}>Text (Size, Memory, etc.)</option>
+                                                            <option value="color" {{ ($attribute->type ?? '') == 'color' ? 'selected' : '' }}>Color (Image per value)</option>
+                                                        </select>
                                                     </div>
                                                     <div class="form-group">
                                                         <label>Status</label>

@@ -34,4 +34,27 @@ class ProductVariant extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    /** Multiple images per variant (e.g. per color) - uploaded when adding/editing variant. */
+    public function images()
+    {
+        return $this->hasMany(ProductVariantImage::class, 'variant_id');
+    }
+
+    /** Get variant attribute value by name from JSON attributes. e.g. getVariantAttributeByName('Color') => 'Teal'. */
+    public function getVariantAttributeByName(string $attributeName): ?string
+    {
+        $attrs = $this->getAttribute('attributes');
+        if (!is_array($attrs)) {
+            $attrs = is_string($attrs) ? json_decode($attrs, true) : [];
+        }
+        return $attrs[$attributeName] ?? null;
+    }
+
+    /** First image URL for this variant (e.g. for color thumbnail on product page). */
+    public function getFirstImagePath(): ?string
+    {
+        $first = $this->images()->first();
+        return $first ? $first->image_path : null;
+    }
 }

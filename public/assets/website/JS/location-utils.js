@@ -23,5 +23,15 @@ function getShortAddress(fullAddress, place = null) {
     return fullAddress.length > 40 ? fullAddress.substring(0, 40) + "..." : fullAddress;
 }
 
+/** Mobile header: max 32 chars then "..", single line display */
+function getShortAddressMobile(fullAddress, place = null) {
+    let short = getShortAddress(fullAddress, place);
+    if (short.length > 32) {
+        return short.substring(0, 32) + "..";
+    }
+    return short;
+}
+
 // Make getShortAddress globally accessible
 window.getShortAddress = getShortAddress;
+window.getShortAddressMobile = getShortAddressMobile;

@@ -11,6 +11,8 @@ use App\Models\Category;
 use App\Models\DeliveryCharge;
 use App\Models\TimeSlot;
 use App\Models\LocationContact;
+use App\Models\DeliveryLocation;
+use App\Models\MasterLocation;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\LocationSharingMail;
@@ -50,6 +52,24 @@ class VendorDashboardController extends Controller
         }
 
         $data['storetime'] = $storetime;
+
+        // Delivery location (vendor_id wise, like branches)
+        $data['deliveryLocation'] = DeliveryLocation::where('vendor_id', $vendor->id)
+            ->where('is_deleted', 0)
+            ->first();
+
+        // Master location area that contains vendor's lat/long (if set)
+        $data['masterLocationArea'] = null;
+        if ($vendor->latitude && $vendor->longitude) {
+            $locations = MasterLocation::where('is_active', 1)->where('is_deleted', 0)->get();
+            foreach ($locations as $loc) {
+                $polygon = is_string($loc->lat_long) ? json_decode($loc->lat_long, true) : $loc->lat_long;
+                if ($polygon && $this->isPointInPolygon((float) $vendor->latitude, (float) $vendor->longitude, $polygon)) {
+                    $data['masterLocationArea'] = ['place' => $loc->place, 'pincode' => $loc->pincode, 'lat_long' => $polygon];
+                    break;
+                }
+            }
+        }
 
         return view('vendorpanel.profile')->with($data);
     }
@@ -288,5 +308,109 @@ class VendorDashboardController extends Controller
         ], 404);
     }
 
+    /**
+     * Get master location areas by pincode (for Delivery location tab - like admin branch)
+     */
+    public function getArea(Request $request)
+    {
+        $pincode = $request->input('pincode');
+        if (!$pincode) {
+            return response()->json(['places' => []]);
+        }
+        $locations = MasterLocation::where('pincode', $pincode)
+            ->where('is_active', 1)
+            ->where('is_deleted', 0)
+            ->get(['place', 'lat_long', 'pincode']);
+        return response()->json(['places' => $locations]);
+    }
 
+    /**
+     * Check if lat/lng falls inside any master location polygon (for Delivery location tab)
+     */
+    public function pointInPolygon(Request $request)
+    {
+        $lat = (float) $request->query('lat');
+        $lng = (float) $request->query('lng');
+        $locations = MasterLocation::where('is_active', 1)->where('is_deleted', 0)->get();
+        foreach ($locations as $location) {
+            $polygon = is_string($location->lat_long) ? json_decode($location->lat_long, true) : $location->lat_long;
+            if ($polygon && $this->isPointInPolygon($lat, $lng, $polygon)) {
+                return response()->json([
+                    'success' => true,
+                    'pincode' => $location->pincode,
+                    'place'   => $location->place,
+                    'lat_long'=> $polygon,
+                ]);
+            }
+        }
+        return response()->json([
+            'success' => false,
+            'message' => 'No service available in your current location.'
+        ], 404);
+    }
+
+    private function isPointInPolygon($lat, $lng, $polygon)
+    {
+        $inside = false;
+        $x = $lng;
+        $y = $lat;
+        $points = count($polygon);
+        $j = $points - 1;
+        for ($i = 0; $i < $points; $i++) {
+            $xi = $polygon[$i]['lng'] ?? $polygon[$i][1];
+            $yi = $polygon[$i]['lat'] ?? $polygon[$i][0];
+            $xj = $polygon[$j]['lng'] ?? $polygon[$j][1];
+            $yj = $polygon[$j]['lat'] ?? $polygon[$j][0];
+            $intersect = (($yi > $y) != ($yj > $y)) &&
+                ($x < ($xj - $xi) * ($y - $yi) / ($yj - $yi + 0.0) + $xi);
+            if ($intersect) {
+                $inside = !$inside;
+            }
+            $j = $i;
+        }
+        return $inside;
+    }
+
+    /**
+     * Save delivery location (polygon) for current vendor - vendor_id wise like branches
+     */
+    public function saveDeliveryLocation(Request $request)
+    {
+        $request->validate([
+            'service_area' => 'required|json',
+            'latitude'     => 'nullable|numeric',
+            'longitude'    => 'nullable|numeric',
+        ]);
+
+        $vendor = auth()->user();
+        $latLongArray = json_decode($request->service_area, true);
+        if (!is_array($latLongArray) || count($latLongArray) < 3) {
+            return response()->json(['success' => false, 'message' => 'Invalid or insufficient polygon points.'], 422);
+        }
+        $first = $latLongArray[0];
+        $last = end($latLongArray);
+        if (($first['lat'] ?? $first[0]) != ($last['lat'] ?? $last[0]) || ($first['lng'] ?? $first[1]) != ($last['lng'] ?? $last[1])) {
+            $latLongArray[] = $first;
+        }
+
+        DeliveryLocation::updateOrCreate(
+            ['vendor_id' => $vendor->id],
+            [
+                'delivery_lat_long' => $latLongArray,
+                'is_active'         => 1,
+                'is_deleted'        => 0,
+            ]
+        );
+
+        if ($request->filled('latitude') && $request->filled('longitude')) {
+            $vendor->latitude = $request->latitude;
+            $vendor->longitude = $request->longitude;
+            $vendor->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Delivery location saved successfully.',
+        ]);
+    }
 }

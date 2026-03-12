@@ -1,0 +1,136 @@
+/**
+ * Search Suggestions Handler
+ * Handles search box autocomplete suggestions for both desktop and mobile
+ * Fetches products from vendors, branches, and admins based on user location
+ */
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Initialize desktop search
+    initializeSearchSuggestions(
+        "search-box",
+        "suggestions-box",
+        "search-form",
+        "search-latitude",
+        "search-longitude"
+    );
+
+    // Initialize mobile search
+    initializeSearchSuggestions(
+        "mobile-search-box",
+        "mobile-suggestions-box",
+        "mobile-search-form",
+        "mobile-search-latitude",
+        "mobile-search-longitude"
+    );
+
+    // Helper function to initialize search suggestions
+    function initializeSearchSuggestions(searchBoxId, suggestionsBoxId, formId, latId, lngId) {
+        let searchBox = document.getElementById(searchBoxId);
+        let suggestionsBox = document.getElementById(suggestionsBoxId);
+        let form = document.getElementById(formId);
+
+        if (!searchBox || !suggestionsBox || !form) {
+            return;
+        }
+
+        // Helper to get location params
+        function getSuggestionLocationParams() {
+            let params = '';
+            let lat = document.getElementById(latId)?.value;
+            let lng = document.getElementById(lngId)?.value;
+            if (lat) params += `&latitude=${encodeURIComponent(lat)}`;
+            if (lng) params += `&longitude=${encodeURIComponent(lng)}`;
+            return params;
+        }
+
+        // Load last searches from localStorage
+        function showLastSearches() {
+            let lastSearches = JSON.parse(localStorage.getItem("lastSearches")) || [];
+            suggestionsBox.innerHTML = "";
+            if (lastSearches.length > 0) {
+                lastSearches.forEach(item => {
+                    let li = document.createElement("li");
+                    li.classList.add("list-group-item", "d-flex", "align-items-center");
+                    li.innerHTML = `<img src="${window.MARKER_IMAGE_URL || '/public/marker.png'}"
+                                        class="me-2" style="width:30px; height:30px; object-fit:cover; border-radius:5px;">
+                                    <span>${item}</span>`;
+                    li.addEventListener("click", () => {
+                        searchBox.value = item;
+                        suggestionsBox.classList.add("d-none");
+                    });
+                    suggestionsBox.appendChild(li);
+                });
+                suggestionsBox.classList.remove("d-none");
+            } else {
+                suggestionsBox.classList.add("d-none");
+            }
+        }
+
+        // On focus show last searches
+        searchBox.addEventListener("focus", showLastSearches);
+
+        // On keyup fetch suggestions
+        searchBox.addEventListener("keyup", function() {
+            let query = this.value.trim();
+            if (query.length < 2) {
+                showLastSearches();
+                return;
+            }
+
+            // Fetch suggestions from backend API
+            // Backend returns products from vendors, branches, and admins filtered by location
+            let searchSuggestionsUrl = window.SEARCH_SUGGESTIONS_URL || '/search/suggestions';
+            fetch(`${searchSuggestionsUrl}?q=${encodeURIComponent(query)}${getSuggestionLocationParams()}`)
+                .then(res => res.json())
+                .then(data => {
+                    suggestionsBox.innerHTML = "";
+                    if (data.length > 0) {
+                       data.forEach(item => {
+                            let li = document.createElement("li");
+                            li.classList.add("list-group-item", "d-flex", "align-items-center");
+                            li.style.cursor = "pointer";
+                            li.innerHTML = `
+                                <img src="${item.image}"
+                                    class="me-2" style="width:40px; height:40px; object-fit:cover; border-radius:5px;">
+                                <span>${item.title}</span>
+                            `;
+                            li.addEventListener("click", () => {
+                                searchBox.value = item.title;
+                                form.submit(); // ✅ redirect to searchresults with ?q=item.title
+                                suggestionsBox.classList.add("d-none");
+                            });
+                            suggestionsBox.appendChild(li);
+                        });
+
+                        suggestionsBox.classList.remove("d-none");
+                    } else {
+                        suggestionsBox.classList.add("d-none");
+                    }
+                })
+                .catch(err => {
+                    console.error("Search error:", err);
+                    suggestionsBox.classList.add("d-none");
+                });
+        });
+
+        // Save searches on form submit
+        form.addEventListener("submit", function() {
+            let query = searchBox.value.trim();
+            if (query) {
+                let lastSearches = JSON.parse(localStorage.getItem("lastSearches")) || [];
+                if (!lastSearches.includes(query)) {
+                    lastSearches.unshift(query); // add to top
+                    if (lastSearches.length > 5) lastSearches.pop(); // keep max 5
+                    localStorage.setItem("lastSearches", JSON.stringify(lastSearches));
+                }
+            }
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener("click", function(e) {
+            if (!form.contains(e.target)) {
+                suggestionsBox.classList.add("d-none");
+            }
+        });
+    }
+});

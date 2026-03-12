@@ -1,5 +1,5 @@
+{{-- Sirf wahi categories jinke products vendor delivery location ke andar hain (controller se filtered) --}}
 @php
-// Ensure unique categories by ID to prevent duplicates
 $uniqueHomepageCategories = $homepageCategories->unique('id')->values();
 @endphp
 @if ($uniqueHomepageCategories->count() > 0)

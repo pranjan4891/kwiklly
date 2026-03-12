@@ -25,11 +25,13 @@ class AttributeController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'type' => 'required|in:text,color',
             'is_active' => 'required|boolean',
         ]);
 
         Attribute::create([
             'name' => $request->name,
+            'type' => $request->type,
             'is_active' => $request->is_active,
             'is_deleted' => 0,
         ]);
@@ -43,11 +45,13 @@ class AttributeController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
+            'type' => 'required|in:text,color',
             'is_active' => 'required|boolean',
         ]);
 
         $attribute->update([
             'name' => $request->name,
+            'type' => $request->type,
             'is_active' => $request->is_active,
         ]);
 
@@ -90,6 +94,7 @@ class AttributeController extends Controller
         AttributeValue::create([
             'attribute_id' => $request->attribute_id,
             'value' => $request->value,
+            'color_code' => $request->color_code ?? null,
             'is_active' => $request->is_active,
             'is_deleted' => 0,
         ]);
@@ -110,6 +115,7 @@ class AttributeController extends Controller
         $attributeValue->update([
             'attribute_id' => $request->attribute_id,
             'value' => $request->value,
+            'color_code' => $request->color_code ?? null,
             'is_active' => $request->is_active,
         ]);
 

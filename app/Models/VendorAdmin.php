@@ -128,6 +128,16 @@ class VendorAdmin extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(DeliveryLocation::class, 'vendor_id');
     }
+
+    /**
+     * Check if this vendor/branch can deliver to the given customer address.
+     * Uses address lat/long and this vendor's delivery_locations polygon.
+     */
+    public function canDeliverToAddress(CustomerAddress $address): bool
+    {
+        return $address->isDeliverableBy($this);
+    }
+
     public function products()
     {
         return $this->hasMany(Product::class, 'vendor_id', 'id');

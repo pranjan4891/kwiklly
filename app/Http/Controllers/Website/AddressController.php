@@ -17,7 +17,9 @@ class AddressController extends Controller
             'flat' => 'required',
             'pincode' => 'required',
             'name' => 'required',
-            'phone' => 'required'
+            'phone' => 'required',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
 
         $address = CustomerAddress::create([
@@ -27,10 +29,12 @@ class AddressController extends Controller
             'flat' => $request->flat,
             'landmark' => $request->landmark,
             'pincode' => $request->pincode,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
             'name' => $request->name,
             'phone' => $request->phone,
             'alt_phone' => $request->alt_phone,
-            'full_address' => $request->flat . ', ' . $request->area . ', ' . $request->landmark
+            'full_address' => $request->flat . ', ' . $request->area . ', ' . ($request->landmark ? $request->landmark . ', ' : '') . $request->pincode,
         ]);
 
         return response()->json(['success' => true, 'message' => 'Address saved successfully']);
@@ -41,7 +45,7 @@ class AddressController extends Controller
         $address = CustomerAddress::where('user_id', auth()->id())->findOrFail($id);
 
         $address->update($request->only([
-            'type', 'area', 'flat', 'landmark', 'pincode', 'name', 'phone', 'alt_phone'
+            'type', 'area', 'flat', 'landmark', 'pincode', 'latitude', 'longitude', 'name', 'phone', 'alt_phone'
         ]));
 
         return response()->json(['success' => true, 'message' => 'Address updated']);
@@ -57,6 +61,9 @@ class AddressController extends Controller
 
 
 
+    /** Max distance (km) to consider an address in "current location" */
+    const CURRENT_LOCATION_RADIUS_KM = 50;
+
     public function getAddresses(Request $request)
     {
         $query = CustomerAddress::where('user_id', auth()->id());
@@ -67,6 +74,20 @@ class AddressController extends Controller
         }
 
         $addresses = $query->whereNull('deleted_at')->latest()->get();
+
+        // Filter by current location: only addresses within radius of given lat/lng
+        if ($request->filled('latitude') && $request->filled('longitude')) {
+            $lat = (float) $request->latitude;
+            $lng = (float) $request->longitude;
+            $addresses = $addresses->filter(function ($addr) use ($lat, $lng) {
+                if ($addr->latitude === null || $addr->longitude === null) {
+                    return false;
+                }
+                $km = CustomerAddress::distanceInKm($lat, $lng, (float) $addr->latitude, (float) $addr->longitude);
+                return $km !== null && $km <= self::CURRENT_LOCATION_RADIUS_KM;
+            })->values();
+        }
+
         return response()->json($addresses);
     }
 

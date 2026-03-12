@@ -131,6 +131,7 @@ Route::group(['prefix' => 'admin'], function () {
             Route::post('/variant/store', [ProductController::class, 'storeVariant'])->name('product.variant.store');
             Route::get('/variant/edit/{id}', [ProductController::class, 'editVariant'])->name('product.variant.edit');
             Route::post('/variant/update/{id}', [ProductController::class, 'updateVariant'])->name('product.variant.update');
+            Route::get('/variant/image/delete/{id}', [ProductController::class, 'deleteVariantImage'])->name('product.variant.image.delete');
             Route::delete('/variant/delete/{id}', [ProductController::class, 'deleteVariant'])->name('product.variant.destroy');
         });
 

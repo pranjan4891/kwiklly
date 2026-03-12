@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductImages;
-use App\Models\MasterLocation;
+use App\Models\DeliveryLocation;
+// use App\Models\MasterLocation; // commented with master location fallback
 use App\Models\VendorAdmin;
 
 class SearchController extends Controller
@@ -18,13 +19,10 @@ class SearchController extends Controller
         $lat = $request->input('latitude');
         $lng = $request->input('longitude');
 
-        // If location provided, filter by same MasterLocation
+        // If location provided, filter by delivery_locations (vendor/branch delivery areas)
         $vendorIds = collect();
         if ($lat && $lng) {
-            $insideLocation = $this->findUserLocation($lat, $lng);
-            if ($insideLocation) {
-                $vendorIds = $this->getVendorsInLocation($insideLocation);
-            }
+            $vendorIds = $this->getVendorIdsByDeliveryLocation($lat, $lng);
         } else {
             // No location, show no products
             $vendorIds = collect();
@@ -76,10 +74,7 @@ class SearchController extends Controller
 
         $vendorIds = collect();
         if ($lat && $lng) {
-            $insideLocation = $this->findUserLocation($lat, $lng);
-            if ($insideLocation) {
-                $vendorIds = $this->getVendorsInLocation($insideLocation);
-            }
+            $vendorIds = $this->getVendorIdsByDeliveryLocation($lat, $lng);
         }
 
         if ($vendorIds->isNotEmpty()) {
@@ -107,37 +102,78 @@ class SearchController extends Controller
         return response()->json($products);
     }
 
-    private function findUserLocation($lat, $lng)
+    /**
+     * Get vendor IDs for user's location: delivery_locations first, fallback to master location.
+     */
+    private function getVendorIdsByDeliveryLocation($lat, $lng)
     {
-        return MasterLocation::where('is_active', 1)
+        if (!$lat || !$lng) {
+            return collect();
+        }
+        $locations = DeliveryLocation::where('is_active', 1)
             ->where('is_deleted', 0)
-            ->get()
-            ->first(function($location) use ($lat, $lng) {
-                return $this->pointInPolygon($lat, $lng, $location->lat_long);
-            });
+            ->whereNotNull('delivery_lat_long')
+            ->get();
+        $vendorIds = collect();
+        foreach ($locations as $loc) {
+            $polygon = $loc->delivery_lat_long;
+            if (empty($polygon)) {
+                continue;
+            }
+            $points = is_array($polygon) ? collect($polygon) : collect(json_decode($polygon, true));
+            if (!$points || $points->count() < 3) {
+                continue;
+            }
+            if (is_array($polygon)) {
+                $polygon = json_encode($polygon);
+            }
+            if ($this->pointInPolygon($lat, $lng, $polygon)) {
+                $vendorIds->push($loc->vendor_id);
+            }
+        }
+        $vendorIds = $vendorIds->unique()->values();
+        // Master location fallback commented - ab sirf delivery location se dikhaye
+        // if ($vendorIds->isEmpty()) {
+        //     return $this->getVendorIdsByMasterLocation($lat, $lng);
+        // }
+        return $vendorIds;
     }
 
-    private function getVendorsInLocation($location)
-    {
-        return VendorAdmin::where('status', '1')
-            ->where('is_active', '1')
-            ->whereIn('user_type', ['vendor', 'branch', 'admin'])
-            ->whereNull('deleted_at')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->get()
-            ->filter(function ($vendor) use ($location) {
-                return $this->pointInPolygon(
-                    $vendor->latitude,
-                    $vendor->longitude,
-                    $location->lat_long
-                );
-            })->pluck('id');
-    }
+    // Master location fallback - commented, ab sirf delivery location use ho raha hai
+    // private function getVendorIdsByMasterLocation($lat, $lng)
+    // {
+    //     if (!$lat || !$lng) {
+    //         return collect();
+    //     }
+    //     $insideLocation = MasterLocation::where('is_active', 1)
+    //         ->where('is_deleted', 0)
+    //         ->get()
+    //         ->first(function ($location) use ($lat, $lng) {
+    //             return $this->pointInPolygon($lat, $lng, $location->lat_long);
+    //         });
+    //     if (!$insideLocation) {
+    //         return collect();
+    //     }
+    //     return VendorAdmin::where('status', '1')
+    //         ->where('is_active', '1')
+    //         ->whereIn('user_type', ['vendor', 'branch', 'admin'])
+    //         ->whereNull('deleted_at')
+    //         ->whereNotNull('latitude')
+    //         ->whereNotNull('longitude')
+    //         ->get()
+    //         ->filter(function ($vendor) use ($insideLocation) {
+    //             return $this->pointInPolygon($vendor->latitude, $vendor->longitude, $insideLocation->lat_long);
+    //         })
+    //         ->pluck('id')
+    //         ->values();
+    // }
 
     // Ray casting algorithm for point in polygon
     private function pointInPolygon($lat, $lng, $polygon)
     {
+        if (is_array($polygon)) {
+            $polygon = json_encode($polygon);
+        }
         $inside = false;
         $x = $lng;
         $y = $lat;

@@ -1,7 +1,7 @@
-
+    {{-- Category-wise products: sirf delivery location wale vendors ke products (controller se filtered) --}}
     @if ($categorywiseproducts && count($categorywiseproducts) > 0)
         @foreach ($categorywiseproducts as $categoryData)
-            @if ($categoryData['products']->count() > 0) {{-- ✅ only show if products exist --}}
+            @if ($categoryData['products']->count() > 0)
             <div class="container mt-4">
                 {{-- 🔹 Category Title --}}
                 <h4 class="pb-3 pt-4 headingclass">{{ ucfirst(strtolower($categoryData['name'])) }}</h4>

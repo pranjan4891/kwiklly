@@ -10,9 +10,14 @@ class Attribute extends Model
     use HasFactory;
     protected $fillable = [
         'name',
+        'type',
         'is_active',
         'is_deleted',
     ];
+
+    /** Attribute types: text = size, memory, quantity (no image). color = value has image (swatch/thumbnail). */
+    const TYPE_TEXT = 'text';
+    const TYPE_COLOR = 'color';
     protected $table = 'attributes';
     public function values()
     {

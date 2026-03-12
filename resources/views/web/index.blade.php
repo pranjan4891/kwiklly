@@ -71,6 +71,8 @@
 </section>
 
 
+{{-- Category slider: sirf wahi categories jinke products vendor delivery location ke andar hain --}}
+@if(isset($categories) && $categories->count() > 0)
 <section class="categoryfordesktop">
    <div class="container new-cate-grocery-section">
       <div class="row align-items-center m-0">
@@ -91,7 +93,6 @@
             <h4 class="py-3 m-0 new-cate-category-title headingclass">Categories</h4>
             <div class="new-cate-owl-carousel owl-carousel owl-theme">
                @php
-               // Ensure unique categories by ID
                $uniqueCategories = $categories->unique('id')->values();
                @endphp
                @foreach ($uniqueCategories->chunk(2) as $chunk)
@@ -119,29 +120,30 @@
       </div>
    </div>
 </section>
+@endif
 
+{{-- Mobile category slider: sirf delivery location wali categories --}}
+@if(isset($categories) && $categories->count() > 0)
+@php $categoryBanner = $categoryBanner ?? collect($banners)->firstWhere('banner_cat_id', 3); @endphp
 <section class="categoryformobile">
    <div class="container new-cate-grocery-section">
    <div class="row align-items-center m-0">
       <!-- Left Promo Section -->
       <div class="col-md-4">
+         @if ($categoryBanner)
          <div class="new-cate-promo-box" style="background-image: url('{{ asset('public/' . $categoryBanner['desktop_image']) }}');">
-            @if ($categoryBanner)
-               <a href="{{$categoryBanner['banner_url']}}" class="btn btn-light" onclick="return redirectWithLocation(this.href)">Know More</a>
-            @endif
+            <a href="{{$categoryBanner['banner_url']}}" class="btn btn-light" onclick="return redirectWithLocation(this.href)">Know More</a>
          </div>
+         @endif
       </div>
       <!-- Right Category Slider -->
       <div class="col-md-8 new-cate">
          <h4 class="pb-3 new-cate-category-title headingclass">Categories</h4>
          <div class="row" id="category-container">
-            <!-- Repeat this block for all your categories (add as many as you want, for demo 18) -->
             @php
-            // Ensure unique categories by ID for mobile view
             $uniqueCategoriesMobile = $categories->unique('id')->values();
             @endphp
-            @if ($uniqueCategoriesMobile->count() > 0)
-                @foreach ($uniqueCategoriesMobile as $cat)
+            @foreach ($uniqueCategoriesMobile as $cat)
                 @php
                    $categoryName = strtolower($cat['name']);
                    // Replace & with & (with spaces) if not already spaced
@@ -160,17 +162,11 @@
                 </div>
                 </div>
                 @endforeach
-           
-            @endif
          </div>
       </div>
-      <!-- <div class="text-center">
-         <button class="view-all-btn mt-3" id="loadMoreBtn">
-         Load More <i class="fa fa-angles-down ms-2"></i>
-         </button>
-      </div> -->
    </div>
 </section>
+@endif
 
 <section id="stores-section">
    @if(isset($stores) && count($stores) > 0)
@@ -186,11 +182,11 @@
    @include('web.partials.sponsors', ['sponsors_products' => $sponsors_products])
 </section>
 
+{{-- Category-wise products: sirf tab dikhe jab koi vendor ne delivery location (polygon) set kiya ho --}}
 <section id="categories-section">
   @if(isset($categorywiseproducts) && count($categorywiseproducts) > 0)
       @include('web.partials.categories', ['categorywiseproducts' => $categorywiseproducts])
-  
-   @endif
+  @endif
 </section>
 
 @endsection

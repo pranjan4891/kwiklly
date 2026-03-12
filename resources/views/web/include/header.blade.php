@@ -14,7 +14,7 @@
       <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
       <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
    </head>
-   <body>
+   <body class="{{ $bodyClass ?? '' }}">
       <!-- Desktop sidebar cart start  -->
       <div class="cart-sidebar position-fixed top-0 end-0 bg-white shadow" style="width: 25%; height: 100vh; z-index: 1050; display: flex; flex-direction: column; transition: all 0.3s;" id="cartSidebar">
          <div class="d-flex justify-content-between align-items-center p-3" style="box-shadow: 0 2px 2px rgb(0 0 0 / 25%);background-color: white;z-index: 999; flex-shrink: 0;">

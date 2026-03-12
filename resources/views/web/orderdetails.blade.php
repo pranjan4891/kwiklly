@@ -121,7 +121,7 @@
                 <div class="d-flex align-items-center">
                   <img src="{{ $product->feature_image_id ? asset('public/' . $product->featureImage->feature_image) : asset('public/assets/website/images/default.png') }}" width="100" alt="{{ $product->title }}">
                   <div class="ms-3">
-                    <a href="{{ route('subcategory.products', ['vendor_id' => $product->vendor_id,'category_id' => $product->category_id,'subcategory_id' => $product->sub_category_id]) }}" onclick="return redirectWithLocation(this.href)"><strong>{{ $product->title }}</strong></a><br>
+                    <a href="{{ route('subcategory.products', ['vendor_id' => $product->vendor_id,'category_id' => $product->category_id,'subcategory_id' => $product->sub_category_id]) }}" onclick="return redirectWithLocation(this.href)"><strong>{{ $product->title }}{{ $item->variant && $item->variant->variant_name ? ' - ' . $item->variant->variant_name : '' }}</strong></a><br>
                     ₹{{ $item->price * $item->quantity }} <small>(₹{{ $item->price }} X {{ $item->quantity }})</small>
                   </div>
                 </div>

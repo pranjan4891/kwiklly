@@ -160,82 +160,84 @@
                                                 </form>
                                             </td>
                                         </tr>
-                                        <!-- Edit Modal --><!-- Edit Modal -->
+                                        <!-- Edit Subcategory Modal -->
                                         <div class="modal fade" id="editModal{{ $subcategory->id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel{{ $subcategory->id }}" aria-hidden="true">
-                                            <div class="modal-dialog" role="document">
+                                            <div class="modal-dialog modal-lg" role="document">
                                                 <div class="modal-content">
                                                     <form method="POST" action="{{ route('admin.subcategory.update', $subcategory->id) }}" enctype="multipart/form-data">
                                                         @csrf
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Edit Subcategory</h5>
-                                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                        <div class="modal-header" style="border-bottom: 1px solid #eee; padding: 15px 20px;">
+                                                            <h5 class="modal-title" id="editModalLabel{{ $subcategory->id }}" style="font-weight: 600; font-size: 18px;">Edit Subcategory</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin: -10px -15px -10px 0; padding: 10px; opacity: 0.6;">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
                                                         </div>
 
-                                                        <div class="modal-body">
-                                                            {{-- Category --}}
-                                                            <div class="form-group">
-                                                                <label>Category Name *</label>
-                                                                <select class="form-control" name="cat_id" required>
-                                                                    <option value="">Select Category</option>
-                                                                    @foreach($categories as $category)
-                                                                        <option value="{{ $category->id }}" {{ $subcategory->category_id == $category->id ? 'selected' : '' }}>
-                                                                            {{ $category->name }}
-                                                                        </option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-
-                                                            {{-- Subcategory Name --}}
-                                                            <div class="form-group">
-                                                                <label>Subcategory Name *</label>
-                                                                <input class="form-control" name="subcategory_name" type="text" value="{{ $subcategory->sub_cat_name }}" required>
-                                                            </div>
-
-                                                           <div class="form-group">
-                                                            <div>
-                                                                <label>Attributes *</label>
-                                                            </div>
-
-                                                            <div>
-
-                                                                <select class="form-control attribute-select" name="attribute[]" multiple required>
-                                                                    @foreach ($attributes as $attribute)
-                                                                        <option value="{{ $attribute->id }}"
-                                                                            {{ in_array($attribute->id, $subcategory->attributes->pluck('id')->toArray()) ? 'selected' : '' }}>
-                                                                            {{ $attribute->name }}
-                                                                        </option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-                                                                <small class="text-muted">Search and select multiple attributes</small>
-                                                            </div>
-
-
-                                                                {{-- Image --}}
-                                                                <div class="form-group">
-                                                                <label>Sub-category Image</label>
-                                                                <input class="form-control" name="subcat_img" type="file">
-                                                                <small style="color: red;">Min dimension: 120x120 or same ratio</small>
-                                                                @if($subcategory->image)
-                                                                    <div class="mt-2">
-                                                                        <img src="{{ asset('public/'.$subcategory->image) }}" width="50" height="50" alt="Subcategory Image">
+                                                        <div class="modal-body" style="padding: 20px 24px;">
+                                                            <div class="row">
+                                                                <div class="col-sm-6">
+                                                                    <div class="form-group" style="margin-bottom: 18px;">
+                                                                        <label class="control-label" style="font-weight: 600; margin-bottom: 6px; display: block;">Category Name <span class="text-danger">*</span></label>
+                                                                        <select class="form-control" name="cat_id" required style="border-radius: 4px;">
+                                                                            <option value="">Select Category</option>
+                                                                            @foreach($categories as $category)
+                                                                                <option value="{{ $category->id }}" {{ $subcategory->category_id == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                                                                            @endforeach
+                                                                        </select>
                                                                     </div>
-                                                                @endif
+                                                                </div>
+                                                                <div class="col-sm-6">
+                                                                    <div class="form-group" style="margin-bottom: 18px;">
+                                                                        <label class="control-label" style="font-weight: 600; margin-bottom: 6px; display: block;">Subcategory Name <span class="text-danger">*</span></label>
+                                                                        <input class="form-control" name="subcategory_name" type="text" value="{{ $subcategory->sub_cat_name }}" required style="border-radius: 4px;" placeholder="e.g. Mobile Phone">
+                                                                    </div>
+                                                                </div>
                                                             </div>
 
-                                                            {{-- Status --}}
-                                                            <div class="form-group">
-                                                                <label>Status</label>
-                                                                <select class="form-control" name="status" required>
+                                                            <div class="form-group" style="margin-bottom: 18px;">
+                                                                <label class="control-label" style="font-weight: 600; margin-bottom: 6px; display: block;">Attributes <span class="text-danger">*</span></label>
+                                                                <select class="form-control attribute-select edit-attribute-select" name="attribute[]" multiple required style="width: 100%; border-radius: 4px;">
+                                                                    @foreach ($attributes as $attribute)
+                                                                        <option value="{{ $attribute->id }}" {{ in_array($attribute->id, $subcategory->attributes->pluck('id')->toArray()) ? 'selected' : '' }}>{{ $attribute->name }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                                <small class="text-muted" style="margin-top: 4px; display: block;">Search and select multiple attributes</small>
+                                                            </div>
+
+                                                            <div class="form-group" style="margin-bottom: 18px;">
+                                                                <label class="control-label" style="font-weight: 600; margin-bottom: 6px; display: block;">Sub-category Image</label>
+                                                                <div class="row">
+                                                                    <div class="col-sm-6">
+                                                                        <input class="form-control" name="subcat_img" type="file" accept="image/*" style="border-radius: 4px; padding: 6px;">
+                                                                        <small class="text-muted" style="margin-top: 6px; display: block;">Min dimension: 120×120 or same ratio. Leave empty to keep current image.</small>
+                                                                    </div>
+                                                                    <div class="col-sm-6">
+                                                                        @if($subcategory->image)
+                                                                            <div class="subcat-edit-preview" style="border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; background: #fafafa; text-align: center; min-height: 100px;">
+                                                                                <p style="font-size: 11px; color: #888; margin-bottom: 8px;">Current image</p>
+                                                                                <img src="{{ asset('public/'.$subcategory->image) }}" alt="Subcategory" style="max-width: 80px; max-height: 80px; object-fit: contain;">
+                                                                            </div>
+                                                                        @else
+                                                                            <div class="subcat-edit-preview" style="border: 1px dashed #ddd; border-radius: 6px; padding: 20px; background: #f9f9f9; text-align: center; min-height: 100px; color: #999;">
+                                                                                <span style="font-size: 12px;">No image uploaded</span>
+                                                                            </div>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="form-group" style="margin-bottom: 0;">
+                                                                <label class="control-label" style="font-weight: 600; margin-bottom: 6px; display: block;">Status</label>
+                                                                <select class="form-control" name="status" required style="max-width: 200px; border-radius: 4px;">
                                                                     <option value="1" {{ $subcategory->is_active == 1 ? 'selected' : '' }}>Active</option>
                                                                     <option value="0" {{ $subcategory->is_active == 0 ? 'selected' : '' }}>Inactive</option>
                                                                 </select>
                                                             </div>
                                                         </div>
 
-                                                        <div class="modal-footer">
+                                                        <div class="modal-footer" style="border-top: 1px solid #eee; padding: 14px 24px; background: #fafafa;">
+                                                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                                                             <button type="submit" class="btn btn-primary">Update</button>
-                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                                                         </div>
                                                     </form>
                                                 </div>

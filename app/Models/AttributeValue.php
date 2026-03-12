@@ -11,9 +11,16 @@ class AttributeValue extends Model
     protected $fillable = [
         'attribute_id',
         'value',
+        'color_code',
         'is_active',
         'is_deleted',
     ];
+
+    /** Whether this value has an image (e.g. color swatch). */
+    public function hasImage(): bool
+    {
+        return !empty($this->image);
+    }
     protected $table = 'attribute_values';
 
     public function attribute()

@@ -88,10 +88,14 @@ class CartController extends Controller
             if (isset($cart[$key])) {
                 $cart[$key]["quantity"] += $request->quantity;
             } else {
+                $cartTitle = $variant->product->title;
+                if ($variant->variant_name) {
+                    $cartTitle .= ' - ' . $variant->variant_name;
+                }
                 $cart[$key] = [
                     "product_id" => $request->product_id,
                     "variant_id" => $request->variant_id,
-                    "title" => $variant->product->title,
+                    "title" => $cartTitle,
                     "business_name" => $variant->product->vendor->business_name,
                     "image" => $variant->product->feature_image_id
                         ? url(
@@ -398,10 +402,14 @@ class CartController extends Controller
 
                 $key = $item->product_id . "_" . $item->variant_id;
 
+                $itemTitle = $item->variant->product->title;
+                if ($item->variant->variant_name) {
+                    $itemTitle .= ' - ' . $item->variant->variant_name;
+                }
                 $groupedCart[$businessName][$key] = [
                     "product_id"     => $item->product_id,
                     "variant_id"     => $item->variant_id,
-                    "title"          => $item->variant->product->title,
+                    "title"          => $itemTitle,
                     "business_id"    => $businessId,
                     "business_name"  => $businessName,
                     "image"          => $item->variant->product->feature_image_id && $item->variant->product->featureImage

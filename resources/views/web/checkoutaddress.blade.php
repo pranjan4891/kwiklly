@@ -11,6 +11,9 @@
       <link rel="stylesheet" href="{{ asset('public/assets/website/CSS/checkoutdelivery.css')}}">
       <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
       <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+      <style>
+        input.address-locked { background-color: #f0f0f0 !important; cursor: not-allowed !important; }
+      </style>
    </head>
    <body>
       <section>
@@ -42,6 +45,16 @@
                </div>
                <hr style="border: 1px solid #D8C2BC;" class="my-3">
             </div>    
+            @if(session('error'))
+            <div class="row g-3">
+               <div class="col-12">
+                  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                     {{ session('error') }}
+                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+               </div>
+            </div>
+            @endif
             <div class="row g-3">
             
                 <div class="col-12 col-md-6 main-content-box address-box ">
@@ -65,7 +78,7 @@
                         </div>
                         <div class="pata-input"><input type="text" name="flat" placeholder="Flat / Building no*" class="form-control" required></div>
                         <div class="pata-input"><input type="text" name="landmark" placeholder="Landmark (optional)" class="form-control"></div>
-                        <div class="pata-input"><input type="text" name="pincode" placeholder="Pincode*" class="form-control" required></div>
+                        <div class="pata-input"><input type="text" name="pincode" id="pincodeInput" placeholder="Pincode*" class="form-control" required></div>
                         <div class="pata-input"><input type="text" name="name" placeholder="Name*" class="form-control" required></div>
                         <div class="pata-input"><input type="text" name="phone" placeholder="Phone Number*" class="form-control" required></div>
                         <div class="pata-input"><input type="text" name="alt_phone" placeholder="Alternate Phone Number (optional)" class="form-control"></div>
@@ -114,6 +127,8 @@
          @csrf
          <input type="hidden" name="order_id" value="{{ $order->id }}">
          <input type="hidden" name="address_id" id="selectedAddressId" value="">
+         <input type="hidden" name="current_latitude" id="currentLatitude" value="">
+         <input type="hidden" name="current_longitude" id="currentLongitude" value="">
       </form>
 
       <!-- Hidden inputs for location data -->
@@ -126,6 +141,7 @@
          let selectedAddressId = null;
          let googlemapkey = "{{ env('GOOGLE_MAPS_API_KEY') }}";
          let autocomplete;
+         let orderId = {{ $order->id }};
 
          document.addEventListener("DOMContentLoaded", function () {
            const homeBtn = document.getElementById("pataHomeBtn");
@@ -166,6 +182,17 @@
              e.preventDefault();
 
              const formData = new FormData(this);
+             // Include current location lat/lng so address is saved for this delivery area
+             let savedLocation = localStorage.getItem("userLocation");
+             if (savedLocation) {
+               try {
+                 let loc = JSON.parse(savedLocation);
+                 if (loc.lat != null && loc.lng != null) {
+                   formData.set('latitude', loc.lat);
+                   formData.set('longitude', loc.lng);
+                 }
+               } catch (e) {}
+             }
              const editId = form.getAttribute('data-edit-id');
              const url = editId
                ? `{{ url('address/update') }}/${editId}`
@@ -201,6 +228,7 @@
 
            // Reset form after save/update
            function resetForm() {
+             unlockAreaAndPincode();
              form.reset();
              form.removeAttribute('data-edit-id');
              saveBtn.textContent = 'Save Address';
@@ -209,16 +237,27 @@
              workBtn.classList.remove("active");
            }
 
-           // Load saved addresses
+           // Load saved addresses (only for current location when lat/lng available)
            function loadSavedAddresses() {
-             fetch("{{ route('address.list') }}")
+             let url = "{{ route('address.list') }}";
+             let savedLocation = localStorage.getItem("userLocation");
+             if (savedLocation) {
+               try {
+                 let loc = JSON.parse(savedLocation);
+                 if (loc.lat != null && loc.lng != null) {
+                   url += "?latitude=" + encodeURIComponent(loc.lat) + "&longitude=" + encodeURIComponent(loc.lng);
+                 }
+               } catch (e) {}
+             }
+
+             fetch(url)
                .then(res => res.json())
                .then(data => {
                  const section = document.getElementById("savedAddressList");
                  section.innerHTML = '';
 
                  if (!data.length) {
-                   section.innerHTML = '<p class="text-center">No saved addresses</p>';
+                   section.innerHTML = '<p class="text-center text-muted">No saved addresses for this location. Save an address in your current area (use "Use my current location" or enter address).</p>';
                    return;
                  }
 
@@ -253,7 +292,7 @@
                });
            }
 
-           // Initialize location from localStorage
+           // Initialize location from localStorage and set hidden inputs for form submit
            function initLocation() {
              let savedLocation = localStorage.getItem("userLocation");
              if (savedLocation) {
@@ -261,6 +300,12 @@
                  let loc = JSON.parse(savedLocation);
                  if (loc.fullAddress) {
                    currentLocationDisplay.textContent = loc.fullAddress;
+                 }
+                 if (loc.lat != null && loc.lng != null) {
+                   document.getElementById('currentLatitude').value = loc.lat;
+                   document.getElementById('currentLongitude').value = loc.lng;
+                   // Pre-fill area & pincode from saved location and lock them
+                   reverseGeocode(loc.lat, loc.lng, true);
                  }
                } catch (e) {
                  console.error("Error parsing saved location:", e);
@@ -290,50 +335,61 @@
              });
            }
 
-           // Extract address components from Google Places result
+           // Lock Area and Pincode so they cannot be edited or removed (set from location only)
+           function lockAreaAndPincode() {
+             const areaEl = document.querySelector('input[name="area"]');
+             const pincodeEl = document.querySelector('input[name="pincode"]');
+             if (!areaEl || !pincodeEl) return;
+             if (areaEl.value.trim() || pincodeEl.value.trim()) {
+               areaEl.readOnly = true;
+               pincodeEl.readOnly = true;
+               areaEl.classList.add('address-locked');
+               pincodeEl.classList.add('address-locked');
+             }
+           }
+
+           function unlockAreaAndPincode() {
+             const areaEl = document.querySelector('input[name="area"]');
+             const pincodeEl = document.querySelector('input[name="pincode"]');
+             if (areaEl) { areaEl.readOnly = false; areaEl.classList.remove('address-locked'); }
+             if (pincodeEl) { pincodeEl.readOnly = false; pincodeEl.classList.remove('address-locked'); }
+           }
+
+           // Extract address components from Google Places / Geocode result
            function extractAddressComponents(place) {
+             if (!place || !place.address_components) return;
              let streetNumber = '';
              let route = '';
              let locality = '';
+             let sublocality = '';
              let postalCode = '';
              let administrativeArea = '';
 
-             // Get each component of the address
              for (const component of place.address_components) {
-               const componentType = component.types[0];
-
-               switch (componentType) {
-                 case "street_number":
-                   streetNumber = component.long_name;
-                   break;
-                 case "route":
-                   route = component.long_name;
-                   break;
-                 case "locality":
-                   locality = component.long_name;
-                   break;
-                 case "postal_code":
-                   postalCode = component.long_name;
-                   break;
-                 case "administrative_area_level_1":
-                   administrativeArea = component.long_name;
-                   break;
-               }
+               const types = component.types || [];
+               if (types.includes("street_number")) streetNumber = component.long_name;
+               if (types.includes("route")) route = component.long_name;
+               if (types.includes("locality")) locality = component.long_name;
+               if (types.includes("sublocality") || types.includes("sublocality_level_1")) sublocality = component.long_name;
+               if (types.includes("postal_code")) postalCode = component.long_name;
+               if (types.includes("administrative_area_level_1")) administrativeArea = component.long_name;
              }
 
-             // Populate form fields
+             const areaVal = locality || sublocality || '';
+             if (areaVal) {
+               document.querySelector('input[name="area"]').value = areaVal;
+             }
+             if (postalCode) {
+               document.querySelector('input[name="pincode"]').value = postalCode;
+             }
              if (streetNumber || route) {
                document.querySelector('input[name="flat"]').value = [streetNumber, route].filter(Boolean).join(' ');
              }
 
-             if (locality) {
-               document.querySelector('input[name="area"]').value = locality;
-             }
-
-             if (postalCode) {
-               document.querySelector('input[name="pincode"]').value = postalCode;
-             }
+             lockAreaAndPincode();
            }
+           window.lockAreaAndPincode = lockAreaAndPincode;
+           window.unlockAreaAndPincode = unlockAreaAndPincode;
 
            // Detect current location
            function detectLocation() {
@@ -341,14 +397,51 @@
 
              if (navigator.geolocation) {
                navigator.geolocation.getCurrentPosition(
-                 (position) => {
+                 async (position) => {
                    let lat = position.coords.latitude;
                    let lng = position.coords.longitude;
+
+                   // First check if this location is deliverable by all vendors in the order
+                   try {
+                     const checkRes = await fetch("{{ route('order.checkDeliveryLocation') }}", {
+                       method: 'POST',
+                       headers: {
+                         'Content-Type': 'application/json',
+                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                         'Accept': 'application/json'
+                       },
+                       body: JSON.stringify({
+                         order_id: orderId,
+                         latitude: lat,
+                         longitude: lng
+                       })
+                     });
+                     const checkData = await checkRes.json();
+
+                     if (!checkData.deliverable) {
+                       useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
+                       Swal.fire({
+                         icon: 'error',
+                         title: 'Delivery not available',
+                         text: checkData.message || 'Sorry we could not deliver on this address.'
+                       });
+                       return;
+                     }
+                   } catch (err) {
+                     console.error('Delivery check error:', err);
+                     useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
+                     Swal.fire({
+                       icon: 'error',
+                       title: 'Error',
+                       text: 'Unable to verify delivery for this address. Please try again.'
+                     });
+                     return;
+                   }
 
                    document.getElementById('latitude').value = lat;
                    document.getElementById('longitude').value = lng;
 
-                   reverseGeocode(lat, lng);
+                   reverseGeocode(lat, lng, false);
                  },
                  (error) => {
                    console.warn("Geolocation error:", error);
@@ -362,8 +455,11 @@
              }
            }
 
-           // Reverse geocode coordinates to address
-           async function reverseGeocode(lat, lng) {
+           // Reverse geocode coordinates to address. silent=true: only fill form & lock, no UI/button update
+           async function reverseGeocode(lat, lng, silent) {
+             if (!silent) {
+               useCurrentLocationBtn.innerHTML = '<span class="location-loading"></span> Detecting location...';
+             }
              let geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${googlemapkey}`;
 
              try {
@@ -374,29 +470,30 @@
                  let result = data.results[0];
                  let address = result.formatted_address;
 
-                 // Update location display
-                 currentLocationDisplay.textContent = address;
-
-                 // Extract and populate address components
+                 if (!silent) {
+                   currentLocationDisplay.textContent = address;
+                 }
                  extractAddressComponents(result);
 
-                 // Save to localStorage
-                 let shortAddress = getShortAddress(address, result);
-                 localStorage.setItem("userLocation", JSON.stringify({
-                   fullAddress: address,
-                   shortAddress: shortAddress,
-                   lat: lat,
-                   lng: lng
-                 }));
-
-                 useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
-               } else {
+                 if (!silent) {
+                   let shortAddress = getShortAddress(address, result);
+                   localStorage.setItem("userLocation", JSON.stringify({
+                     fullAddress: address,
+                     shortAddress: shortAddress,
+                     lat: lat,
+                     lng: lng
+                   }));
+                   useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
+                 }
+               } else if (!silent) {
                  throw new Error("No results found");
                }
              } catch (error) {
-               console.error("Reverse geocoding error:", error);
-               useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
-               alert('Unable to get address from your location. Please try again or enter manually.');
+               if (!silent) {
+                 console.error("Reverse geocoding error:", error);
+                 useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
+                 alert('Unable to get address from your location. Please try again or enter manually.');
+               }
              }
            }
 
@@ -484,6 +581,7 @@
                }
 
                $('.pata-save-btn').text('Update Address');
+               if (window.lockAreaAndPincode) window.lockAreaAndPincode();
              })
              .catch(err => {
                alert('Failed to load address');
@@ -510,6 +608,24 @@
          document.getElementById('proceedToPayBtn').addEventListener('click', function() {
            if (!selectedAddressId) {
              alert('Please select an address');
+             return;
+           }
+
+           // Require current location so we can validate address is in delivery area
+           let savedLocation = localStorage.getItem("userLocation");
+           let hasLocation = false;
+           if (savedLocation) {
+             try {
+               let loc = JSON.parse(savedLocation);
+               if (loc.lat != null && loc.lng != null) {
+                 document.getElementById('currentLatitude').value = loc.lat;
+                 document.getElementById('currentLongitude').value = loc.lng;
+                 hasLocation = true;
+               }
+             } catch (e) {}
+           }
+           if (!hasLocation) {
+             alert('Please set your current location first (click "Use my current location" or enter and save an address in your current area).');
              return;
            }
 

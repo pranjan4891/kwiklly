@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\Subcategory;
 use App\Models\Attribute;
 use App\Models\ProductVariant;
+use App\Models\ProductVariantImage;
 use App\Models\AttributeValue;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -175,7 +176,7 @@ class ProductController extends Controller
         if (!$branch) {
             return redirect()->route('branch.login')->with('error', 'You are not authorized to access this page.');
         }
-        $product = Product::with('subcategory')->findOrFail($productId);
+        $product = Product::with(['subcategory', 'variants.images'])->findOrFail($productId);
         $subcategoryId = $product->sub_category_id;
 
         // Load attributes linked to the subcategory, and their values
@@ -191,23 +192,89 @@ class ProductController extends Controller
 
     public function storeVariant(Request $request)
     {
+        $hasColorBlocks = (bool) $request->input('has_color_blocks', false);
+
+        if ($hasColorBlocks) {
+            $request->validate([
+                'product_id' => 'required|exists:products,id',
+                'variant_base_name' => 'required|string|max:255',
+                'variant_actual_price' => 'required|numeric',
+                'variant_selling_price' => 'required|numeric',
+                'attributes' => 'nullable|array',
+                'colors' => 'required|array',
+                'colors.*.color' => 'required|string|max:255',
+                'colors.*.stock' => 'nullable|integer|min:0',
+                'colors.*.images' => 'nullable|array',
+                'colors.*.images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            ]);
+
+            $baseName = $request->variant_base_name;
+            $attributes = $request->input('attributes', []);
+            $savePriceRs = $request->variant_actual_price - $request->variant_selling_price;
+            $savePricePercent = ($request->variant_actual_price > 0) ? ($savePriceRs / $request->variant_actual_price) * 100 : 0;
+            $dir = 'uploads/product_variant_images';
+            if (!is_dir(public_path($dir))) {
+                @mkdir(public_path($dir), 0755, true);
+            }
+
+            $created = 0;
+            foreach ($request->input('colors') as $idx => $colorRow) {
+                $color = $colorRow['color'] ?? null;
+                if (empty($color)) {
+                    continue;
+                }
+                $stock = isset($colorRow['stock']) ? (int) $colorRow['stock'] : 0;
+                $variantAttrs = array_merge($attributes, ['Color' => $color]);
+                $variantName = trim($baseName . ' - ' . $color);
+
+                $variant = ProductVariant::create([
+                    'product_id' => $request->product_id,
+                    'variant_name' => $variantName,
+                    'variant_actual_price' => $request->variant_actual_price,
+                    'variant_selling_price' => $request->variant_selling_price,
+                    'variant_save_price_in_rs' => $savePriceRs,
+                    'variant_save_price_in_percent' => $savePricePercent,
+                    'stock' => $stock,
+                    'attributes' => json_encode($variantAttrs),
+                ]);
+
+                $files = $request->file("colors.{$idx}.images");
+                if (!empty($files)) {
+                    foreach ((array) $files as $file) {
+                        $name = time() . '_' . uniqid() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', $file->getClientOriginalName());
+                        $file->move(public_path($dir), $name);
+                        ProductVariantImage::create([
+                            'variant_id' => $variant->id,
+                            'image_path' => $dir . '/' . $name,
+                        ]);
+                    }
+                }
+                $created++;
+            }
+
+            return redirect()->back()->with('success', $created > 0 ? "{$created} variant(s) created successfully (one per color)." : 'No variant created. Please add at least one color.');
+        }
+
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'variant_name' => 'required|string|max:255',
+            'variant_base_name' => 'nullable|string|max:255',
+            'variant_name' => 'required_without:variant_base_name|nullable|string|max:255',
             'variant_actual_price' => 'required|numeric',
             'variant_selling_price' => 'required|numeric',
             'stock' => 'required|integer',
             'attributes' => 'required|array',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         $attributes = $request->input('attributes');
-
+        $variantName = $request->input('variant_name') ?: $request->input('variant_base_name', 'Variant');
         $savePriceRs = $request->variant_actual_price - $request->variant_selling_price;
-        $savePricePercent = ($savePriceRs / $request->variant_actual_price) * 100;
+        $savePricePercent = ($request->variant_actual_price > 0) ? ($savePriceRs / $request->variant_actual_price) * 100 : 0;
 
-        ProductVariant::create([
+        $variant = ProductVariant::create([
             'product_id' => $request->product_id,
-            'variant_name' => $request->variant_name,
+            'variant_name' => $variantName,
             'variant_actual_price' => $request->variant_actual_price,
             'variant_selling_price' => $request->variant_selling_price,
             'variant_save_price_in_rs' => $savePriceRs,
@@ -215,6 +282,21 @@ class ProductController extends Controller
             'stock' => $request->stock,
             'attributes' => json_encode($attributes),
         ]);
+
+        if ($request->hasFile('images')) {
+            $dir = 'uploads/product_variant_images';
+            if (!is_dir(public_path($dir))) {
+                @mkdir(public_path($dir), 0755, true);
+            }
+            foreach ($request->file('images') as $file) {
+                $name = time() . '_' . uniqid() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', $file->getClientOriginalName());
+                $file->move(public_path($dir), $name);
+                ProductVariantImage::create([
+                    'variant_id' => $variant->id,
+                    'image_path' => $dir . '/' . $name,
+                ]);
+            }
+        }
 
         return redirect()->back()->with('success', 'Variant created successfully.');
     }
@@ -226,7 +308,7 @@ class ProductController extends Controller
         if (!$branch) {
             return redirect()->route('branch.login')->with('error', 'You are not authorized to access this page.');
         }
-        $variant = ProductVariant::findOrFail($id);
+        $variant = ProductVariant::with('images')->findOrFail($id);
         $product = Product::findOrFail($variant->product_id);
 
         $subcategoryId = $product->sub_category_id;
@@ -248,12 +330,12 @@ class ProductController extends Controller
             'variant_actual_price' => 'required|numeric',
             'variant_selling_price' => 'required|numeric',
             'stock' => 'required|integer',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         $savePriceRs = $request->variant_actual_price - $request->variant_selling_price;
-        $savePercent = ($savePriceRs / $request->variant_actual_price) * 100;
-
-        // Optional: ensure attributes is always array
+        $savePercent = ($request->variant_actual_price > 0) ? ($savePriceRs / $request->variant_actual_price) * 100 : 0;
         $attributes = $request->input('attributes', []);
 
         $variant->update([
@@ -266,9 +348,34 @@ class ProductController extends Controller
             'attributes' => json_encode($attributes),
         ]);
 
-        return redirect()->route('product.variant.create', $variant->product_id)->with('success', 'Variant updated successfully.');
+        if ($request->hasFile('images')) {
+            $dir = 'uploads/product_variant_images';
+            if (!is_dir(public_path($dir))) {
+                @mkdir(public_path($dir), 0755, true);
+            }
+            foreach ($request->file('images') as $file) {
+                $name = time() . '_' . uniqid() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', $file->getClientOriginalName());
+                $file->move(public_path($dir), $name);
+                ProductVariantImage::create([
+                    'variant_id' => $variant->id,
+                    'image_path' => $dir . '/' . $name,
+                ]);
+            }
+        }
+
+        return redirect()->route('branch.product.variant.create', $variant->product_id)->with('success', 'Variant updated successfully.');
     }
 
+    public function deleteVariantImage($id)
+    {
+        $image = ProductVariantImage::where('id', $id)->firstOrFail();
+        $variantId = $image->variant_id;
+        if (file_exists(public_path($image->image_path))) {
+            @unlink(public_path($image->image_path));
+        }
+        $image->delete();
+        return redirect()->route('branch.product.variant.edit', $variantId)->with('success', 'Image removed.');
+    }
 
     public function deleteVariant($id)
     {

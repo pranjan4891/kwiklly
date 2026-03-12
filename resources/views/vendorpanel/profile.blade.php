@@ -228,7 +228,8 @@
 
                <li><a href="#tab2" data-toggle="tab">Settings</a></li>
                <li><a href="#tab3" data-toggle="tab">Store Timing</a></li>
-               <li><a href="#tab4" data-toggle="tab">Location Share</a></li>
+               <li><a href="#tab4" data-toggle="tab">Delivery location</a></li>
+               <li><a href="#tab5" data-toggle="tab">Location Share</a></li>
             </ul>
             <div class="tab-content">
                <div class="tab-pane panel-body active" id="tab1">
@@ -653,7 +654,56 @@
                         </div>
                     </form>
                 </div>
+                {{-- Delivery location tab: master location map, vendor pindrop, polygon --}}
                 <div class="tab-pane panel-body" id="tab4">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <p><strong>Vendor location (Lat/Long):</strong>
+                                @if(!empty($vendor->latitude) && !empty($vendor->longitude))
+                                    {{ $vendor->latitude }}, {{ $vendor->longitude }}
+                                @else
+                                    <span class="text-muted">Not set. Use the map to pindrop your location.</span>
+                                @endif
+                            </p>
+                            @if(!empty($masterLocationArea))
+                                <p><strong>Master location area:</strong> {{ $masterLocationArea['place'] ?? '' }} (Pincode: {{ $masterLocationArea['pincode'] ?? '' }})</p>
+                            @else
+                                <p><strong>Master location area:</strong> <span class="text-muted">Enter pincode and select place to load area, or set your location first.</span></p>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-lg-2 col-form-label">Pincode</label>
+                        <div class="col-lg-4">
+                            <input type="text" class="form-control" id="dl_pincode" maxlength="6" placeholder="Enter 6-digit pincode">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-lg-2 col-form-label">Place (Master location)</label>
+                        <div class="col-lg-6">
+                            <select id="dl_place" class="form-control" disabled>
+                                <option value="">Select Place</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="map-instructions" style="background:#f8f9fa;padding:10px;border-radius:4px;margin:10px 0;">
+                        <p><strong>Instructions:</strong></p>
+                        <ol>
+                            <li>Enter pincode and select a place to load the master location boundary (blue area).</li>
+                            <li>Click on the map to set your vendor location (red marker).</li>
+                            <li>Click "Draw delivery area" to create a polygon within the boundary.</li>
+                            <li>Double-click to complete the polygon, then click Save.</li>
+                        </ol>
+                    </div>
+                    <div class="drawing-controls" style="margin:15px 0;">
+                        <button type="button" id="dl_btnDraw" class="btn btn-primary btn-draw" disabled><i class="fa fa-draw-polygon"></i> Draw delivery area</button>
+                        <button type="button" id="dl_btnClear" class="btn btn-danger" disabled><i class="fa fa-trash"></i> Clear</button>
+                        <button type="button" id="dl_btnSave" class="btn btn-success" disabled><i class="fa fa-save"></i> Save delivery location</button>
+                    </div>
+                    <input type="hidden" id="dl_service_area" value="">
+                    <div id="dl_map_canvas" style="height:450px;width:100%;border:1px solid #ccc;border-radius:4px;"></div>
+                </div>
+                <div class="tab-pane panel-body" id="tab5">
                     <div class="alert alert-warning">
                         <strong>Info!</strong> Share your location with delivery boy
                         <button type="button" class="btn btn-info btn-rounded" onclick="openLocationShareModal()">Share Location</button>
@@ -937,4 +987,263 @@
         loadLocationContacts();
     });
 </script>
+
+{{-- Delivery location tab: map, master location, pindrop, polygon --}}
+@push('scripts')
+<script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=geometry,drawing"></script>
+<script>
+(function() {
+    var dlMap, dlMarker, dlBoundaryPolygon, dlServicePolygon, dlDrawingManager, dlIsDrawing = false;
+    var vendorLat = {{ $vendor->latitude ? (float)$vendor->latitude : 'null' }};
+    var vendorLng = {{ $vendor->longitude ? (float)$vendor->longitude : 'null' }};
+    var savedPolygon = @json(isset($deliveryLocation) && $deliveryLocation && $deliveryLocation->delivery_lat_long ? $deliveryLocation->delivery_lat_long : null);
+    var masterLatLong = @json($masterLocationArea['lat_long'] ?? null);
+
+    function dlInitMap() {
+        if (dlMap) return;
+        var center = (vendorLat && vendorLng) ? { lat: vendorLat, lng: vendorLng } : { lat: 22.9734, lng: 78.6569 };
+        dlMap = new google.maps.Map(document.getElementById('dl_map_canvas'), {
+            center: center,
+            zoom: (vendorLat && vendorLng) ? 14 : 5,
+            mapTypeId: 'roadmap',
+            gestureHandling: 'greedy'
+        });
+        dlMap.addListener('click', function(e) {
+            if (!dlIsDrawing) dlHandleMapClick(e.latLng);
+        });
+        dlDrawingManager = new google.maps.drawing.DrawingManager({
+            drawingMode: null,
+            drawingControl: false,
+            polygonOptions: {
+                editable: true,
+                draggable: false,
+                strokeColor: '#FF0000',
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: '#FF0000',
+                fillOpacity: 0.35,
+                clickable: false
+            }
+        });
+        dlDrawingManager.setMap(dlMap);
+        google.maps.event.addListener(dlDrawingManager, 'polygoncomplete', function(polygon) {
+            dlHandlePolygonComplete(polygon);
+        });
+        if (vendorLat && vendorLng) {
+            dlPlaceMarker(new google.maps.LatLng(vendorLat, vendorLng));
+            $('#dl_btnDraw').prop('disabled', false);
+            $('#dl_btnClear').prop('disabled', false);
+        }
+        if (masterLatLong && masterLatLong.length >= 3) {
+            dlDrawBoundary(masterLatLong);
+        }
+        if (savedPolygon && savedPolygon.length >= 3) {
+            dlDrawSavedPolygon(savedPolygon);
+            $('#dl_service_area').val(JSON.stringify(savedPolygon));
+            $('#dl_btnSave').prop('disabled', false);
+        }
+    }
+
+    function dlDrawBoundary(coords) {
+        if (dlBoundaryPolygon) dlBoundaryPolygon.setMap(null);
+        var path = coords.map(function(c) {
+            return new google.maps.LatLng(parseFloat(c.lat || c[0]), parseFloat(c.lng || c[1]));
+        });
+        dlBoundaryPolygon = new google.maps.Polygon({
+            paths: path,
+            strokeColor: '#0000FF',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#0000FF',
+            fillOpacity: 0.2,
+            map: dlMap,
+            clickable: false
+        });
+        var bounds = new google.maps.LatLngBounds();
+        path.forEach(function(p) { bounds.extend(p); });
+        dlMap.fitBounds(bounds);
+    }
+
+    function dlDrawSavedPolygon(coords) {
+        if (dlServicePolygon) dlServicePolygon.setMap(null);
+        var path = coords.map(function(c) {
+            return new google.maps.LatLng(parseFloat(c.lat || c[0]), parseFloat(c.lng || c[1]));
+        });
+        dlServicePolygon = new google.maps.Polygon({
+            paths: path,
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#FF0000',
+            fillOpacity: 0.35,
+            map: dlMap,
+            editable: true
+        });
+        dlServicePolygon.getPath().addListener('set_at', function() { dlStoreCoords(dlServicePolygon); });
+        dlServicePolygon.getPath().addListener('insert_at', function() { dlStoreCoords(dlServicePolygon); });
+    }
+
+    function dlHandleMapClick(latLng) {
+        if (dlBoundaryPolygon && !google.maps.geometry.poly.containsLocation(latLng, dlBoundaryPolygon)) {
+            alert('Select a point inside the blue master location area.');
+            return;
+        }
+        dlPlaceMarker(latLng);
+        $('#dl_btnDraw').prop('disabled', false);
+        $('#dl_btnClear').prop('disabled', false);
+    }
+
+    function dlPlaceMarker(position) {
+        if (dlMarker) dlMarker.setMap(null);
+        dlMarker = new google.maps.Marker({
+            position: position,
+            map: dlMap,
+            title: 'Vendor location',
+            draggable: true,
+            icon: { url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png' }
+        });
+        vendorLat = position.lat();
+        vendorLng = position.lng();
+        dlMarker.addListener('dragend', function() {
+            var p = dlMarker.getPosition();
+            if (dlBoundaryPolygon && !google.maps.geometry.poly.containsLocation(p, dlBoundaryPolygon)) {
+                alert('Marker must stay within the boundary.');
+                return;
+            }
+            vendorLat = p.lat();
+            vendorLng = p.lng();
+        });
+        dlMap.setCenter(position);
+        if (dlMap.getZoom() < 10) dlMap.setZoom(14);
+    }
+
+    function dlHandlePolygonComplete(polygon) {
+        if (dlBoundaryPolygon) {
+            var path = polygon.getPath();
+            for (var i = 0; i < path.getLength(); i++) {
+                if (!google.maps.geometry.poly.containsLocation(path.getAt(i), dlBoundaryPolygon)) {
+                    alert('Draw inside the blue master location area.');
+                    polygon.setMap(null);
+                    return;
+                }
+            }
+        }
+        if (dlServicePolygon) dlServicePolygon.setMap(null);
+        dlServicePolygon = polygon;
+        dlStoreCoords(polygon);
+        dlServicePolygon.getPath().addListener('set_at', function() { dlStoreCoords(dlServicePolygon); });
+        dlServicePolygon.getPath().addListener('insert_at', function() { dlStoreCoords(dlServicePolygon); });
+        dlIsDrawing = false;
+        $('#dl_btnDraw').html('<i class="fa fa-draw-polygon"></i> Draw delivery area').removeClass('btn-warning').addClass('btn-primary');
+        $('#dl_btnSave').prop('disabled', false);
+    }
+
+    function dlStoreCoords(polygon) {
+        var path = polygon.getPath();
+        var arr = [];
+        for (var i = 0; i < path.getLength(); i++) {
+            var p = path.getAt(i);
+            arr.push({ lat: p.lat(), lng: p.lng() });
+        }
+        $('#dl_service_area').val(JSON.stringify(arr));
+    }
+
+    function dlToggleDrawing() {
+        if (!dlIsDrawing) {
+            dlIsDrawing = true;
+            dlDrawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
+            $('#dl_btnDraw').html('<i class="fa fa-stop-circle"></i> Finish (double-click)').removeClass('btn-primary').addClass('btn-warning');
+        } else {
+            dlIsDrawing = false;
+            dlDrawingManager.setDrawingMode(null);
+            $('#dl_btnDraw').html('<i class="fa fa-draw-polygon"></i> Draw delivery area').removeClass('btn-warning').addClass('btn-primary');
+        }
+    }
+
+    function dlClearDrawing() {
+        if (dlServicePolygon) {
+            dlServicePolygon.setMap(null);
+            dlServicePolygon = null;
+            $('#dl_service_area').val('');
+            $('#dl_btnSave').prop('disabled', true);
+        }
+        if (dlIsDrawing) {
+            dlDrawingManager.setDrawingMode(null);
+            dlIsDrawing = false;
+            $('#dl_btnDraw').html('<i class="fa fa-draw-polygon"></i> Draw delivery area').removeClass('btn-warning').addClass('btn-primary');
+        }
+    }
+
+    function dlSave() {
+        var serviceArea = $('#dl_service_area').val();
+        if (!serviceArea) {
+            alert('Please draw a delivery area first.');
+            return;
+        }
+        $.ajax({
+            url: '{{ route("vendor.delivery.location.save") }}',
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                service_area: serviceArea,
+                latitude: vendorLat || '',
+                longitude: vendorLng || ''
+            },
+            success: function(res) {
+                if (res.success) {
+                    alert(res.message);
+                    location.reload();
+                } else {
+                    alert(res.message || 'Failed to save.');
+                }
+            },
+            error: function(xhr) {
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Error saving.';
+                alert(msg);
+            }
+        });
+    }
+
+    $(function() {
+        $('a[href="#tab4"]').one('click', function() {
+            dlInitMap();
+        });
+        $('#dl_pincode').on('blur', function() {
+            var pin = $(this).val().trim();
+            var $place = $('#dl_place').html('<option value="">Select Place</option>').prop('disabled', true);
+            if (pin.length === 6) {
+                $.get('{{ route("vendor.get.area") }}', { pincode: pin }).then(function(data) {
+                    var places = data.places || [];
+                    if (Array.isArray(places)) {
+                        places.forEach(function(loc) {
+                            if (loc.place && loc.lat_long) {
+                                var coords = typeof loc.lat_long === 'string' ? JSON.parse(loc.lat_long) : loc.lat_long;
+                                if (Array.isArray(coords) && coords.length >= 3) {
+                                    $place.append($('<option></option>').attr('value', JSON.stringify(coords)).attr('data-place', loc.place).text(loc.place));
+                                }
+                            }
+                        });
+                        $place.prop('disabled', false);
+                    }
+                });
+            }
+        });
+        $('#dl_place').on('change', function() {
+            var val = $(this).val();
+            if (val) {
+                var coords = JSON.parse(val);
+                if (!dlMap) dlInitMap();
+                dlDrawBoundary(coords);
+                dlClearDrawing();
+                $('#dl_btnDraw').prop('disabled', false);
+                $('#dl_btnClear').prop('disabled', false);
+            }
+        });
+        $('#dl_btnDraw').on('click', dlToggleDrawing);
+        $('#dl_btnClear').on('click', dlClearDrawing);
+        $('#dl_btnSave').on('click', dlSave);
+    });
+})();
+</script>
+@endpush
 @endsection

@@ -115,6 +115,7 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
 
         // Update order address
         Route::post('/order/update-address', [OrderController::class, 'updateAddress'])->name('order.updateAddress');
+        Route::post('/order/check-delivery-location', [OrderController::class, 'checkDeliveryLocation'])->name('order.checkDeliveryLocation');
 
         // Payment details page
         Route::get('/payment/details/{orderId}', [OrderController::class, 'paymentDetails'])->name('payment.details');

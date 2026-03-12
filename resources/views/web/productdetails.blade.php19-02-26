@@ -1,0 +1,806 @@
+
+@extends('web.include.main')
+@section('content')
+
+<style>
+    /* ===============================
+   Global Font Feel
+=================================*/
+.product-details-section {
+    font-family: 'Inter', 'Poppins', sans-serif;
+    color: #1c1c1c;
+}
+
+/* ===============================
+   Breadcrumb
+=================================*/
+.breadcrumb-product {
+    font-size: 13px;
+    font-weight: 400;
+    color: #7a7a7a;
+    letter-spacing: 0.2px;
+}
+
+/* ===============================
+   Product Title
+=================================*/
+.prodetailheading h4 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+    color: #1c1c1c;
+}
+
+/* Vendor */
+.prodetailheading p {
+    font-size: 14px;
+    font-weight: 400;
+    color: #686b78;
+    margin-bottom: 0;
+}
+
+.prodetailheading p span {
+    font-weight: 600;
+}
+
+/* ===============================
+   Small Info Text (Stock / Quantity)
+=================================*/
+.prodetailheading h6 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #3d4152;
+}
+
+.d-flex p {
+    font-size: 14px;
+    font-weight: 500;
+    color: #3d4152;
+}
+
+/* ===============================
+   Section Headings
+=================================*/
+.detailheading {
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 28px;
+    margin-bottom: 12px;
+    color: #1c1c1c;
+    letter-spacing: 0.2px;
+}
+
+/* ===============================
+   Variant Options
+=================================*/
+.color-option-det,
+.btn-option-det {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ===============================
+   Add Button
+=================================*/
+.add-btn-detail {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* ===============================
+   Quantity Buttons
+=================================*/
+.qty-btn {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.qty-input {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+/* ===============================
+   Coupon Text
+=================================*/
+.coupon-det {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ===============================
+   Description
+=================================*/
+.desc-det {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.7;
+    color: #3d4152;
+}
+
+.extra-det {
+    font-size: 13px;
+    font-weight: 400;
+    color: #7a7a7a;
+}
+
+.show-more-det {
+    font-size: 14px;
+    font-weight: 600;
+}
+/* ===============================
+   Mobile Responsive Styling
+=================================*/
+
+@media (max-width: 768px) {
+
+    /* Section Padding */
+    .product-details-section {
+        padding: 10px 0;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-product {
+        font-size: 12px;
+        line-height: 1.4;
+        margin-bottom: 10px;
+    }
+
+    /* Product Title */
+    .prodetailheading h4 {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    /* Vendor */
+    .prodetailheading p {
+        font-size: 13px;
+    }
+
+    /* Quantity & Stock Row */
+    .prodetailheading h6,
+    .d-flex p {
+        font-size: 13px;
+    }
+
+    /* Section Headings */
+    .detailheading {
+        font-size: 15px;
+        font-weight: 600;
+        margin-top: 20px;
+        margin-bottom: 8px;
+    }
+
+    /* Variant Buttons */
+    .color-option-det,
+    .btn-option-det {
+        font-size: 13px;
+        padding: 6px 14px;
+        margin-bottom: 8px;
+    }
+
+    /* Add Button */
+    .add-btn-detail {
+        font-size: 14px;
+        padding: 10px 18px;
+    }
+
+    /* Quantity Controls */
+    .qty-btn {
+        font-size: 16px;
+    }
+
+    .qty-input {
+        font-size: 14px;
+    }
+
+    /* Coupon */
+    .coupon-det {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+
+    /* Description */
+    .desc-det {
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .extra-det {
+        font-size: 12px;
+    }
+
+    .show-more-det {
+        font-size: 13px;
+    }
+
+    /* Improve spacing between sections */
+    .product-details-section .col-md-7 {
+        margin-top: 10px;
+    }
+}
+
+
+/* Extra Small Devices */
+@media (max-width: 480px) {
+
+    .prodetailheading h4 {
+        font-size: 18px;
+    }
+
+    .detailheading {
+        font-size: 14px;
+    }
+
+    .color-option-det,
+    .btn-option-det {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    .add-btn-detail {
+        font-size: 13px;
+    }
+}
+
+</style>
+<!-- first section start  -->
+<section class="extrapadding product-details-section">
+<div class="container my-4">
+    <div class="row">
+    <p class="text-black breadcrumb-product">Home > {{ $product->category->name ?? 'Category' }} > {{ $product->subcategory->sub_cat_name ?? 'Subcategory' }} > {{ $product->title }}</p>
+      <!-- Product Image and Thumbnails -->
+      <div class="col-md-5 py-3">
+        <div class="main-img-det">
+          <img src="{{ $productImages && $productImages->feature_image ? asset('public/' . $productImages->feature_image) : asset('public/assets/website/images/default.png') }}" class="img-fluid main-product-det" alt="{{ $product->title }}">
+        </div>
+
+        <!-- Thumbnail slider with arrows -->
+        <div class="thumb-container-det position-relative">
+          <div class="arrow-det arrow-left-det"><i class="fa fa-chevron-left"></i></div>
+          <div class="thumb-det">
+            @if($productImages && $productImages->product_images && is_array($productImages->product_images))
+              @foreach($productImages->product_images as $index => $image)
+                <img src="{{ asset('public/' . $image) }}" class="{{ $index === 0 ? 'active' : '' }}" alt="{{ $product->title }}">
+              @endforeach
+            @else
+              <img src="{{ $productImages && $productImages->feature_image ? asset('public/' . $productImages->feature_image) : asset('public/assets/website/images/default.png') }}" class="active" alt="{{ $product->title }}">
+            @endif
+          </div>
+          <div class="arrow-det arrow-right-det"><i class="fa fa-chevron-right"></i></div>
+        </div>
+      </div>
+
+      <!-- Product Details -->
+        <div class="col-md-7 py-3">
+            <div class="d-flex justify-content-between">
+            <div class="prodetailheading">
+                <h4>{{ $product->title }}</h4>
+            </div>
+            <div class="detailicon d-none"><img src="{{ asset('public/assets/website/images/share.png')}}" alt=""></div>
+            </div>
+            <div class="prodetailheading">
+             <p>by <span class="text-danger">{{ $product->vendor->business_name ?? 'Store' }}</span></p>
+            </div>
+
+            <!-- Share and Stock -->
+            <div class="d-flex justify-content-between mt-4 mb-2">
+             <div class="prodetailheading"><h6 class="mt-1">Net Quantity : 1 unit</h6></div>
+             <div><p>Availability : {{ $product->variants->first() && $product->variants->first()->stock > 0 ? 'In Stock' : 'Out of Stock' }}</p></div>
+            </div>
+
+            @php
+                $selectedVariant = $product->variants->first();
+                $sellingPrice = $selectedVariant ? $selectedVariant->variant_selling_price : 0;
+                $actualPrice = $selectedVariant ? $selectedVariant->variant_actual_price : 0;
+                $discountPercent = ($actualPrice > $sellingPrice && $actualPrice > 0) ? (int) round((($actualPrice - $sellingPrice) / $actualPrice) * 100) : 0;
+            @endphp
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="">
+                    <span class="pricedetail">
+                        <span class="rupee-symbol">₹</span> {{ number_format($sellingPrice, 0) }}
+                    </span>
+                    @if($actualPrice > $sellingPrice)
+                    <span class="original-price ms-1">
+                        <span class="rupee-symbol2">₹</span> {{ number_format($actualPrice, 0) }}
+                    </span>
+                    @endif
+                    @if($discountPercent > 0)
+                    <span class="badge bg-successs ms-2">{{ $discountPercent }}% Off</span>
+                    @endif
+                    <p>(incl. of all tax)</p>
+                </div>
+                
+            </div>
+
+            @php
+                $colorVariants = collect();
+                $memoryVariants = collect();
+                $ramVariants = collect();
+
+                foreach($product->variants as $variant) {
+                    $attributes = json_decode($variant->attributes ?? '{}', true);
+                    if(isset($attributes['Color'])) {
+                        $colorVariants->push($attributes['Color']);
+                    }
+                    if(isset($attributes['Memory Size'])) {
+                        $memoryVariants->push($attributes['Memory Size']);
+                    }
+                    if(isset($attributes['RAM'])) {
+                        $ramVariants->push($attributes['RAM']);
+                    }
+                }
+
+                $uniqueColors = $colorVariants->unique();
+                $uniqueMemories = $memoryVariants->unique();
+                $uniqueRams = $ramVariants->unique();
+            @endphp
+
+            @if($uniqueColors->isNotEmpty())
+            <h5 class="detailheading">Select Color</h5>
+            <div class="d-flex my-3">
+                @foreach($uniqueColors as $color)
+                <span class="color-option-det {{ $loop->first ? 'active' : '' }}">{{ $color }}</span>
+                @endforeach
+            </div>
+            @endif
+
+            @if($uniqueMemories->isNotEmpty())
+            <h5 class="detailheading">Select Memory Size</h5>
+            <div class="my-3">
+                @foreach($uniqueMemories as $memory)
+                <span class="btn-option-det {{ $loop->first ? 'active' : '' }}">{{ $memory }}</span>
+                @endforeach
+            </div>
+            @endif
+
+            @if($uniqueRams->isNotEmpty())
+            <h5 class="detailheading">Select RAM</h5>
+            <div class="my-3">
+                @foreach($uniqueRams as $ram)
+                <span class="btn-option-det {{ $loop->first ? 'active' : '' }}">{{ $ram }}</span>
+                @endforeach
+            </div>
+            @endif
+
+            @php
+                $defaultVariant = $product->variants->first();
+                $hasMultipleVariants = $product->variants->count() > 1;
+                $firstVariant = $defaultVariant;
+                $key = $product->id . '_' . ($firstVariant->id ?? 0);
+
+                if (auth()->check()) {
+                    $cartItem = \App\Models\CartItem::where([
+                        'user_id' => auth()->id(),
+                        'product_id' => $product->id,
+                        'variant_id' => $firstVariant->id ?? null,
+                    ])->first();
+                    $inCart = $cartItem !== null;
+                    $quantity = $inCart ? $cartItem->quantity : 1;
+                } else {
+                    $cart = session('cart', []);
+                    $inCart = isset($cart[$key]);
+                    $quantity = $inCart ? $cart[$key]['quantity'] : 1;
+                }
+
+                $isOpen = \App\Helpers\StoreHelper::isStoreOpen($product->vendor->store_time);
+            @endphp
+
+            <div class="qty-box"
+                data-product-id="{{ $product->id }}"
+                data-variant-id="{{ $firstVariant->id ?? '' }}"
+                data-key="{{ $key }}">
+
+                @if ($isOpen)
+                    {{-- ✅ Store is open --}}
+                    @if ($hasMultipleVariants)
+                        <button class="add-btn-detail d-flex flex-column align-items-center position-relative"
+                                onclick="openPopup({{ $product->id }})">
+                            <div class="d-flex align-items-center">
+                                Add
+                                <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                            </div>
+                            <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
+                        </button>
+                    @else
+                        @if (!$defaultVariant)
+                            <button class="add-btn-detail" disabled>Unavailable</button>
+                        @else
+                            @if (!$inCart)
+                                <button class="add-btn-detail add-btn"
+                                        data-product-id="{{ $product->id }}"
+                                        data-variant-id="{{ $firstVariant->id }}">
+                                    Add
+                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                </button>
+                            @else
+                                <div class="qty-container">
+                                    <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
+                                    <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
+                                    <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
+                                </div>
+                            @endif
+                        @endif
+                    @endif
+                @else
+                    {{-- ❌ Store is closed --}}
+                    <button class="add-btn-detail disabled" disabled>
+                        Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                    </button>
+                @endif
+            </div>
+
+            <!-- Coupon and Offers -->
+            @php
+                $vendorCoupons = \App\Models\Coupon::where('created_by_id', $product->vendor_id)
+                    ->where('is_active', 1)
+                    ->where('is_deleted', 0)
+                    ->limit(3)
+                    ->get();
+            @endphp
+
+            @if($vendorCoupons->count() > 0)
+            <h5 class="detailheading">Coupon & Offers</h5>
+                @foreach($vendorCoupons as $coupon)
+                <div class="coupon-det">
+                    <i class="fa-solid fa-tags text-danger"></i>
+                    {{ $coupon->discount_type === 'percentage' ? $coupon->discount_value . '% off' : '₹' . $coupon->discount_value . ' off' }}
+                    above ₹{{ $coupon->min_order_amount }}
+                </div>
+                @endforeach
+            @endif
+
+            @if($product->information && trim($product->information) !== '')
+            <!-- Product Information (HTML from DB, safe tags only) -->
+            <h5 class="detailheading">Product Information</h5>
+            <div class="desc-det">
+                {!! \App\Helpers\StoreHelper::safeHtml($product->information) !!}
+            </div>
+            @endif
+
+            <!-- Description (HTML from DB, safe tags only) -->
+            <h5 class="detailheading">Products Description</h5>
+            <div class="desc-det">
+                {!! \App\Helpers\StoreHelper::safeHtml($product->description ?? '') ?: 'No description available.' !!}
+                @if($product->disclaimer && trim($product->disclaimer) !== '')
+                <span class="extra-det">{!! \App\Helpers\StoreHelper::safeHtml($product->disclaimer) !!}</span>
+                @endif
+                <!-- <span class="show-more-det">Show More +</span> -->
+            </div>
+        </div>
+     </div>
+  </div>
+</section>
+<!-- first section end  -->
+<!-- Add-to-cart bar outside section so position:fixed works on scroll (Chrome/Safari) -->
+<div class="fixed-bottom-mobile footerpricemobile">
+    <div class="d-flex align-items-center justify-content-between w-100 price-container-mobile d-none">
+        <div>
+             <span class="pricedetail"> 
+                <span class="rupee-symbol">₹</span> {{ number_format($sellingPrice, 0) }}
+            </span>
+            @if($actualPrice > $sellingPrice)
+            <span class="original-price ms-1">
+                <span class="rupee-symbol2">₹</span> {{ number_format($actualPrice, 0) }}
+            </span>
+            @endif
+            @if($discountPercent > 0)
+            <span class="discount-badge-mobile">{{ $discountPercent }}% Off</span>
+            @endif
+            <p class="tax-info-mobile">(incl. of all tax)</p>
+        </div>
+        <div class="qty-box qty-box-mobile"
+             data-product-id="{{ $product->id }}"
+             data-variant-id="{{ $firstVariant->id ?? '' }}"
+             data-key="{{ $key }}">
+        @if ($isOpen)
+            @if ($hasMultipleVariants)
+                <button class="add-btn-mobile d-flex flex-column align-items-center position-relative"
+                        onclick="openPopup({{ $product->id }})">
+                    <div class="d-flex align-items-center">
+                        Add
+                        <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                    </div>
+                    <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
+                </button>
+            @else
+                    @if (!$defaultVariant)
+                        <button class="add-btn-mobile" disabled>Unavailable</button>
+                    @else
+                        @if (!$inCart)
+                        <button class="add-btn-mobile add-btn"
+                                data-product-id="{{ $product->id }}"
+                                data-variant-id="{{ $firstVariant->id }}">
+                            Add
+                            <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                        </button>
+                    @else
+                        <div class="qty-container qty-container-mobile">
+                            <button class="qty-btn qty-btn-mobile minus decrement-btn" data-key="{{ $key }}">−</button>
+                            <input type="text" class="qty-input qty-input-mobile quantity-input" value="{{ $quantity }}" readonly>
+                            <button class="qty-btn qty-btn-mobile plus increment-btn" data-key="{{ $key }}">+</button>
+                        </div>
+                    @endif
+                @endif
+            @endif
+        @else
+            <button class="add-btn-mobile disabled" disabled>
+                Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+            </button>
+        @endif
+        </div>
+    </div>
+</div>
+   <!-- for mobile  -->
+<!-- second section start  -->
+@if($similarProducts->count() > 0)
+<section>
+<div class="container mt-4">
+    <h4 class="pb-3 pt-4 headingclass">Similar Products</h4>
+        <div class="owl-carousel owl-theme">
+        @foreach($similarProducts as $similarProduct)
+        @php
+            $variant = $similarProduct->variants->first();
+            $sellingPrice = $variant ? $variant->variant_selling_price : 0;
+            $actualPrice = $variant ? $variant->variant_actual_price : 0;
+            $discountPercent = ($actualPrice > $sellingPrice && $actualPrice > 0) ? round((($actualPrice - $sellingPrice) / $actualPrice) * 100) : 0;
+
+            $attributes = json_decode($variant->attributes ?? '{}', true);
+            $variantInfo = array_values($attributes)[0] ?? '';
+        @endphp
+        <div class="item">
+                <div class="product-card">
+                    @if($discountPercent > 0)
+                    <span class="discount-label">{{ $discountPercent }}% Off</span>
+                    @endif
+                    <a href="{{ route('productdetails', ['slug' => $similarProduct->slug]) }}">
+                        <img src="{{ $similarProduct->featureImage ? asset('public/' . $similarProduct->featureImage->feature_image) : asset('public/assets/website/images/default.png') }}" class="product-image" alt="{{ $similarProduct->title }}">
+                    </a>
+                    <div class="product-title">{{ $similarProduct->title }}</div>
+                    <div class="product-info">{{ $variantInfo }}</div>
+                    <div class="">
+                        <span class="pricedetail">
+                            <span class="rupee-symbol">₹</span> {{ number_format($sellingPrice, 0) }}
+                        </span>
+                        @if($actualPrice > $sellingPrice)
+                        <span class="original-price">
+                            <span class="rupee-symbol2">₹</span> {{ number_format($actualPrice, 0) }}
+                        </span>
+                        @endif
+
+                        @php
+                            $defaultVariantSimilar = $similarProduct->variants->first();
+                            $hasMultipleVariantsSimilar = $similarProduct->variants->count() > 1;
+                            $firstVariantSimilar = $defaultVariantSimilar;
+                            $keySimilar = $similarProduct->id . '_' . ($firstVariantSimilar->id ?? 0);
+
+                            if (auth()->check()) {
+                                $cartItemSimilar = \App\Models\CartItem::where([
+                                    'user_id' => auth()->id(),
+                                    'product_id' => $similarProduct->id,
+                                    'variant_id' => $firstVariantSimilar->id ?? null,
+                                ])->first();
+                                $inCartSimilar = $cartItemSimilar !== null;
+                                $quantitySimilar = $inCartSimilar ? $cartItemSimilar->quantity : 1;
+                            } else {
+                                $cartSimilar = session('cart', []);
+                                $inCartSimilar = isset($cartSimilar[$keySimilar]);
+                                $quantitySimilar = $inCartSimilar ? $cartSimilar[$keySimilar]['quantity'] : 1;
+                            }
+
+                            $isOpenSimilar = \App\Helpers\StoreHelper::isStoreOpen($similarProduct->vendor->store_time);
+                        @endphp
+
+                        <!-- <div class="qty-box"
+                            data-product-id="{{ $similarProduct->id }}"
+                            data-variant-id="{{ $firstVariantSimilar->id ?? '' }}"
+                            data-key="{{ $keySimilar }}">
+
+                            @if ($isOpenSimilar)
+                                {{-- ✅ Store is open --}}
+                                @if ($hasMultipleVariantsSimilar)
+                                    <button class="add-btn d-flex flex-column align-items-center position-relative"
+                                            onclick="openPopup({{ $similarProduct->id }})">
+                                        <div class="d-flex align-items-center">
+                                            Add
+                                            <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                        </div>
+                                        <div class="cart-options text-black">{{ $similarProduct->variants->count() }} Options</div>
+                                    </button>
+                                @else
+                                    @if (!$defaultVariantSimilar)
+                                        <button class="add-btn" disabled>Unavailable</button>
+                                    @else
+                                        @if (!$inCartSimilar)
+                                            <button class="add-btn"
+                                                    data-product-id="{{ $similarProduct->id }}"
+                                                    data-variant-id="{{ $firstVariantSimilar->id }}"
+                                                    onclick="addToCart(this)">
+                                                Add
+                                                <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                            </button>
+                                        @else
+                                            <div class="qty-container">
+                                                <button class="qty-btn minus decrement-btn" data-key="{{ $keySimilar }}">−</button>
+                                                <input type="text" class="qty-input quantity-input" value="{{ $quantitySimilar }}" readonly>
+                                                <button class="qty-btn plus increment-btn" data-key="{{ $keySimilar }}">+</button>
+                                            </div>
+                                        @endif
+                                    @endif
+                                @endif
+                            @else
+                                {{-- ❌ Store is closed --}}
+                                <button class="add-btn disabled" disabled>
+                                    Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                </button>
+                            @endif
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        @endforeach
+        </div>
+    </div>
+</section>
+@endif
+<!-- second section end  -->
+ <!-- third section start  -->
+@if($otherVendorProducts->count() > 0)
+<section>
+<div class="container mt-4 otherproductmargin">
+    <h4 class="pb-3 pt-4 headingclass">Other Products by {{ $product->vendor->business_name ?? 'Store' }}</h4>
+        <div class="owl-carousel owl-theme">
+        @foreach($otherVendorProducts as $vendorProduct)
+        @php
+            $variant = $vendorProduct->variants->first();
+            $sellingPrice = $variant ? $variant->variant_selling_price : 0;
+            $actualPrice = $variant ? $variant->variant_actual_price : 0;
+            $discountPercent = ($actualPrice > $sellingPrice && $actualPrice > 0) ? round((($actualPrice - $sellingPrice) / $actualPrice) * 100) : 0;
+
+            $attributes = json_decode($variant->attributes ?? '{}', true);
+            $variantInfo = array_values($attributes)[0] ?? '';
+        @endphp
+        <div class="item">
+                <div class="product-card">
+                    @if($discountPercent > 0)
+                    <span class="discount-label">{{ $discountPercent }}% Off</span>
+                    @endif
+                    <a href="{{ route('productdetails', ['slug' => $vendorProduct->slug]) }}">
+                        <img src="{{ $vendorProduct->featureImage ? asset('public/' . $vendorProduct->featureImage->feature_image) : asset('public/assets/website/images/default.png') }}" class="product-image" alt="{{ $vendorProduct->title }}">
+                    </a>
+                    <div class="product-title">{{ $vendorProduct->title }}</div>
+                    <div class="product-info">{{ $variantInfo }}</div>
+                    <div class="">
+                        <span class="pricedetail">
+                            <span class="rupee-symbol">₹</span> {{ number_format($sellingPrice, 0) }}
+                        </span>
+                        @if($actualPrice > $sellingPrice)
+                        <span class="original-price">
+                            <span class="rupee-symbol2">₹</span> {{ number_format($actualPrice, 0) }}
+                        </span>
+                        @endif
+
+                        @php
+                            $defaultVariantVendor = $vendorProduct->variants->first();
+                            $hasMultipleVariantsVendor = $vendorProduct->variants->count() > 1;
+                            $firstVariantVendor = $defaultVariantVendor;
+                            $keyVendor = $vendorProduct->id . '_' . ($firstVariantVendor->id ?? 0);
+
+                            if (auth()->check()) {
+                                $cartItemVendor = \App\Models\CartItem::where([
+                                    'user_id' => auth()->id(),
+                                    'product_id' => $vendorProduct->id,
+                                    'variant_id' => $firstVariantVendor->id ?? null,
+                                ])->first();
+                                $inCartVendor = $cartItemVendor !== null;
+                                $quantityVendor = $inCartVendor ? $cartItemVendor->quantity : 1;
+                            } else {
+                                $cartVendor = session('cart', []);
+                                $inCartVendor = isset($cartVendor[$keyVendor]);
+                                $quantityVendor = $inCartVendor ? $cartVendor[$keyVendor]['quantity'] : 1;
+                            }
+
+                            $isOpenVendor = \App\Helpers\StoreHelper::isStoreOpen($vendorProduct->vendor->store_time);
+                        @endphp
+
+                        <!-- <div class="qty-box"
+                            data-product-id="{{ $vendorProduct->id }}"
+                            data-variant-id="{{ $firstVariantVendor->id ?? '' }}"
+                            data-key="{{ $keyVendor }}">
+
+                            @if ($isOpenVendor)
+                                {{-- ✅ Store is open --}}
+                                @if ($hasMultipleVariantsVendor)
+                                    <button class="add-btn d-flex flex-column align-items-center position-relative"
+                                            onclick="openPopup({{ $vendorProduct->id }})">
+                                        <div class="d-flex align-items-center">
+                                            Add
+                                            <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                        </div>
+                                        <div class="cart-options text-black">{{ $vendorProduct->variants->count() }} Options</div>
+                                    </button>
+                                @else
+                                    @if (!$defaultVariantVendor)
+                                        <button class="add-btn" disabled>Unavailable</button>
+                                    @else
+                                        @if (!$inCartVendor)
+                                            <button class="add-btn"
+                                                    data-product-id="{{ $vendorProduct->id }}"
+                                                    data-variant-id="{{ $firstVariantVendor->id }}"
+                                                    onclick="addToCart(this)">
+                                                Add
+                                                <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                            </button>
+                                        @else
+                                            <div class="qty-container">
+                                                <button class="qty-btn minus decrement-btn" data-key="{{ $keyVendor }}">−</button>
+                                                <input type="text" class="qty-input quantity-input" value="{{ $quantityVendor }}" readonly>
+                                                <button class="qty-btn plus increment-btn" data-key="{{ $keyVendor }}">+</button>
+                                            </div>
+                                        @endif
+                                    @endif
+                                @endif
+                            @else
+                                {{-- ❌ Store is closed --}}
+                                <button class="add-btn disabled" disabled>
+                                    Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                </button>
+                            @endif
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        @endforeach
+        </div>
+    </div>
+</section>
+@endif
+<!-- third section end  -->
+<?php //include("include/footer2.php")?>
+@endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var mainImg = document.querySelector('.main-img-det .main-product-det');
+  var thumbContainer = document.querySelector('.thumb-det');
+  var arrowLeft = document.querySelector('.thumb-container-det .arrow-left-det');
+  var arrowRight = document.querySelector('.thumb-container-det .arrow-right-det');
+
+  if (!mainImg || !thumbContainer) return;
+
+  // Thumbnail click: update main preview image
+  thumbContainer.addEventListener('click', function (e) {
+    var thumb = e.target.closest('.thumb-det img');
+    if (!thumb) return;
+    var src = thumb.getAttribute('src');
+    if (src) {
+      mainImg.setAttribute('src', src);
+      thumbContainer.querySelectorAll('img').forEach(function (img) { img.classList.remove('active'); });
+      thumb.classList.add('active');
+    }
+  });
+
+  // Arrow left: scroll thumb strip
+  if (arrowLeft) {
+    arrowLeft.addEventListener('click', function () {
+      if (thumbContainer.scrollLeft > 0) {
+        thumbContainer.scrollLeft -= (thumbContainer.offsetWidth * 0.8);
+      }
+    });
+  }
+  if (arrowRight) {
+    arrowRight.addEventListener('click', function () {
+      var maxScroll = thumbContainer.scrollWidth - thumbContainer.clientWidth;
+      if (thumbContainer.scrollLeft < maxScroll) {
+        thumbContainer.scrollLeft += (thumbContainer.offsetWidth * 0.8);
+      }
+    });
+  }
+});
+</script>
+@endpush

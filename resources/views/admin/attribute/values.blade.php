@@ -33,10 +33,10 @@
                         <div class="form-group">
                             <label class="control-label col-lg-2">Select Attribute *</label>
                             <div class="col-lg-5">
-                                <select name="attribute_id" class="form-control" required>
+                                <select name="attribute_id" class="form-control attribute-select" data-color-target="#addColorCodeGroup" required>
                                     <option value="">--Select--</option>
                                     @foreach($attributes as $attribute)
-                                        <option value="{{ $attribute->id }}">{{ $attribute->name }}</option>
+                                        <option value="{{ $attribute->id }}" data-type="{{ $attribute->type }}">{{ $attribute->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -46,6 +46,12 @@
                             <label class="control-label col-lg-2">Value *</label>
                             <div class="col-lg-5">
                                 <input type="text" name="value" class="form-control" required value="{{ old('value') }}">
+                            </div>
+                        </div>
+                        <div class="form-group" id="addColorCodeGroup" style="display: none;">
+                            <label class="control-label col-lg-2">Color Code</label>
+                            <div class="col-lg-5">
+                                <input type="text" name="color_code" class="form-control" value="{{ old('color_code') }}" placeholder="#FFFFFF">
                             </div>
                         </div>
 
@@ -74,81 +80,118 @@
     {{-- Grouped Values --}}
     <div class="row">
         <div class="col-md-12">
-            <div class="panel-body">
-                <table  id="datatable" class="table table-striped table-bordered">
-                    <thead>
-                        <tr>
-                            <th>S No.</th>
-                            <th>Attribute Name</th>
-                            <th>Value</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($attributeValues as $index => $val)
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">All Attribute Values</h3>
+                </div>
+                <div class="panel-body">
+                    <table  id="datatable" class="table table-striped table-bordered">
+                        <thead>
                             <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $val->attribute->name ?? 'N/A' }}</td>
-                                <td>{{ $val->value }}</td>
-                                <td>
-                                    <span class="label label-{{ $val->is_active ? 'success' : 'danger' }}">
-                                        {{ $val->is_active ? 'Active' : 'Inactive' }}
-                                    </span>
-                                </td>
-                                <td>{{ $val->created_at->format('Y-m-d') }}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#editModal{{ $val->id }}">Edit</button>
-                                    <a href="{{ route('admin.attribute.value.delete', $val->id) }}" onclick="return confirm('Are you sure?')" class="btn btn-sm btn-danger">Delete</a>
-                                </td>
+                                <th>S No.</th>
+                                <th>Attribute Name</th>
+                                <th>Value</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Action</th>
                             </tr>
-                            {{-- Edit Modal --}}
-                            <div class="modal fade" id="editModal{{ $val->id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel{{ $val->id }}" aria-hidden="true">
-                                <div class="modal-dialog" role="document">
-                                    <form method="POST" action="{{ route('admin.attribute.value.update', $val->id) }}">
-                                        @csrf
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Edit Attribute Value</h5>
-                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="form-group">
-                                                    <label>Attribute Name</label>
-                                                    <select name="attribute_id" class="form-control" required>
-                                                        @foreach ($attributes as $attribute)
-                                                            <option value="{{ $attribute->id }}" {{ $val->attribute_id == $attribute->id ? 'selected' : '' }}>
-                                                                {{ $attribute->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
+                        </thead>
+                        <tbody>
+                            @foreach($attributeValues as $index => $val)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $val->attribute->name ?? 'N/A' }}</td>
+                                    <td>{{ $val->value }}</td>
+                                    <td>
+                                        <span class="label label-{{ $val->is_active ? 'success' : 'danger' }}">
+                                            {{ $val->is_active ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $val->created_at->format('Y-m-d') }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" data-toggle="modal" data-target="#editModal{{ $val->id }}">Edit</button>
+                                        <a href="{{ route('admin.attribute.value.delete', $val->id) }}" onclick="return confirm('Are you sure?')" class="btn btn-sm btn-danger">Delete</a>
+                                    </td>
+                                </tr>
+                                {{-- Edit Modal --}}
+                                <div class="modal fade" id="editModal{{ $val->id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel{{ $val->id }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <form method="POST" action="{{ route('admin.attribute.value.update', $val->id) }}">
+                                            @csrf
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Edit Attribute Value</h5>
+                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
                                                 </div>
-                                                <div class="form-group">
-                                                    <label>Value</label>
-                                                    <input type="text" name="value" class="form-control" value="{{ $val->value }}" required>
+                                                <div class="modal-body">
+                                                    <div class="form-group">
+                                                        <label>Attribute Name</label>
+                                                        <select name="attribute_id" class="form-control attribute-select" data-color-target="#colorGroup{{ $val->id }}" required>
+                                                            @foreach ($attributes as $attribute)
+                                                                <option value="{{ $attribute->id }}" data-type="{{ $attribute->type }}" {{ $val->attribute_id == $attribute->id ? 'selected' : '' }}>
+                                                                    {{ $attribute->name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Value</label>
+                                                        <input type="text" name="value" class="form-control" value="{{ $val->value }}" required>
+                                                    </div>
+                                                    <div class="form-group" id="colorGroup{{ $val->id }}" style="display: {{ ($val->attribute && $val->attribute->type === \App\Models\Attribute::TYPE_COLOR) ? 'block' : 'none' }};">
+                                                        <label>Color Code</label>
+                                                        <input type="text" name="color_code" class="form-control" value="{{ $val->color_code }}" placeholder="#FFFFFF">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Status</label>
+                                                        <select name="is_active" class="form-control">
+                                                            <option value="1" {{ $val->is_active ? 'selected' : '' }}>Active</option>
+                                                            <option value="0" {{ !$val->is_active ? 'selected' : '' }}>Inactive</option>
+                                                        </select>
+                                                    </div>
                                                 </div>
-                                                <div class="form-group">
-                                                    <label>Status</label>
-                                                    <select name="is_active" class="form-control">
-                                                        <option value="1" {{ $val->is_active ? 'selected' : '' }}>Active</option>
-                                                        <option value="0" {{ !$val->is_active ? 'selected' : '' }}>Inactive</option>
-                                                    </select>
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-primary">Update</button>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                                                 </div>
                                             </div>
-                                            <div class="modal-footer">
-                                                <button type="submit" class="btn btn-primary">Update</button>
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                            </div>
-                                        </div>
-                                    </form>
+                                        </form>
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    </tbody>
-                </table>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function toggleColorGroup(selectEl) {
+        const $select = $(selectEl);
+        const target = $select.data('color-target');
+        const $group = $(target);
+        const type = $select.find('option:selected').data('type');
+
+        if (type === 'color') {
+            $group.show();
+        } else {
+            $group.hide();
+            $group.find('input').val('');
+        }
+    }
+
+    $(document).ready(function () {
+        $('.attribute-select').each(function () {
+            toggleColorGroup(this);
+        });
+
+        $('.attribute-select').on('change', function () {
+            toggleColorGroup(this);
+        });
+    });
+</script>
+@endpush

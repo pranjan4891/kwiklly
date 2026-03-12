@@ -59,12 +59,13 @@ Route::group(['prefix' => 'branch'], function () {
         Route::post('product/{id}/edit', [ProductController::class, 'update'])->name('branch.product.update');
         Route::post('product/{id}/delete', [ProductController::class, 'destroy'])->name('branch.product.destroy');
 
-        // Product Inventory Management
+        // Product Inventory Management (same as admin variant flow)
         Route::prefix('product')->group(function () {
             Route::get('/variant/create/{productId}', [ProductController::class, 'createVariant'])->name('branch.product.variant.create');
             Route::post('/variant/store', [ProductController::class, 'storeVariant'])->name('branch.product.variant.store');
             Route::get('/variant/edit/{id}', [ProductController::class, 'editVariant'])->name('branch.product.variant.edit');
             Route::post('/variant/update/{id}', [ProductController::class, 'updateVariant'])->name('branch.product.variant.update');
+            Route::get('/variant/image/delete/{id}', [ProductController::class, 'deleteVariantImage'])->name('branch.product.variant.image.delete');
             Route::delete('/variant/delete/{id}', [ProductController::class, 'deleteVariant'])->name('branch.product.variant.destroy');
         });
 

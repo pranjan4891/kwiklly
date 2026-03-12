@@ -48,11 +48,15 @@
                     if (typeof loadSideCartItems === "function") {
                         loadSideCartItems(res.cart);
                     }
+                    var isMobileBar = parent.hasClass('qty-box-mobile') || parent.closest('.fixed-bottom-mobile').length > 0;
+                    var qtyContainerClass = isMobileBar ? 'qty-container qty-container-mobile' : 'qty-container';
+                    var qtyBtnClass = isMobileBar ? 'qty-btn qty-btn-mobile' : 'qty-btn';
+                    var qtyInputClass = isMobileBar ? 'qty-input qty-input-mobile quantity-input' : 'qty-input quantity-input';
                     let qtyContainer = `
-                        <div class="qty-container">
-                            <button class="qty-btn minus decrement-btn" data-key="${key}">−</button>
-                            <input type="text" class="qty-input quantity-input" value="1" readonly>
-                            <button class="qty-btn plus increment-btn" data-key="${key}">+</button>
+                        <div class="${qtyContainerClass}">
+                            <button class="${qtyBtnClass} minus decrement-btn" data-key="${key}">−</button>
+                            <input type="text" class="${qtyInputClass}" value="1" readonly>
+                            <button class="${qtyBtnClass} plus increment-btn" data-key="${key}">+</button>
                         </div>
                     `;
                     parent.html(qtyContainer);
@@ -93,8 +97,11 @@
                     });
 
                     if (updatedQty !== null) {
-                        $(this).closest('.qty-box').find('.quantity-input').val(updatedQty);
-                        $(this).closest('.qty-container').find('.quantity-input').val(updatedQty);
+                        // Update qty everywhere for this key (product details, cards, side cart, etc.)
+                        $('[data-key="' + key + '"]')
+                            .closest('.qty-box, .qty-container')
+                            .find('.quantity-input')
+                            .val(updatedQty);
                         if (window.updateProgress) window.updateProgress();
                     }
                 },

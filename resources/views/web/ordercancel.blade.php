@@ -119,7 +119,7 @@
             <div class="d-flex align-items-center">
               <img src="{{ asset('public/' . $item->variant->product->featureImage->feature_image ?? 'public/assets/website/images/placeholder.png') }}" width="100" alt="Item">
               <div class="ms-3">
-                <strong>{{ $item->variant->product->title ?? 'Product' }} - {{ $item->variant->name }}</strong><br>
+                <strong>{{ $item->variant->product->title ?? 'Product' }}{{ $item->variant->variant_name ? ' - ' . $item->variant->variant_name : '' }}</strong><br>
                 ₹{{ $item->price * $item->quantity }} <small>(₹{{ $item->price }} X {{ $item->quantity }})</small>
               </div>
             </div>

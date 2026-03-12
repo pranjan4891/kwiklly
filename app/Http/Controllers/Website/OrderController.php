@@ -656,11 +656,58 @@ class OrderController extends Controller
         return view('web.checkoutaddress', compact('order'));
     }
 
+    /**
+     * Check if given lat/lng is deliverable by all vendors in the order (intersects each vendor's delivery area).
+     * Used when user clicks "Use my current location" on checkout address page.
+     */
+    public function checkDeliveryLocation(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
+        $order = Order::with('vendorOrders')
+            ->where('id', $request->order_id)
+            ->where('user_id', Auth::id())
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$order) {
+            return response()->json(['deliverable' => false, 'message' => 'Order not found or already processed.']);
+        }
+
+        $lat = (float) $request->latitude;
+        $lng = (float) $request->longitude;
+        $vendorIds = $order->vendorOrders->pluck('vendor_id')->unique()->values()->all();
+
+        $tempAddress = new CustomerAddress();
+        $tempAddress->latitude = $lat;
+        $tempAddress->longitude = $lng;
+
+        foreach ($vendorIds as $vendorId) {
+            if (!$tempAddress->isDeliverableByVendor((int) $vendorId)) {
+                return response()->json([
+                    'deliverable' => false,
+                    'message' => 'Sorry we could not deliver on this address.',
+                ]);
+            }
+        }
+
+        return response()->json(['deliverable' => true]);
+    }
+
+    /** Max distance (km) to allow delivery address from current location */
+    const DELIVERY_LOCATION_RADIUS_KM = 50;
+
     public function updateAddress(Request $request)
     {
         $request->validate([
             'order_id' => 'required|exists:orders,id',
-            'address_id' => 'required|exists:customer_addresses,id'
+            'address_id' => 'required|exists:customer_addresses,id',
+            'current_latitude' => 'required|numeric',
+            'current_longitude' => 'required|numeric',
         ]);
 
         // Get the order
@@ -671,6 +718,28 @@ class OrderController extends Controller
 
         if (!$order) {
             return redirect()->back()->with('error', 'Order not found or already processed');
+        }
+
+        $address = CustomerAddress::where('id', $request->address_id)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (!$address) {
+            return redirect()->back()->with('error', 'Invalid address');
+        }
+
+        // Ensure selected address is within current delivery location (e.g. Delhi only, not Ranchi)
+        if (!$address->latitude || !$address->longitude) {
+            return redirect()->back()->with('error', 'This address cannot be used for delivery at current location. Please add an address in your current area using "Use my current location".');
+        }
+        $km = CustomerAddress::distanceInKm(
+            (float) $request->current_latitude,
+            (float) $request->current_longitude,
+            (float) $address->latitude,
+            (float) $address->longitude
+        );
+        if ($km === null || $km > self::DELIVERY_LOCATION_RADIUS_KM) {
+            return redirect()->back()->with('error', 'Selected address is not in your current delivery location. Please select an address in your current area or update your location.');
         }
 
         // Update the address

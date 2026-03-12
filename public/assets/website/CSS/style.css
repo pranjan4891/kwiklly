@@ -162,17 +162,24 @@ a {
     color: #28a745;
 }
 
-/* Mobile Bottom Navigation */
+/* Mobile Bottom Navigation - Safari/Chrome: fixed at bottom, own layer */
 .bottom-nav {
     display: none;
     position: fixed;
     bottom: 0;
     left: 0;
+    right: 0;
     width: 100%;
+    min-height: 56px;
     background: white;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-    padding: 0px 0;
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
     z-index: 1000;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 }
 
 .bottom-nav .nav-item {
@@ -243,9 +250,9 @@ a {
     object-fit: contain;
 }
 .product-title {
-    font-size: 16px;
-    color: #231917;
-    font-weight: 700;
+    font-size: 14px;
+    color: #3e3b3a;
+    font-weight: 600;
     margin-bottom: 5px;
     line-height: 18.4px;
     min-height: 36.8px; /* 2 lines height (18.4px * 2) */
@@ -404,7 +411,7 @@ a {
     height: auto;
     max-height: 170px;
     object-fit: contain;
-    margin: 0px auto 0px;
+    margin: 40px auto 12px;
 }
 .cart-options {
     background: #FFFFFF;
@@ -462,8 +469,12 @@ a {
     width: 24px;
     height: 24px;
     font-size: 14px;
+    font-weight: bold;
     line-height: 24px;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: 0.3s ease-in-out;
     flex-shrink: 0;
@@ -1641,6 +1652,7 @@ select.time-boxde:focus {
         width: 22px !important;
         height: 22px !important;
         font-size: 13px !important;
+        font-weight: bold !important;
         line-height: 24px !important;
         padding: 0 !important;
         margin: 0 !important;
@@ -2037,6 +2049,10 @@ select.time-boxde:focus {
     padding: 20px;
     text-align: center;
     border-radius: 10px;
+    height: 420px !important;
+  }
+  .main-img-det .img-fluid{
+      height: 375px;
   }
 
   .thumb-container-det {
@@ -2216,7 +2232,7 @@ select.time-boxde:focus {
     line-height: 100%;
 }
 .prodetailheading p span{
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 400;
     line-height: 100%;
 }
@@ -3368,6 +3384,10 @@ select.time-boxde:focus {
   .locations-text {
     font-size: 14px;
     line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100vw - 140px);
   }
 
   .dropdown-icon {
@@ -3834,18 +3854,67 @@ select.time-boxde:focus {
 
 /* Mobile-specific: Fix entire section at the bottom */
 @media (max-width: 768px) {
+    /* Ensure mobile bar and add-to-cart show on product details - above bottom nav */
+    .footerpricemobile,
+    .fixed-bottom-mobile.footerpricemobile {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* Add-to-cart bar: fixed above nav; z-index > .bottom-nav (1000) so Chrome keeps it on top on scroll */
     .fixed-bottom-mobile {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
+        position: fixed !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        top: auto !important;
         background: #fff;
         padding: 10px 15px 0px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
+        z-index: 1001 !important;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        will-change: transform;
+    }
+
+    /* Product details: add bar sits above bottom nav (Chrome: stays visible on scroll) */
+    .fixed-bottom-mobile.footerpricemobile {
+        bottom: 69px !important;
+        z-index: 1001 !important;
+    }
+
+    /* Product details: leave space so content is not hidden under add bar + bottom nav */
+    section.product-details-section {
+        padding-bottom: 0px;
+    }
+
+    /* Footer on mobile: space above bottom nav so footer content is visible when scrolled */
+    .footer-section {
+        padding-bottom: 70px;
+    }
+
+    /* Product details page: footer needs extra space (add bar + bottom nav) */
+    body.product-details-page .footer-section {
+        padding-bottom: 158px;
+    }
+
+    /* Breadcrumb on product details: single line with ellipsis on mobile */
+    .breadcrumb-product {
+        font-size: 12px;
+        line-height: 1.4;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-top: 8px;
+        margin-top: 6px;
+        margin-bottom: 0.5rem;
+        max-width: 100%;
     }
 
     .price-container-mobile {
@@ -3884,8 +3953,14 @@ select.time-boxde:focus {
         color: #666;
         margin-top: 5px;
     }
+    
+    @media (max-width: 768px) {
+      .breadcrumb-product {
+        display: none;
+    }
+    }
 
-    /* Add to Cart Button */
+    /* Add to Cart Button - ensure visible on mobile */
     .add-btn-mobile {
         background-color: #e3431d;
         color: #fff;
@@ -3894,12 +3969,62 @@ select.time-boxde:focus {
         border: none;
         padding: 6px 18px;
         border-radius: 10px;
-        display: flex;
+        display: flex !important;
         align-items: center;
         gap: 0px;
         cursor: pointer;
         justify-content: center;
         white-space: nowrap;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* Quantity controls in mobile fixed bar - same design as web view */
+    .qty-container-mobile,
+    .fixed-bottom-mobile .qty-container,
+    .fixed-bottom-mobile .qty-container-mobile {
+        display: flex !important;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        flex-shrink: 0;
+        width: 75px;
+        margin-left: 0;
+        margin-right: auto;
+        padding: 2px 0;
+    }
+
+    .qty-btn-mobile,
+    .fixed-bottom-mobile .qty-btn {
+        background: #E94412 !important;
+        color: white !important;
+        border: none !important;
+        width: 28px !important;
+        height: 28px !important;
+        padding: 0 !important;
+        font-size: 14px !important;
+        font-weight: bold !important;
+        line-height: 28px !important;
+        text-align: center !important;
+        cursor: pointer;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0;
+        transition: 0.3s ease-in-out;
+    }
+
+    .qty-input-mobile,
+    .fixed-bottom-mobile .qty-input {
+        width: 26px !important;
+        height: 28px !important;
+        text-align: center !important;
+        font-size: 13px !important;
+        border: 1px solid #ddd !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
 
     /* Disabled Add button mobile - grey out */
@@ -3914,6 +4039,21 @@ select.time-boxde:focus {
     .add-btn-mobile i {
         font-size: 1.2rem;
     }
+
+    /* When JS injects Add button in mobile bar (after decrement to 0), style like add-btn-mobile */
+    .fixed-bottom-mobile .add-btn {
+        background-color: #e3431d !important;
+        color: #fff !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        padding: 6px 18px !important;
+        border-radius: 10px !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
     .addpop-popup {
         position: fixed;
         top: 0;
@@ -4129,6 +4269,11 @@ select.time-boxde:focus {
 
     .bottom-nav {
         display: flex;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        padding-bottom: env(safe-area-inset-bottom, 0);
     }
 
     /* Mobile Cart Sidebar Full Width */
@@ -5192,7 +5337,7 @@ body.suggestions-open {
         font-size: 13px !important;
         line-height: 16px !important;
         font-weight: 400 !important;
-        display: block !important;
+        
     }
     
     /* Mobile Add Button - Ensure visibility */
@@ -5515,10 +5660,14 @@ body.suggestions-open {
         width: 23px;
         height: 28px;
         font-size: 21px;
+        font-weight: bold;
         line-height: 28px;
         text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
-        transition: 0.3sease-in-out;
+        transition: 0.3s ease-in-out;
     }
     .textnewsletter{
         font-size: 16px;
@@ -6937,6 +7086,7 @@ body.suggestions-open {
         text-align: center;
         border-radius: 10px;
         margin-bottom: 15px;
+        margin-top: 88px;
     }
 
     .main-img-det .main-product-det,
@@ -7045,6 +7195,7 @@ body.suggestions-open {
     }
     .footerpricemobile{
         display: block;
+        /* margin-bottom: 65px; */
     }.prodetailheading h4 {
         font-size: 22px;
         font-weight: 700;

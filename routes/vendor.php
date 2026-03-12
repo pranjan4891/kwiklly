@@ -81,6 +81,11 @@ Route::prefix('vendor')->name('vendor.')->middleware(['auth:vendor', 'verified',
     Route::post('share-location/{contactId}', [VendorDashboardController::class, 'shareLocation'])->name('share.location');
     Route::delete('location-contact/{id}', [VendorDashboardController::class, 'deleteLocationContact']);
 
+    // Delivery location (master location, pindrop, polygon) - like admin branches
+    Route::get('get-area', [VendorDashboardController::class, 'getArea'])->name('get.area');
+    Route::get('check-lat-lon', [VendorDashboardController::class, 'pointInPolygon'])->name('check.lat.lon');
+    Route::post('delivery-location/save', [VendorDashboardController::class, 'saveDeliveryLocation'])->name('delivery.location.save');
+
     // Category
     Route::get('categories', [CategoryController::class, 'categories'])->name('categories');
     Route::post('categories/store', [CategoryController::class, 'store'])->name('categories.store');
@@ -121,6 +126,7 @@ Route::prefix('vendor')->name('vendor.')->middleware(['auth:vendor', 'verified',
     Route::post('/variant/store', [ProductController::class, 'storeVariant'])->name('product.variant.store');
     Route::get('/variant/edit/{id}', [ProductController::class, 'editVariant'])->name('product.variant.edit');
     Route::post('/variant/update/{id}', [ProductController::class, 'updateVariant'])->name('product.variant.update');
+    Route::get('/variant/image/delete/{id}', [ProductController::class, 'deleteVariantImage'])->name('product.variant.image.delete');
     Route::delete('/variant/delete/{id}', [ProductController::class, 'deleteVariant'])->name('product.variant.destroy');
 
 
