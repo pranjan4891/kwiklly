@@ -144,6 +144,13 @@
                      <div class="profile-order-details">
                         <a href="{{ route('explorestore', ['vendor_id' => $vendorData['vendor_id'],'cat_id'=>'0']) }}" onclick="return redirectWithLocation(this.href)"><h6 class="mb-1"><b>{{ $vendorName }}</b></h6></a>
                         <small><strong>Order ID:</strong> #{{ $order['order_id'] }}</small><br>
+                        @php
+                          $pStatus = $order['payment_status'] ?? 'pending';
+                          $pMethod = $order['payment_method'] ?? 'N/A';
+                          $pMethodLabel = $pMethod === 'cod' ? 'Cash on Delivery' : ($pMethod === 'phonepe' ? 'PhonePe' : ucfirst($pMethod));
+                          $pStatusLabel = ucfirst(str_replace('_', ' ', $pStatus));
+                        @endphp
+                        <small><strong>Payment:</strong> {{ $pMethodLabel }} · <span class="text-muted">{{ $pStatusLabel }}</span></small><br>
                         @if($vendorData['delivery_date'])
                         <small><strong>Estimate Delivery On:</strong> {{ $vendorData['delivery_date'] }}</small>
                         @endif

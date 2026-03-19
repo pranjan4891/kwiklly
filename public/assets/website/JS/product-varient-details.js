@@ -103,9 +103,13 @@
     function renderQtyBox(productId, variantId, key, stock, inCart, quantity) {
         var storeOpen = $('.product-details-section .qty-box').attr('data-store-open') === '1';
         var cartIcon = '<img src="' + (window.CART_ICON_URL || '') + '" class="ms-2">';
+        var stockNum = parseInt(stock, 10) || 0;
+        var outOfStockHtml = '<span class="add-btn-detail btn disabled text-muted">Out of Stock</span>';
         var html = '';
         if (!storeOpen) {
             html = '<button class="add-btn-detail disabled" disabled>Add ' + cartIcon + '</button>';
+        } else if (stockNum <= 0) {
+            html = outOfStockHtml;
         } else if (inCart && quantity > 0) {
             html = '<div class="qty-container">' +
                 '<button class="qty-btn minus decrement-btn" data-key="' + key + '">−</button>' +
@@ -120,6 +124,8 @@
         var mobileHtml = '';
         if (!storeOpen) {
             mobileHtml = '<button class="add-btn-mobile disabled" disabled>Add ' + cartIcon + '</button>';
+        } else if (stockNum <= 0) {
+            mobileHtml = '<span class="add-btn-mobile btn disabled text-muted">Out of Stock</span>';
         } else if (inCart && quantity > 0) {
             mobileHtml = '<div class="qty-container qty-container-mobile">' +
                 '<button class="qty-btn qty-btn-mobile minus decrement-btn" data-key="' + key + '">−</button>' +

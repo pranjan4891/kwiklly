@@ -331,9 +331,10 @@
                @if($products && $products->count())
                @foreach ($products as $product)
                @php
-               $defaultVariant = $product->variants->first();
+               $defaultVariant = $product->variants->firstWhere('stock', '>', 0) ?? $product->variants->first();
                $hasMultipleVariants = $product->variants->count() > 1;
                $firstVariant = $defaultVariant;
+               $variantInStock = $firstVariant && $firstVariant->stock > 0;
                $key = $product->id . '_' . ($firstVariant->id ?? 0);
                if (auth()->check()) {
                $cartItem = \App\Models\CartItem::where([
@@ -403,6 +404,8 @@
                               @else
                               @if (!$defaultVariant)
                               <button class="add-btn" disabled>Unavailable</button>
+                              @elseif(!$variantInStock)
+                              <span class="add-btn btn disabled text-muted">Out of Stock</span>
                               @else
                               @if (!$inCart)
                               <button class="add-btn"

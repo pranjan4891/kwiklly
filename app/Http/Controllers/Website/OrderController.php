@@ -19,6 +19,8 @@ use App\Models\VendorAdmin;
 use App\Models\WalletTransaction;
 use App\Models\CustomerAddress;
 use App\Models\Payment;
+use App\Models\PendingCheckout;
+use App\Services\PhonePeService;
 use Carbon\Carbon;
 
 
@@ -26,267 +28,97 @@ class OrderController extends Controller
 {
     public function storeOrder(Request $request)
     {
-        // Validate the request
         $request->validate([
             'vendors' => 'required|array',
             'grand_total' => 'required|numeric|min:0',
         ]);
 
-        DB::beginTransaction();
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not authenticated'], 401);
+        }
 
-        try {
-            // Get current user and cart items with product and vendor relationships
-            $user = Auth::user();
+        $cartItems = CartItem::with(['product.vendor', 'variant'])
+            ->where('user_id', $user->id)
+            ->get();
 
-            if (!$user) {
+        if ($cartItems->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Your cart is empty.'], 400);
+        }
+
+        foreach ($cartItems as $cartItem) {
+            $variant = $cartItem->variant;
+            if (!$variant || $variant->stock < $cartItem->quantity) {
+                $available = $variant?->stock ?? 0;
                 return response()->json([
                     'success' => false,
-                    'message' => 'User not authenticated'
-                ], 401);
+                    'message' => "Only {$available} qty available for {$cartItem->product->title}."
+                ], 422);
             }
+        }
 
-            $cartItems = CartItem::with(['product.vendor', 'variant'])
-                ->where('user_id', $user->id)
-                ->get();
+        $groupedCart = $cartItems->groupBy(fn($item) => $item->product->vendor_id ?? 0);
+        $orderNumber = 'ORD' . date('YmdHis') . rand(100, 999);
+        $totals = $this->calculateOrderTotals($groupedCart, $user);
+        $finalAmount = (float) $request->grand_total;
+        $walletUsed = $totals['wallet_used'] ?? 0;
 
-          //  Log::info('Cart items retrieved', ['count' => $cartItems->count()]);
-
-            if ($cartItems->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Your cart is empty.'
-                ], 400);
+        if ($walletUsed > 0) {
+            $walletBalance = WalletTransaction::getBalance($user->id);
+            if ($walletBalance < $walletUsed) {
+                return response()->json(['success' => false, 'message' => 'Insufficient wallet balance.'], 400);
             }
+        }
 
-            // ✅ Stock validation before proceeding
-            foreach ($cartItems as $cartItem) {
-                $variant = $cartItem->variant;
-                if (!$variant || $variant->stock < $cartItem->quantity) {
-                    $available = $variant?->stock ?? 0;
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Only {$available} qty available for {$cartItem->product->title}."
-                    ], 422);
-                }
+        // Build checkout data for session (no DB order until payment complete)
+        $usedCoupons = [];
+        $vendorsData = [];
+
+        foreach ($groupedCart as $vendorId => $items) {
+            $vendor = VendorAdmin::find($vendorId);
+            if (!$vendor) {
+                continue;
             }
-
-
-            // Group cart items by vendor ID from the product relationship
-            $groupedCart = $cartItems->groupBy(function($item) {
-                return $item->product->vendor_id ?? 0;
-            });
-
-            // Generate unique order number
-            $orderNumber = 'ORD' . date('YmdHis') . rand(100, 999);
-
-            // Calculate totals - USE THE PRICE FROM CART ITEM, not from product/variant
-            $totals = $this->calculateOrderTotals($groupedCart, $user);
-
-            // Use the grand_total from frontend instead of calculated final_amount
-            $finalAmount = $request->grand_total;
-
-
-            // Check wallet balance if used
-            $walletUsed = $totals['wallet_used'] ?? 0;
-            if ($walletUsed > 0) {
-                $walletBalance = WalletTransaction::getBalance($user->id);
-                if ($walletBalance < $walletUsed) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Insufficient wallet balance.'
-                    ], 400);
-                }
+            $vendorTotals = $this->calculateVendorTotals($items, $vendorId, $user);
+            $vendorData = $request->vendors[$vendorId] ?? [];
+            $vendorsData[$vendorId] = [
+                'delivery_type' => $vendorData['delivery_type'] ?? 'standard',
+                'custom_delivery' => $vendorData['custom_delivery'] ?? null,
+                'vendor_totals' => $vendorTotals,
+                'items' => $items->map(fn($i) => [
+                    'product_id' => $i->product_id,
+                    'variant_id' => $i->variant_id,
+                    'quantity' => $i->quantity,
+                    'price' => (float) $i->price,
+                ])->values()->toArray(),
+            ];
+            if ($vendorTotals['coupon_id']) {
+                $usedCoupons[] = ['coupon_id' => $vendorTotals['coupon_id'], 'vendor_id' => $vendorId];
             }
+        }
+        if ($totals['coupon_id']) {
+            $usedCoupons[] = ['coupon_id' => $totals['coupon_id'], 'vendor_id' => null];
+        }
 
-            // Create main order
-            $order = Order::create([
-                'user_id' => $user->id,
-                'order_number' => $orderNumber,
-                'total_price' => $totals['subtotal'],
+        $checkoutData = [
+            'order_number' => $orderNumber,
+            'totals' => [
+                'subtotal' => $totals['subtotal'],
                 'coupon_id' => $totals['coupon_id'],
                 'coupon_discount' => $totals['coupon_discount'],
                 'wallet_used' => $walletUsed,
                 'final_amount' => $finalAmount,
-                'status' => 'pending',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            ],
+            'vendors' => $vendorsData,
+            'used_coupons' => $usedCoupons,
+        ];
 
+        session()->put('checkout_data', $checkoutData);
 
-
-            // Process wallet transaction if used
-            if ($walletUsed > 0) {
-                $this->processWalletTransaction($user->id, $walletUsed, $order->id);
-
-            }
-
-            // Track used coupons to update usage counts
-            $usedCoupons = [];
-
-            // Process each vendor's items
-            foreach ($groupedCart as $vendorId => $items) {
-
-                // Check if vendor exists
-                $vendor = VendorAdmin::find($vendorId);
-                if (!$vendor) {
-                    continue;
-                }
-
-                $vendorTotals = $this->calculateVendorTotals($items, $vendorId, $user);
-
-                // Handle delivery slot
-                $deliverySlotId = null;
-                if (isset($request->vendors[$vendorId])) {
-                    $vendorData = $request->vendors[$vendorId];
-
-                    if ($vendorData['delivery_type'] === 'custom') {
-                        // Create a new delivery slot for custom delivery
-                        $deliverySlot = DeliverySlot::create([
-                            'user_id' => $user->id,
-                            'vendor_id' => $vendorId,
-                            'date' => $vendorData['custom_delivery']['date'],
-                            'start_time' => date('H:i', strtotime($vendorData['custom_delivery']['start_time'])),
-                            'end_time' => date('H:i', strtotime($vendorData['custom_delivery']['end_time'])),
-                            'is_available' => 1, // Mark as booked
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-
-                        $deliverySlotId = $deliverySlot->id;
-
-
-                    } elseif ($vendorData['delivery_type'] === 'express') {
-                        // For express delivery, find or create a slot for the next 20 minutes
-                        $expressTime = now()->addMinutes(20);
-                        $expressEndTime = now()->addMinutes(40);
-
-                        $deliverySlot = DeliverySlot::firstOrCreate([
-                            'user_id' => $user->id,
-                            'vendor_id' => $vendorId,
-                            'date' => $expressTime->format('Y-m-d'),
-                            'start_time' => $expressTime->format('H:i:s'),
-                            'end_time' => $expressEndTime->format('H:i:s'),
-                        ], [
-                            'is_available' => 1,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-
-                        $deliverySlotId = $deliverySlot->id;
-
-
-                    } else {
-                        // Standard delivery - find or create a slot for the next 30 minutes
-                        $standardTime = now()->addMinutes(30);
-                        $standardEndTime = now()->addMinutes(60);
-
-                        $deliverySlot = DeliverySlot::firstOrCreate([
-                            'user_id' => $user->id,
-                            'vendor_id' => $vendorId,
-                            'date' => $standardTime->format('Y-m-d'),
-                            'start_time' => $standardTime->format('H:i:s'),
-                            'end_time' => $standardEndTime->format('H:i:s'),
-                        ], [
-                            'is_available' => 1,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-
-                        $deliverySlotId = $deliverySlot->id;
-
-                    }
-                }
-
-                // Create vendor order with delivery_slot_id
-                $vendorOrder = VendorOrder::create([
-                    'order_id' => $order->id,
-                    'vendor_id' => $vendorId,
-                    'coupon_id' => $vendorTotals['coupon_id'],
-                    'coupon_discount' => $vendorTotals['coupon_discount'],
-                    'delivery_slot_id' => $deliverySlotId,
-                    'sub_total' => $vendorTotals['subtotal'],
-                    'delivery_fee' => $vendorTotals['delivery_fee'],
-                    'final_amount' => $vendorTotals['final_amount'],
-                    'delivery_status' => 'pending',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-
-                // Track vendor coupon usage
-                if ($vendorTotals['coupon_id']) {
-                    $usedCoupons[] = [
-                        'coupon_id' => $vendorTotals['coupon_id'],
-                        'vendor_id' => $vendorId
-                    ];
-                }
-
-                // Create order items - USE THE PRICE FROM CART ITEM
-                foreach ($items as $cartItem) {
-                    $price = $cartItem->price; // Use the price stored in cart item
-
-                    $orderItemData = [
-                        'vendor_order_id' => $vendorOrder->id,
-                        'product_id' => $cartItem->product_id,
-                        'variant_id' => $cartItem->variant_id,
-                        'quantity' => $cartItem->quantity,
-                        'price' => $price,
-                        'total_price' => $cartItem->quantity * $price,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
-
-                    $orderItem = OrderItem::create($orderItemData);
-
-                    // ✅ Decrease stock
-                    if ($cartItem->variant) {
-                        $cartItem->variant->decrement('stock', $cartItem->quantity);
-                    }
-
-                }
-            }
-
-            // Track global coupon usage
-            if ($totals['coupon_id']) {
-                $usedCoupons[] = [
-                    'coupon_id' => $totals['coupon_id'],
-                    'vendor_id' => null // Global coupon
-                ];
-
-            }
-
-            // Update coupon usage counts
-            if (!empty($usedCoupons)) {
-                $this->updateCouponUsages($usedCoupons, $user->id);
-            }
-
-            // Clear the cart
-            //$deletedCartItems = CartItem::where('user_id', $user->id)->delete();
-            //  Log::info('Cart cleared', ['deleted_items' => $deletedCartItems]);
-
-            // Clear session coupons and wallet settings
-            session()->forget('global_coupon');
-            session()->forget('use_wallet');
-            session()->forget('wallet_amount');
-            foreach ($groupedCart as $vendorId => $items) {
-                session()->forget("vendor_{$vendorId}_coupon");
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Order processed successfully',
-                'order_id' => $order->id
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to place order: ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Proceed to delivery address',
+        ]);
     }
 
      /**
@@ -357,6 +189,144 @@ class OrderController extends Controller
                 // ]);
             }
         }
+    }
+
+    /**
+     * Create Order, VendorOrder, OrderItem from session/checkout data. Call only when payment is being completed.
+     */
+    public function createOrderFromCheckoutData(array $checkoutData, int $userId, ?int $custAddressId): Order
+    {
+        $totals = $checkoutData['totals'];
+        $orderNumber = $checkoutData['order_number'];
+
+        $order = Order::create([
+            'user_id' => $userId,
+            'cust_address_id' => $custAddressId,
+            'order_number' => $orderNumber,
+            'total_price' => $totals['subtotal'],
+            'coupon_id' => $totals['coupon_id'],
+            'coupon_discount' => $totals['coupon_discount'],
+            'wallet_used' => $totals['wallet_used'],
+            'final_amount' => $totals['final_amount'],
+            'status' => 'confirmed',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        if (($totals['wallet_used'] ?? 0) > 0) {
+            $this->processWalletTransaction($userId, $totals['wallet_used'], $order->id);
+        }
+
+        foreach ($checkoutData['vendors'] as $vendorId => $vd) {
+            $vendor = VendorAdmin::find($vendorId);
+            if (!$vendor) {
+                continue;
+            }
+            $vendorTotals = $vd['vendor_totals'];
+            $deliverySlotId = $this->createDeliverySlotFromCheckout($userId, (int) $vendorId, $vd);
+
+            $vendorOrder = VendorOrder::create([
+                'order_id' => $order->id,
+                'vendor_id' => $vendorId,
+                'coupon_id' => $vendorTotals['coupon_id'],
+                'coupon_discount' => $vendorTotals['coupon_discount'],
+                'delivery_slot_id' => $deliverySlotId,
+                'sub_total' => $vendorTotals['subtotal'],
+                'delivery_fee' => $vendorTotals['delivery_fee'],
+                'final_amount' => $vendorTotals['final_amount'],
+                'delivery_status' => 'pending',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            foreach ($vd['items'] as $item) {
+                OrderItem::create([
+                    'vendor_order_id' => $vendorOrder->id,
+                    'product_id' => $item['product_id'],
+                    'variant_id' => $item['variant_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'total_price' => $item['quantity'] * $item['price'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        if (!empty($checkoutData['used_coupons'])) {
+            $this->updateCouponUsages($checkoutData['used_coupons'], $userId);
+        }
+
+        session()->forget('checkout_data');
+        session()->forget('checkout_address_id');
+        session()->forget('global_coupon');
+        session()->forget('use_wallet');
+        session()->forget('wallet_amount');
+        foreach (array_keys($checkoutData['vendors'] ?? []) as $vid) {
+            session()->forget("vendor_{$vid}_coupon");
+        }
+
+        return $order;
+    }
+
+    private function createDeliverySlotFromCheckout(int $userId, int $vendorId, array $vd): ?int
+    {
+        $type = $vd['delivery_type'] ?? 'standard';
+        $custom = $vd['custom_delivery'] ?? null;
+
+        if ($type === 'custom' && $custom) {
+            $slot = DeliverySlot::create([
+                'user_id' => $userId,
+                'vendor_id' => $vendorId,
+                'date' => $custom['date'],
+                'start_time' => date('H:i', strtotime($custom['start_time'])),
+                'end_time' => date('H:i', strtotime($custom['end_time'])),
+                'is_available' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            return $slot->id;
+        }
+        if ($type === 'express') {
+            $start = now()->addMinutes(20);
+            $end = now()->addMinutes(40);
+        } else {
+            $start = now()->addMinutes(30);
+            $end = now()->addMinutes(60);
+        }
+        $slot = DeliverySlot::firstOrCreate([
+            'user_id' => $userId,
+            'vendor_id' => $vendorId,
+            'date' => $start->format('Y-m-d'),
+            'start_time' => $start->format('H:i:s'),
+            'end_time' => $end->format('H:i:s'),
+        ], [
+            'is_available' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        return $slot->id;
+    }
+
+    /**
+     * Decrement product stock for all items of an order. Call only when payment is complete.
+     * Uses order.stock_deducted flag to avoid double decrement (e.g. PhonePe redirect + callback).
+     */
+    private function decrementStockForOrder(int $orderId): void
+    {
+        $order = Order::find($orderId);
+        if (!$order || $order->stock_deducted) {
+            return;
+        }
+        $orderItems = OrderItem::whereHas('vendorOrder', fn ($q) => $q->where('order_id', $orderId))
+            ->with('variant')
+            ->get();
+        foreach ($orderItems as $orderItem) {
+            if ($orderItem->variant) {
+                $orderItem->variant->decrement('stock', $orderItem->quantity);
+            }
+        }
+        $order->update(['stock_deducted' => true]);
     }
 
     private function calculateOrderTotals($groupedCart, $user)
@@ -643,15 +613,17 @@ class OrderController extends Controller
 
     public function deliveryAddress()
     {
-        // Check if user has a pending order
-        $order = Order::where('user_id', Auth::id())
-            ->where('status', 'pending')
-            ->latest()
-            ->first();
-
-        if (!$order) {
-            return redirect()->route('cart.view')->with('error', 'Please create an order first.');
+        $checkoutData = session('checkout_data');
+        if (!$checkoutData) {
+            return redirect()->route('cart.view')->with('error', 'Please proceed from cart first.');
         }
+
+        // View expects an object with order_number, final_amount; id used only for form/API
+        $order = (object) [
+            'id' => 0,
+            'order_number' => $checkoutData['order_number'],
+            'final_amount' => $checkoutData['totals']['final_amount'],
+        ];
 
         return view('web.checkoutaddress', compact('order'));
     }
@@ -663,24 +635,18 @@ class OrderController extends Controller
     public function checkDeliveryLocation(Request $request)
     {
         $request->validate([
-            'order_id' => 'required|exists:orders,id',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
         ]);
 
-        $order = Order::with('vendorOrders')
-            ->where('id', $request->order_id)
-            ->where('user_id', Auth::id())
-            ->where('status', 'pending')
-            ->first();
-
-        if (!$order) {
-            return response()->json(['deliverable' => false, 'message' => 'Order not found or already processed.']);
+        $checkoutData = session('checkout_data');
+        if (!$checkoutData || empty($checkoutData['vendors'])) {
+            return response()->json(['deliverable' => false, 'message' => 'Checkout session expired. Please try again from cart.']);
         }
 
         $lat = (float) $request->latitude;
         $lng = (float) $request->longitude;
-        $vendorIds = $order->vendorOrders->pluck('vendor_id')->unique()->values()->all();
+        $vendorIds = array_keys($checkoutData['vendors']);
 
         $tempAddress = new CustomerAddress();
         $tempAddress->latitude = $lat;
@@ -704,20 +670,13 @@ class OrderController extends Controller
     public function updateAddress(Request $request)
     {
         $request->validate([
-            'order_id' => 'required|exists:orders,id',
             'address_id' => 'required|exists:customer_addresses,id',
             'current_latitude' => 'required|numeric',
             'current_longitude' => 'required|numeric',
         ]);
 
-        // Get the order
-        $order = Order::where('id', $request->order_id)
-                    ->where('user_id', Auth::id())
-                    ->where('status', 'pending')
-                    ->first();
-
-        if (!$order) {
-            return redirect()->back()->with('error', 'Order not found or already processed');
+        if (!session('checkout_data')) {
+            return redirect()->route('cart.view')->with('error', 'Checkout session expired. Please try again from cart.');
         }
 
         $address = CustomerAddress::where('id', $request->address_id)
@@ -728,7 +687,6 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'Invalid address');
         }
 
-        // Ensure selected address is within current delivery location (e.g. Delhi only, not Ranchi)
         if (!$address->latitude || !$address->longitude) {
             return redirect()->back()->with('error', 'This address cannot be used for delivery at current location. Please add an address in your current area using "Use my current location".');
         }
@@ -742,17 +700,112 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'Selected address is not in your current delivery location. Please select an address in your current area or update your location.');
         }
 
-        // Update the address
-        $order->cust_address_id = $request->address_id;
-        $order->save();
+        session()->put('checkout_address_id', $request->address_id);
 
-        // Redirect to payment page
-        return redirect()->route('payment.details', $order->id);
+        return redirect()->route('payment.checkout');
+    }
+
+    /**
+     * Initiate PhonePe for session checkout (no order in DB yet). Creates PendingCheckout and returns redirect URL.
+     */
+    public function initiatePhonePe(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:1', // in paise
+        ]);
+
+        $checkoutData = session('checkout_data');
+        $addressId = session('checkout_address_id');
+        if (!$checkoutData || !$addressId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Checkout session expired. Please try again from cart.'
+            ], 400);
+        }
+
+        $user = Auth::user();
+        $amount = (float) $request->amount;
+        $amountPaise = (int) round($amount);
+        if ($amountPaise < 100) {
+            return response()->json(['success' => false, 'message' => 'Invalid amount.'], 400);
+        }
+
+        $pending = PendingCheckout::create([
+            'user_id' => $user->id,
+            'cust_address_id' => $addressId,
+            'amount' => $amount / 100,
+            'currency' => 'INR',
+            'order_data' => $checkoutData,
+            'status' => 'pending',
+        ]);
+
+        $transactionId = 'PC_' . $pending->id;
+        $payment = Payment::create([
+            'order_id' => null,
+            'pending_checkout_id' => $pending->id,
+            'user_id' => $user->id,
+            'payment_method' => 'phonepe',
+            'payment_status' => 'initiated',
+            'amount' => $amount / 100,
+            'currency' => 'INR',
+            'transaction_id' => $transactionId,
+        ]);
+
+        $phonePe = app(PhonePeService::class);
+        $result = $phonePe->createOrder($amountPaise, $transactionId);
+
+        if (isset($result['orderId']) && isset($result['redirectUrl'])) {
+            $payment->update([
+                'gateway_reference' => $result['orderId'] ?? null,
+                'payment_status' => 'pending',
+            ]);
+            return response()->json([
+                'success' => true,
+                'redirectUrl' => $result['redirectUrl'],
+            ]);
+        }
+
+        $errorMessage = $result['message'] ?? ($result['error'] ?? 'Unknown error from PhonePe');
+        return response()->json([
+            'success' => false,
+            'message' => $errorMessage,
+            'debug' => $result,
+        ], 500);
+    }
+
+    public function paymentCheckout()
+    {
+        $checkoutData = session('checkout_data');
+        $addressId = session('checkout_address_id');
+        if (!$checkoutData) {
+            return redirect()->route('cart.view')->with('error', 'Checkout session expired. Please try again from cart.');
+        }
+        if (!$addressId) {
+            return redirect()->route('delivery.address')->with('error', 'Please select a delivery address first.');
+        }
+
+        $address = CustomerAddress::where('id', $addressId)->where('user_id', Auth::id())->first();
+        if (!$address) {
+            return redirect()->route('delivery.address')->with('error', 'Invalid address.');
+        }
+
+        $totals = $checkoutData['totals'];
+        $order = (object) [
+            'id' => 0,
+            'order_number' => $checkoutData['order_number'],
+            'total_price' => $totals['subtotal'],
+            'coupon_discount' => $totals['coupon_discount'],
+            'wallet_used' => $totals['wallet_used'],
+            'wallet_discount' => $totals['wallet_used'],
+            'final_amount' => $totals['final_amount'],
+            'address' => $address,
+        ];
+
+        return view('web.paymentdetails', compact('order'));
     }
 
     public function paymentDetails($orderId)
     {
-        // Get the order with address
         $order = Order::with('address')
                     ->where('id', $orderId)
                     ->where('user_id', Auth::id())
@@ -768,40 +821,58 @@ class OrderController extends Controller
 
     public function processCOD(Request $request)
     {
-        $order = Order::where('id', $request->order_id)
-                    ->where('user_id', Auth::id())
-                    ->where('status', 'pending')
-                    ->first();
-
-        if (!$order) {
+        $checkoutData = session('checkout_data');
+        $addressId = session('checkout_address_id');
+        if (!$checkoutData || !$addressId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Order not found or already processed'
-            ]);
+                'message' => 'Checkout session expired. Please try again from cart.'
+            ], 400);
         }
 
-        // Update order status
-        $order->status = 'confirmed';
-        $order->save();
+        $user = Auth::user();
+        $address = CustomerAddress::where('id', $addressId)->where('user_id', $user->id)->first();
+        if (!$address) {
+            return response()->json(['success' => false, 'message' => 'Invalid address.'], 400);
+        }
 
-        // Create payment record
-        Payment::create([
-            'order_id' => $order->id,
-            'user_id' => Auth::id(),
-            'payment_method' => 'cod',
-            'payment_status' => 'pending',
-            'amount' => $order->final_amount,
-            'currency' => 'INR'
-        ]);
+        // Validate stock from cart
+        $cartItems = CartItem::with('variant')->where('user_id', $user->id)->get();
+        foreach ($cartItems as $item) {
+            if ($item->variant && $item->variant->stock < $item->quantity) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Only {$item->variant->stock} qty available for an item. Please update cart."
+                ], 422);
+            }
+        }
 
-        // clear cart
-        CartItem::where('user_id', Auth::id())->delete();
-
-        return response()->json([
-            'success' => true,
-            'order_id' => $order->id,
-            'message' => 'Order confirmed successfully'
-        ]);
+        DB::beginTransaction();
+        try {
+            $order = $this->createOrderFromCheckoutData($checkoutData, $user->id, (int) $addressId);
+            Payment::create([
+                'order_id' => $order->id,
+                'user_id' => $user->id,
+                'payment_method' => 'cod',
+                'payment_status' => 'pending',
+                'amount' => $order->final_amount,
+                'currency' => 'INR'
+            ]);
+            $this->decrementStockForOrder($order->id);
+            CartItem::where('user_id', $user->id)->delete();
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'order_id' => $order->id,
+                'message' => 'Order confirmed successfully'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to place order: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
 }

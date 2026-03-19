@@ -117,7 +117,10 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         Route::post('/order/update-address', [OrderController::class, 'updateAddress'])->name('order.updateAddress');
         Route::post('/order/check-delivery-location', [OrderController::class, 'checkDeliveryLocation'])->name('order.checkDeliveryLocation');
 
-        // Payment details page
+        // Payment: checkout from session (order created only after payment)
+        Route::get('/payment/checkout', [OrderController::class, 'paymentCheckout'])->name('payment.checkout');
+        Route::post('/payment/initiate-phonepe', [OrderController::class, 'initiatePhonePe'])->name('payment.initiate.phonepe');
+        // Payment details page (by order id - used for retry after PhonePe failure)
         Route::get('/payment/details/{orderId}', [OrderController::class, 'paymentDetails'])->name('payment.details');
         Route::post('/process-cod', [OrderController::class, 'processCOD'])->name('order.process.cod');
 

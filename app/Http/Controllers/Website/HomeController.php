@@ -66,6 +66,7 @@ class HomeController extends Controller
                         ->where('is_deleted', 0)
                         ->where('is_active', 1)
                         ->where('top_selling', 1)
+                        ->inStock()
                         ->take(20)
                         ->get();
 
@@ -75,6 +76,7 @@ class HomeController extends Controller
                         ->where('is_deleted', 0)
                         ->where('is_active', 1)
                         ->where('best_offers', 1)
+                        ->inStock()
                         ->take(20)
                         ->get();
 
@@ -84,6 +86,7 @@ class HomeController extends Controller
                         ->where('is_deleted', 0)
                         ->where('is_active', 1)
                         ->where('spons_product', 1)
+                        ->inStock()
                         ->take(20)
                         ->get();
 
@@ -102,6 +105,7 @@ class HomeController extends Controller
                     $categoryIdsWithDeliveryProducts = Product::whereIn('vendor_id', $vendorIds)
                         ->where('is_active', 1)
                         ->where('is_deleted', 0)
+                        ->inStock()
                         ->distinct()
                         ->pluck('category_id')
                         ->unique()
@@ -117,6 +121,7 @@ class HomeController extends Controller
                                 ->where('is_deleted', 0)
                                 ->where('is_active', 1)
                                 ->whereIn('vendor_id', $vendorIds)
+                                ->inStock()
                                 ->limit(16)
                                 ->get();
                             return $category;
@@ -178,7 +183,8 @@ class HomeController extends Controller
             ->whereIn('vendor_id', $vendorIds)
             ->where('is_deleted', 0)
             ->where('is_active', 1)
-            ->where('top_selling', 1)  // Only top selling products
+            ->where('top_selling', 1)
+            ->inStock()
             ->take(20)
             ->get();
 
@@ -186,7 +192,8 @@ class HomeController extends Controller
             ->whereIn('vendor_id', $vendorIds)
             ->where('is_deleted', 0)
             ->where('is_active', 1)
-            ->where('best_offers', 1)  // Only best offer products
+            ->where('best_offers', 1)
+            ->inStock()
             ->take(20)
             ->get();
 
@@ -194,7 +201,8 @@ class HomeController extends Controller
             ->whereIn('vendor_id', $vendorIds)
             ->where('is_deleted', 0)
             ->where('is_active', 1)
-            ->where('spons_product', 1)  // Only sponsored products
+            ->where('spons_product', 1)
+            ->inStock()
             ->take(20)
             ->get();
 
@@ -212,6 +220,7 @@ class HomeController extends Controller
         $categoryIdsWithDeliveryProducts = Product::whereIn('vendor_id', $vendorIds)
             ->where('is_active', 1)
             ->where('is_deleted', 0)
+            ->inStock()
             ->distinct()
             ->pluck('category_id')
             ->unique()
@@ -227,6 +236,7 @@ class HomeController extends Controller
                     ->where('is_deleted', 0)
                     ->where('is_active', 1)
                     ->whereIn('vendor_id', $vendorIds)
+                    ->inStock()
                     ->limit(16)
                     ->get();
                 return $category;
@@ -333,6 +343,7 @@ class HomeController extends Controller
             $products = Product::with('variants')
                 ->where('vendor_id', $selectedVendor->id)
                 ->where('is_active', '1')
+                ->inStock()
                 ->get();
 
             // ✅ Get unique sub_category_ids from products
@@ -407,11 +418,12 @@ class HomeController extends Controller
             return response()->json(['success' => false, 'message' => 'Vendor not found in your area']);
         }
 
-        // ✅ Products
+        // ✅ Products (only in-stock)
         $products = Product::with('variants')
             ->where('vendor_id', $selectedVendor->id)
             ->where('is_deleted', '0')
             ->where('is_active', '1')
+            ->inStock()
             ->get();
 
         // ✅ Store time
@@ -557,6 +569,7 @@ class HomeController extends Controller
                 ->where('is_active', 1)
                 ->whereNotNull('sub_category_id')
                 ->with('variants')
+                ->inStock()
                 ->get();
 
             // Debug: Log products found
@@ -677,6 +690,7 @@ class HomeController extends Controller
                 ->where('is_active', 1)
                 ->whereNotNull('sub_category_id')
                 ->with('variants')
+                ->inStock()
                 ->get();
 
             // Debug: Log products found
@@ -694,6 +708,7 @@ class HomeController extends Controller
                 ->where('is_deleted', 0)
                 ->where('is_active', 1)
                 ->whereNotNull('sub_category_id')
+                ->inStock()
                 ->get();
             
             // Get all subcategory IDs from all vendor products (across all categories)
@@ -859,6 +874,7 @@ class HomeController extends Controller
             ->where('is_deleted', 0)
             ->where('is_active', 1)
             ->whereNotNull('sub_category_id')
+            ->inStock()
             ->pluck('sub_category_id')
             ->unique()
             ->filter()
@@ -894,13 +910,14 @@ class HomeController extends Controller
             'names' => $subcategories->pluck('sub_cat_name')->toArray()
         ]);
 
-        // ✅ Products filter - use direct Product query for specific subcategory
+        // ✅ Products filter - use direct Product query for specific subcategory (only in-stock)
         $products = Product::where('vendor_id', $vendor_id)
             ->where('category_id', $category_id)
             ->where('sub_category_id', $subcategory_id)
             ->where('is_deleted', 0)
             ->where('is_active', 1)
             ->with('variants')
+            ->inStock()
             ->get();
 
         //vendor wise coupons
@@ -970,6 +987,7 @@ class HomeController extends Controller
             ->whereIn('vendor_id', $vendorIds)
             ->where('is_deleted', '0')
             ->where('is_active', '1')
+            ->inStock()
             ->get();
 
         Log::info("Products found:", ['count' => $products->count()]);
@@ -1018,12 +1036,13 @@ class HomeController extends Controller
             ])->with('error', 'No products available in your area.');
         }
 
-        // ✅ Get all products for this category to filter subcategories
+        // ✅ Get all products for this category to filter subcategories (only in-stock)
         $allCategoryProducts = Product::with(['variants', 'vendor'])
             ->where('category_id', $category_id)
             ->whereIn('vendor_id', $vendorIds)
             ->where('is_deleted', '0')
             ->where('is_active', '1')
+            ->inStock()
             ->get();
 
         // ✅ Filter subcategories to only show those that have products
@@ -1110,12 +1129,13 @@ class HomeController extends Controller
             ->where('is_deleted', 0)
             ->first();
 
-        // Get similar products from same subcategory - only from vendors in user's area
+        // Get similar products from same subcategory - only from vendors in user's area (in-stock only)
         $similarProducts = Product::with(['featureImage', 'variants'])
             ->where('sub_category_id', $product->sub_category_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', 1)
             ->where('is_deleted', 0)
+            ->inStock()
             ->when($allowedVendorIds->isNotEmpty(), function($query) use ($allowedVendorIds) {
                 return $query->whereIn('vendor_id', $allowedVendorIds);
             })
@@ -1123,12 +1143,13 @@ class HomeController extends Controller
             ->limit(8)
             ->get();
 
-        // Get other products by same vendor - vendor is already validated to be in user's area
+        // Get other products by same vendor - in-stock only
         $otherVendorProducts = Product::with(['featureImage', 'variants'])
             ->where('vendor_id', $product->vendor_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', 1)
             ->where('is_deleted', 0)
+            ->inStock()
             ->inRandomOrder()
             ->limit(6)
             ->get();

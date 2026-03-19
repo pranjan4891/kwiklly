@@ -239,8 +239,8 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Redirecting...';
             btn.disabled = true;
 
-            // Send AJAX request to initiate PhonePe payment
-            fetch('{{ route("phonepe.pay") }}', {
+            // Send AJAX request to initiate PhonePe payment (order_id 0 = from session checkout)
+            fetch('{{ $order->id ? route("phonepe.pay") : route("payment.initiate.phonepe") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -294,7 +294,7 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({
-                    order_id: {{ $order->id }}
+                    order_id: {{ $order->id ?? 0 }}
                 })
             })
             .then(response => response.json())

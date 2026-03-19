@@ -74,6 +74,14 @@
               <strong>Estimated Delivery: {{ $estimatedDelivery }}</strong><br>
               <small>Order ID: #{{ $order->order_number }}</small><br>
               <small>Ordered on: {{ $order->created_at->format('D j M Y, h:i A') }}</small>
+              @php
+                $latestPayment = $order->payments->sortByDesc('created_at')->first();
+              @endphp
+              @if($latestPayment)
+              <br><small><strong>Payment:</strong> {{ $latestPayment->payment_method === 'cod' ? 'Cash on Delivery' : ($latestPayment->payment_method === 'phonepe' ? 'PhonePe' : ucfirst($latestPayment->payment_method)) }} · <span class="text-muted">{{ ucfirst(str_replace('_', ' ', $latestPayment->payment_status)) }}</span></small>
+              @else
+              <br><small><strong>Payment:</strong> <span class="text-muted">Pending</span></small>
+              @endif
             </div>
           </div>
 

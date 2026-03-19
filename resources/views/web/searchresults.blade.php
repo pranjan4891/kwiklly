@@ -13,7 +13,10 @@
         @if($products->isNotEmpty())
             <div class="row">
                 @foreach($products as $product)
-                    @php $defaultVariant = $product->variants->first(); @endphp
+                    @php
+                        $defaultVariant = $product->variants->firstWhere('stock', '>', 0) ?? $product->variants->first();
+                        $variantInStock = $defaultVariant && $defaultVariant->stock > 0;
+                    @endphp
                     @if($defaultVariant)
                         <div class="col-md-3 pb-4 col-6">
                             <div class="item">
@@ -92,7 +95,9 @@
                                                         <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
                                                     </button>
                                                 @else
-                                                    @if (!$inCart)
+                                                    @if(!$variantInStock)
+                                                        <span class="add-btn btn disabled text-muted">Out of Stock</span>
+                                                    @elseif (!$inCart)
                                                         <button class="add-btn"
                                                                 data-product-id="{{ $product->id }}"
                                                                 data-variant-id="{{ $firstVariant->id }}"

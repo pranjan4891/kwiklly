@@ -125,7 +125,6 @@
       <!-- Hidden form for proceeding to payment -->
       <form id="proceedToPaymentForm" method="POST" action="{{ route('order.updateAddress') }}">
          @csrf
-         <input type="hidden" name="order_id" value="{{ $order->id }}">
          <input type="hidden" name="address_id" id="selectedAddressId" value="">
          <input type="hidden" name="current_latitude" id="currentLatitude" value="">
          <input type="hidden" name="current_longitude" id="currentLongitude" value="">
@@ -141,7 +140,7 @@
          let selectedAddressId = null;
          let googlemapkey = "{{ env('GOOGLE_MAPS_API_KEY') }}";
          let autocomplete;
-         let orderId = {{ $order->id }};
+         let orderId = {{ $order->id ?? 0 }};
 
          document.addEventListener("DOMContentLoaded", function () {
            const homeBtn = document.getElementById("pataHomeBtn");
@@ -403,7 +402,7 @@
 
                    // First check if this location is deliverable by all vendors in the order
                    try {
-                     const checkRes = await fetch("{{ route('order.checkDeliveryLocation') }}", {
+                     const checkRes = await fetch("{{ url('/order/check-delivery-location') }}", {
                        method: 'POST',
                        headers: {
                          'Content-Type': 'application/json',
@@ -411,7 +410,6 @@
                          'Accept': 'application/json'
                        },
                        body: JSON.stringify({
-                         order_id: orderId,
                          latitude: lat,
                          longitude: lng
                        })

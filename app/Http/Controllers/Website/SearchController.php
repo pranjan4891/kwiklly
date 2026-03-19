@@ -33,11 +33,13 @@ class SearchController extends Controller
                     'category',
                     'subcategory',
                     'vendor',
-                    'featureImage'
+                    'featureImage',
+                    'variants'
                 ])
                 ->where('is_active', 1)
                 ->where('is_deleted', 0)
                 ->whereIn('vendor_id', $vendorIds)
+                ->inStock()
                 ->where(function ($q) use ($query) {
                     $q->where('title', 'LIKE', "%{$query}%")
                     ->orWhere('sub_title', 'LIKE', "%{$query}%")
@@ -82,6 +84,7 @@ class SearchController extends Controller
                 ->where('is_active', 1)
                 ->where('is_deleted', 0)
                 ->whereIn('vendor_id', $vendorIds)
+                ->inStock()
                 ->where(function ($q) use ($query) {
                     $q->where('title', 'LIKE', "%{$query}%")
                     ->orWhere('sub_title', 'LIKE', "%{$query}%");

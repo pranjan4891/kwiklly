@@ -47,10 +47,10 @@
                 @if($products->count())
                     @foreach ($products as $product)
                         @php
-                            $defaultVariant = $product->variants->first();
+                            $defaultVariant = $product->variants->firstWhere('stock', '>', 0) ?? $product->variants->first();
                             $hasMultipleVariants = $product->variants->count() > 1;
+                            $variantInStock = $defaultVariant && $defaultVariant->stock > 0;
 
-                            // safely handle missing variant
                             $variantId = $defaultVariant->id ?? 0;
                             $key = $product->id . '_' . $variantId;
 
@@ -122,6 +122,8 @@
                                                 @else
                                           @if (!$defaultVariant)
                                           <button class="add-btn" disabled>Unavailable</button>
+                                          @elseif(!$variantInStock)
+                                          <span class="add-btn btn disabled text-muted">Out of Stock</span>
                                           @else
                                                     @if (!$inCart)
                                                         <button class="add-btn"

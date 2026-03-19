@@ -63,15 +63,17 @@ class PhonePeService
 
     /**
      * Create Payment Order
+     * @param int $amount Amount in paise
+     * @param string|null $merchantOrderId Optional (e.g. PC_123 for pending checkout)
      */
-    public function createOrder(int $amount): array
+    public function createOrder(int $amount, ?string $merchantOrderId = null): array
     {
         $token = $this->getToken();
         if (!$token) {
             return ['success' => false, 'message' => 'Unable to fetch token'];
         }
 
-        $merchantOrderId = 'ORD_' . uniqid();
+        $merchantOrderId = $merchantOrderId ?? ('ORD_' . uniqid());
 
         $payload = [
             "merchantOrderId" => $merchantOrderId,

@@ -20,6 +20,11 @@ class Order extends Model
         'wallet_used',
         'final_amount',
         'status',
+        'stock_deducted',
+    ];
+
+    protected $casts = [
+        'stock_deducted' => 'boolean',
     ];
 
     public function items()

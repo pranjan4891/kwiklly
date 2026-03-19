@@ -479,7 +479,7 @@
             </div>
 
             @php
-                $firstVariantForDisplay = $product->variants->first();
+                $firstVariantForDisplay = $product->variants->firstWhere('stock', '>', 0) ?? $product->variants->first();
                 $attrsFirst = $firstVariantForDisplay ? (is_array($firstVariantForDisplay->attributes ?? null) ? $firstVariantForDisplay->attributes : json_decode($firstVariantForDisplay->attributes ?? '{}', true)) : [];
                 $netQtyFirst = !empty($attrsFirst) ? implode(', ', $attrsFirst) : ($firstVariantForDisplay->variant_name ?? '1 unit');
             @endphp
@@ -529,9 +529,29 @@
                     if(isset($attributes['RAM'])) $ramVariants->push($attributes['RAM']);
                 }
                 $uniqueBases = array_keys($variantBases);
-                $firstBase = $uniqueBases[0] ?? null;
+                $defaultSelectedVariant = $product->variants->firstWhere('stock', '>', 0) ?? $product->variants->first();
+                if ($defaultSelectedVariant) {
+                    $attrsDef = json_decode($defaultSelectedVariant->attributes ?? '{}', true);
+                    $defBaseName = isset($attrsDef['Color']) && strpos($defaultSelectedVariant->variant_name ?? '', ' - ') !== false
+                        ? trim(substr($defaultSelectedVariant->variant_name, 0, strrpos($defaultSelectedVariant->variant_name, ' - ')))
+                        : ($defaultSelectedVariant->variant_name ?? '');
+                    $firstBase = $defBaseName && isset($variantBases[$defBaseName]) ? $defBaseName : ($uniqueBases[0] ?? null);
+                } else {
+                    $firstBase = $uniqueBases[0] ?? null;
+                }
                 $firstVariantsOfBase = $firstBase ? $variantBases[$firstBase] : [];
-                $defaultSelectedVariant = !empty($firstVariantsOfBase) ? $firstVariantsOfBase[0] : null;
+                if (!$defaultSelectedVariant && !empty($firstVariantsOfBase)) {
+                    $defaultSelectedVariant = $firstVariantsOfBase[0];
+                }
+                if ($defaultSelectedVariant && $firstBase && !empty($firstVariantsOfBase)) {
+                    $rest = array_values(array_filter($firstVariantsOfBase, function ($v) use ($defaultSelectedVariant) {
+                        return $v->id !== $defaultSelectedVariant->id;
+                    }));
+                    if (count($rest) < count($firstVariantsOfBase)) {
+                        $firstVariantsOfBase = array_merge([$defaultSelectedVariant], $rest);
+                        $variantBases[$firstBase] = $firstVariantsOfBase;
+                    }
+                }
                 $uniqueMemories = $memoryVariants->unique()->values();
                 $uniqueRams = $ramVariants->unique()->values();
             @endphp
@@ -714,8 +734,9 @@
                 @if ($isOpen)
                     {{-- ✅ Store is open --}}
                     @if ($hasMultipleVariants)
-                        {{-- Variant chosen from list above; qty-box binds to selected variant via JS --}}
-                        @if (!$inCart)
+                        @if (($firstVariant->stock ?? 0) <= 0)
+                        <span class="add-btn-detail btn disabled text-muted">Out of Stock</span>
+                        @elseif (!$inCart)
                         <button class="add-btn-detail add-btn"
                                 data-product-id="{{ $product->id }}"
                                 data-variant-id="{{ $firstVariant->id }}">
@@ -732,6 +753,8 @@
                     @else
                         @if (!$defaultVariant)
                             <button class="add-btn-detail" disabled>Unavailable</button>
+                        @elseif (($firstVariant->stock ?? 0) <= 0)
+                            <span class="add-btn-detail btn disabled text-muted">Out of Stock</span>
                         @else
                             @if (!$inCart)
                                 <button class="add-btn-detail add-btn"

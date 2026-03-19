@@ -113,14 +113,14 @@ class CustomerController extends Controller
             auth()->login($user);
             $request->session()->regenerate();
 
-            // If guest (missing name/email), redirect to profile update
-            if (empty($user->name) || empty($user->email)) {
-                return redirect()->route('update.profile')->with('info', 'Please update your details');
-            }
-
-            // ✅ Migrate session cart if exists
+            // ✅ Always migrate session cart first (so cart is never lost for new or existing users)
             $sessionCart = session('cart', []);
             foreach ($sessionCart as $item) {
+                if (empty($item['product_id']) || empty($item['variant_id'])) {
+                    continue;
+                }
+                $qty = (int) ($item['quantity'] ?? 1);
+                $price = (float) ($item['price'] ?? 0);
                 CartItem::updateOrCreate(
                     [
                         'user_id' => auth()->id(),
@@ -128,18 +128,24 @@ class CustomerController extends Controller
                         'variant_id' => $item['variant_id'],
                     ],
                     [
-                        'quantity' => DB::raw("quantity + {$item['quantity']}"),
-                        'price' => $item['price']
+                        'quantity' => DB::raw("quantity + {$qty}"),
+                        'price' => $price,
                     ]
                 );
             }
             session()->forget('cart');
 
-            if (!empty($sessionCart)) {
+            // If guest (missing name/email), redirect to profile update; cart already merged
+            if (empty($user->name) || empty($user->email)) {
+                return redirect()->route('update.profile')->with('info', 'Please update your details');
+            }
+
+            // If cart had items (or user has items after merge), go to cart else intended/dashboard
+            $hasCartItems = !empty($sessionCart) || CartItem::where('user_id', auth()->id())->exists();
+            if ($hasCartItems) {
                 return redirect()->route('cart.view');
             }
 
-            // ✅ Proper redirect
             return redirect()->intended('/');
         }
 
@@ -285,6 +291,11 @@ class CustomerController extends Controller
             return response()->json(['success' => true, 'message' => 'Profile updated successfully!']);
         }
 
+        // If user has items in cart, take to cart page; else dashboard
+        $hasCartItems = CartItem::where('user_id', $user->id)->exists();
+        if ($hasCartItems) {
+            return redirect()->route('cart.view')->with('success', 'Profile updated successfully!');
+        }
         return redirect()->route('customer.dashboard')->with('success', 'Profile updated successfully!');
     }
 
@@ -387,8 +398,8 @@ class CustomerController extends Controller
         // Get wallet balance
         $walletBalance = WalletTransaction::getBalance($user->id);
 
-        // Get orders with proper relationships - only latest 6 orders
-        $orders = Order::with(['vendorOrders.vendor', 'vendorOrders.orderItems.product', 'vendorOrders.orderItems.variant', 'vendorOrders.deliverySlot'])
+        // Get orders with proper relationships - only latest 6 orders (include payments for payment status)
+        $orders = Order::with(['vendorOrders.vendor', 'vendorOrders.orderItems.product', 'vendorOrders.orderItems.variant', 'vendorOrders.deliverySlot', 'payments'])
             ->where('user_id', $user->id)
             ->latest()
             ->take(6)
@@ -444,12 +455,15 @@ class CustomerController extends Controller
                 ];
             }
 
+            $latestPayment = $order->payments->sortByDesc('created_at')->first();
             $groupedOrders[] = [
                 'order_id' => $order->order_number,
-                'order_total' => $order->total_price, // Keep the full order total if needed
+                'order_total' => $order->total_price,
                 'status' => $order->status,
                 'date' => $order->created_at->format('D j M Y, h:i A'),
-                'created_at' => $order->created_at->timestamp, // Pass timestamp for 5-minute check
+                'created_at' => $order->created_at->timestamp,
+                'payment_status' => $latestPayment ? $latestPayment->payment_status : 'pending',
+                'payment_method' => $latestPayment ? $latestPayment->payment_method : 'N/A',
                 'vendors' => $itemsByVendor
             ];
         }
@@ -472,7 +486,8 @@ class CustomerController extends Controller
             'vendorOrders.vendor', 
             'vendorOrders.orderItems.product.featureImage',
             'vendorOrders.orderItems.variant',
-            'vendorOrders.deliverySlot'
+            'vendorOrders.deliverySlot',
+            'payments'
         ])
             ->where('order_number', $order_id)
             ->where('user_id', auth()->id())

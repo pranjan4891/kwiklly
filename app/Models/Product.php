@@ -74,6 +74,14 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class, 'product_id');
     }
 
+    /** Only products that have at least one variant with stock > 0 */
+    public function scopeInStock($query)
+    {
+        return $query->whereHas('variants', function ($q) {
+            $q->where('stock', '>', 0);
+        });
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);

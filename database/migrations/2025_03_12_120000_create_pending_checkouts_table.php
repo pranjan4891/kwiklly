@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('pending_checkouts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('cust_address_id')->nullable()->constrained('customer_addresses')->nullOnDelete();
+            $table->decimal('amount', 12, 2);
+            $table->string('currency', 10)->default('INR');
+            $table->json('order_data'); // full checkout data to create order
+            $table->string('status', 20)->default('pending'); // pending, completed, failed, expired
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('pending_checkouts');
+    }
+};

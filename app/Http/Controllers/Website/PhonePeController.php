@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\PhonePeService;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\PendingCheckout;
 use App\Models\CartItem;
+use App\Http\Controllers\Website\OrderController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -139,21 +142,31 @@ class PhonePeController extends Controller
             );
 
             if ($isSuccess) {
-                // Update payment status
                 $payment->update([
                     'payment_status' => 'completed',
                     'gateway_response' => json_encode($status)
                 ]);
 
-                // Update order status
-                $payment->order->update([
-                    'status' => 'confirmed'
-                ]);
-
-                // Clear cart after successful payment
-                CartItem::where('user_id', Auth::id())->delete();
-                
-                // Clear session cart if exists
+                if ($payment->pending_checkout_id) {
+                    // Order not in DB yet: create from PendingCheckout
+                    $pending = PendingCheckout::find($payment->pending_checkout_id);
+                    if ($pending) {
+                        $orderController = app(OrderController::class);
+                        $order = $orderController->createOrderFromCheckoutData(
+                            $pending->order_data,
+                            $pending->user_id,
+                            $pending->cust_address_id
+                        );
+                        $payment->update(['order_id' => $order->id]);
+                        $this->decrementStockForOrder($order->id);
+                        CartItem::where('user_id', $payment->user_id)->delete();
+                        $pending->update(['status' => 'completed']);
+                    }
+                } else {
+                    $payment->order->update(['status' => 'confirmed']);
+                    $this->decrementStockForOrder($payment->order_id);
+                    CartItem::where('user_id', Auth::id())->delete();
+                }
                 if (session()->has('cart')) {
                     session()->forget('cart');
                 }
@@ -223,20 +236,33 @@ class PhonePeController extends Controller
                     $status = strtoupper($request->input('data.state') ?? $request->input('status') ?? '');
 
                     if ($status === 'COMPLETED' || $status === 'SUCCESS' || $status === 'PAYMENT_SUCCESS') {
-                        // Update payment status
                         $payment->update([
                             'payment_status' => 'completed',
                             'gateway_response' => json_encode($request->all())
                         ]);
 
-                        // Update order status
-                        $payment->order->update([
-                            'status' => 'confirmed'
-                        ]);
-
-                        // Clear cart after successful payment
-                        if ($payment->user_id) {
-                            CartItem::where('user_id', $payment->user_id)->delete();
+                        if ($payment->pending_checkout_id) {
+                            $pending = PendingCheckout::find($payment->pending_checkout_id);
+                            if ($pending) {
+                                $orderController = app(OrderController::class);
+                                $order = $orderController->createOrderFromCheckoutData(
+                                    $pending->order_data,
+                                    $pending->user_id,
+                                    $pending->cust_address_id
+                                );
+                                $payment->update(['order_id' => $order->id]);
+                                $this->decrementStockForOrder($order->id);
+                                if ($payment->user_id) {
+                                    CartItem::where('user_id', $payment->user_id)->delete();
+                                }
+                                $pending->update(['status' => 'completed']);
+                            }
+                        } else {
+                            $payment->order->update(['status' => 'confirmed']);
+                            $this->decrementStockForOrder($payment->order_id);
+                            if ($payment->user_id) {
+                                CartItem::where('user_id', $payment->user_id)->delete();
+                            }
                         }
                     } elseif ($status === 'CANCELLED' || $status === 'CANCEL' || $status === 'USER_CANCELLED') {
                         // Payment cancelled
@@ -308,5 +334,26 @@ class PhonePeController extends Controller
         }
 
         return view('web.phonepe.failure', compact('order', 'error'));
+    }
+
+    /**
+     * Decrement product stock for all items of an order. Call only when payment is complete.
+     * Uses order.stock_deducted flag to avoid double decrement (redirect + callback).
+     */
+    private function decrementStockForOrder(int $orderId): void
+    {
+        $order = Order::find($orderId);
+        if (!$order || $order->stock_deducted) {
+            return;
+        }
+        $orderItems = OrderItem::whereHas('vendorOrder', fn ($q) => $q->where('order_id', $orderId))
+            ->with('variant')
+            ->get();
+        foreach ($orderItems as $orderItem) {
+            if ($orderItem->variant) {
+                $orderItem->variant->decrement('stock', $orderItem->quantity);
+            }
+        }
+        $order->update(['stock_deducted' => true]);
     }
 }

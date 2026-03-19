@@ -10,7 +10,8 @@
                 <div class="owl-carousel owl-theme mb-4">
                     @foreach ($categoryData['products']->take(8) as $product)
                         @php
-                            $defaultVariant = $product->variants->first();
+                            $defaultVariant = $product->variants->firstWhere('stock', '>', 0) ?? $product->variants->first();
+                            $variantInStock = $defaultVariant && $defaultVariant->stock > 0;
                         @endphp
                         @if ($defaultVariant)
                             <div class="item">
@@ -86,8 +87,9 @@
                                                         <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
                                                     </button>
                                                 @else
-                                                    {{-- Not in cart → Add --}}
-                                                    @if (!$inCart)
+                                                    @if(!$variantInStock)
+                                                        <span class="add-btn btn disabled text-muted">Out of Stock</span>
+                                                    @elseif (!$inCart)
                                                         <button class="add-btn"
                                                                 data-product-id="{{ $product->id }}"
                                                                 data-variant-id="{{ $variantId }}">
