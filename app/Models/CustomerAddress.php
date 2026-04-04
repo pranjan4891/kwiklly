@@ -26,11 +26,13 @@ class CustomerAddress extends Model
         'phone',
         'alt_phone',
         'full_address',
+        'is_selected',
     ];
 
     protected $casts = [
         'latitude'  => 'decimal:6',
         'longitude' => 'decimal:6',
+        'is_selected' => 'boolean',
     ];
 
     /**

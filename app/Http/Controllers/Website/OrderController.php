@@ -700,6 +700,10 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'Selected address is not in your current delivery location. Please select an address in your current area or update your location.');
         }
 
+        CustomerAddress::where('user_id', Auth::id())->update(['is_selected' => false]);
+        $address->is_selected = true;
+        $address->save();
+
         session()->put('checkout_address_id', $request->address_id);
 
         return redirect()->route('payment.checkout');

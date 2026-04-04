@@ -16,6 +16,10 @@
     <div class="log-in-box">
       <h4 class="mb-4 fw-bold">Login</h4>
 
+      @if(session('success'))
+        <div class="alert alert-success small mb-3">{{ session('success') }}</div>
+      @endif
+
       <div class="d-flex justify-content-center gap-3 mb-3">
         <button class="btn log-in-social-btn bg-transparent">
             <a href="{{ route('auth.google.redirect') }}">
@@ -35,7 +39,7 @@
     @csrf
 
     <div class="mb-3">
-        <input type="email" name="email" class="form-control log-in-form-control" placeholder="Email id" required>
+        <input type="email" name="email" value="{{ old('email') }}" class="form-control log-in-form-control" placeholder="Email id" required>
             @error('email')
                 <div class="text-danger mb-2">{{ $message }}</div>
             @enderror

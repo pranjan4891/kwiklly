@@ -204,6 +204,35 @@
 
 
 <script>
+    const LOCATION_ERROR_SUPPRESS_MS = 5 * 60 * 1000;
+
+    function canShowLocationError(lat, lng) {
+        const key = `${lat},${lng}`;
+        const lastKey = sessionStorage.getItem('lastLocationErrorKey');
+        const lastAt = Number(sessionStorage.getItem('lastLocationErrorAt') || 0);
+        if (lastKey === key && lastAt && (Date.now() - lastAt) < LOCATION_ERROR_SUPPRESS_MS) {
+            return false;
+        }
+        sessionStorage.setItem('lastLocationErrorKey', key);
+        sessionStorage.setItem('lastLocationErrorAt', String(Date.now()));
+        return true;
+    }
+
+    function showLocationUnavailableModal(lat, lng) {
+        if (!canShowLocationError(lat, lng)) return;
+        const modalElement = document.getElementById('locationErrorModal');
+        if (!modalElement) return;
+        const existingModal = bootstrap.Modal.getInstance(modalElement);
+        if (existingModal) {
+            existingModal.hide();
+        }
+        const modal = new bootstrap.Modal(modalElement, {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modal.show();
+    }
+
     function openLocationPopup() {
         // Close the error modal first
         const modalElement = document.getElementById('locationErrorModal');
@@ -217,7 +246,7 @@
         // Open the location selection popup
         setTimeout(function() {
             if (typeof toggleAddpop === 'function') {
-        toggleAddpop(event);
+                toggleAddpop();
             }
         }, 300);
     }
@@ -243,33 +272,9 @@
                     },
                     success: function(response) {
                         console.log("Location check response:", response);
-                        if (response && response.is_in_master_area === false) {
-                            // Show modal if location is outside master area
-                            console.log("Location is outside master area, showing modal");
-                            const modalElement = document.getElementById('locationErrorModal');
-                            if (modalElement) {
-                                // Hide any existing modal instance first
-                                const existingModal = bootstrap.Modal.getInstance(modalElement);
-                                if (existingModal) {
-                                    existingModal.hide();
-                                }
-                                
-                                // Use Bootstrap 5 modal
-                                const modal = new bootstrap.Modal(modalElement, {
-                                    backdrop: 'static',
-                                    keyboard: false
-                                });
-                                modal.show();
-                                
-                                // Force show if modal doesn't appear
-                                setTimeout(function() {
-                                    if (!modalElement.classList.contains('show')) {
-                                        $(modalElement).modal('show');
-                                    }
-                                }, 100);
-                            } else {
-                                console.error("Location error modal element not found");
-                            }
+                        const isDeliverable = !!(response && (response.is_valid_for_selection !== false) && response.is_in_master_area !== false && response.is_in_vendor_area !== false);
+                        if (!isDeliverable) {
+                            showLocationUnavailableModal(loc.lat, loc.lng);
                         } else {
                             console.log("Location is in master area");
                         }
@@ -291,23 +296,6 @@
             checkLocationAndShowModal();
         }, 1000);
     });
-    
-    // Also check when location is detected/updated
-    if (typeof window !== 'undefined') {
-        // Override updateLocation to check after location update
-        const originalUpdateLocation = window.updateLocation;
-        if (originalUpdateLocation) {
-            window.updateLocation = function(fullAddress, place, lat, lng, isAutoDetect) {
-                originalUpdateLocation(fullAddress, place, lat, lng, isAutoDetect);
-                // Check location after update
-                if (lat && lng) {
-                    setTimeout(function() {
-                        if (typeof checkLocationInMasterArea === 'function') {
-                            checkLocationInMasterArea(lat, lng);
-                        }
-                    }, 1500);
-                }
-            };
-        }
-    }
+
+    window.showLocationUnavailableModal = showLocationUnavailableModal;
 </script>

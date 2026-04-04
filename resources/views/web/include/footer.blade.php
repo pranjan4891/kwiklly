@@ -292,16 +292,39 @@
         window.MARKER_IMAGE_URL = "{{ asset('public/loc.png') }}";
         window.HOME_URL = "{{ url('/') }}";
         window.IS_LOGGED_IN = {{ auth()->check() ? 'true' : 'false' }};
+        window.ADDRESS_STORE_URL = "{{ route('address.store') }}";
+        window.ADDRESS_LIST_URL = "{{ route('address.list') }}";
+        window.ADDRESS_SELECT_URL_TEMPLATE = "{{ url('/address/select/:id') }}";
+        window.LOGIN_PAGE_URL = "{{ route('loginbyphone') }}";
     </script>
 
     <!--------------- CUSTOM JAVASCRIPT START ----------------->
     <!-- Location related scripts - MUST load before Google Maps API -->
     <script src="{{ asset('public/assets/website/JS/location-popup.js')}}"></script>
     <script src="{{ asset('public/assets/website/JS/location-utils.js')}}"></script>
+    <script>
+        document.addEventListener("submit", function (e) {
+            var form = e.target;
+            if (!form || form.tagName !== "FORM" || !form.action) return;
+            try {
+                var u = new URL(form.action, window.location.href);
+                var path = (u.pathname || "").replace(/\/+$/, "") || "/";
+                if (path.endsWith("/logout") || path === "/logout") {
+                    if (typeof window.clearKwikllyLocationLocalStorage === "function") {
+                        window.clearKwikllyLocationLocalStorage();
+                    }
+                }
+            } catch (err) {}
+        }, true);
+        if (window.IS_LOGGED_IN && typeof window.promoteGuestLocationAfterLogin === "function") {
+            window.promoteGuestLocationAfterLogin();
+        }
+    </script>
     <script src="{{ asset('public/assets/website/JS/location-detection.js')}}"></script>
     <script src="{{ asset('public/assets/website/JS/location-products.js')}}"></script>
     <script src="{{ asset('public/assets/website/JS/location-autocomplete.js')}}"></script>
     <script src="{{ asset('public/assets/website/JS/location-init.js')}}"></script>
+    <script src="{{ asset('public/assets/website/JS/location-saved-flow.js')}}"></script>
     <script src="{{ asset('public/assets/website/JS/redirect-location.js')}}"></script>
     <script src="{{ asset('public/assets/website/JS/search-suggestions.js')}}"></script>
     <script src="{{ asset('public/assets/website/JS/auto-redirect.js')}}"></script>

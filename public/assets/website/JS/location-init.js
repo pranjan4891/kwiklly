@@ -5,6 +5,9 @@
 
 // --- On Page Load ---
 window.addEventListener("DOMContentLoaded", () => {
+    // Location persistence is cleared on logout (see footer: logout form handler).
+    // Guest with no saved coords: auto-detect below loads products or service-area error.
+
     // First check if URL has location parameters (from redirects)
     const urlParams = new URLSearchParams(window.location.search);
     const urlLat = urlParams.get('latitude');
@@ -25,14 +28,15 @@ window.addEventListener("DOMContentLoaded", () => {
                 // Products will be reloaded by updateLocation function
             }).catch(() => {
                 console.log("Reverse geocode failed, saving coordinates directly");
-                // If reverse geocode fails, still save coordinates
                 let locData = {
                     fullAddress: `Lat: ${urlLat}, Lng: ${urlLng}`,
                     shortAddress: `Lat: ${urlLat}, Lng: ${urlLng}`,
                     lat: urlLat,
                     lng: urlLng
                 };
-                localStorage.setItem("userLocation", JSON.stringify(locData));
+                if (window.IS_LOGGED_IN) {
+                    localStorage.setItem("userLocation", JSON.stringify(locData));
+                }
                 if (typeof updateLocation === 'function') {
                     updateLocation(locData.fullAddress, null, urlLat, urlLng, true);
                 }
@@ -41,7 +45,9 @@ window.addEventListener("DOMContentLoaded", () => {
         return; // Don't proceed with normal flow
     }
     
-    let savedLocation = localStorage.getItem("userLocation");
+    let savedLocation = typeof getPreferredSavedLocationRaw === "function"
+        ? getPreferredSavedLocationRaw()
+        : localStorage.getItem("userLocation");
 
     if (savedLocation) {
         // ✅ Only restore UI, no redirect, no cart clear
@@ -56,18 +62,21 @@ window.addEventListener("DOMContentLoaded", () => {
             if (document.getElementById("mobile-search-latitude")) document.getElementById("mobile-search-latitude").value = loc.lat || "";
             if (document.getElementById("mobile-search-longitude")) document.getElementById("mobile-search-longitude").value = loc.lng || "";
 
-            let headerLocationDesktop = document.querySelector(".location-text");
-            let headerLocationMobile = document.querySelector(".locations-text");
-            let selectedLocationEl = document.getElementById("selected-location");
-
-            if (headerLocationDesktop && typeof getShortAddress === 'function') {
-                headerLocationDesktop.innerHTML = getShortAddress(loc.fullAddress);
+            if (typeof applyUnifiedHeaderLocationText === "function") {
+                applyUnifiedHeaderLocationText(loc.fullAddress, null);
+            } else {
+                let headerLocationDesktop = document.querySelector(".location-text");
+                let headerLocationMobile = document.querySelector(".locations-text");
+                let selectedLocationEl = document.getElementById("selected-location");
+                if (headerLocationDesktop && typeof getShortAddress === 'function') {
+                    headerLocationDesktop.innerHTML = getShortAddress(loc.fullAddress);
+                }
+                if (headerLocationMobile) {
+                    let mobileText = typeof getShortAddressMobile === 'function' ? getShortAddressMobile(loc.fullAddress) : (loc.shortAddress && loc.shortAddress.length > 32 ? loc.shortAddress.substring(0, 32) + ".." : (loc.shortAddress || loc.fullAddress || ""));
+                    headerLocationMobile.innerHTML = mobileText;
+                }
+                if (selectedLocationEl) selectedLocationEl.innerText = "\uD83D\uDCCD " + loc.fullAddress;
             }
-            if (headerLocationMobile) {
-                let mobileText = typeof getShortAddressMobile === 'function' ? getShortAddressMobile(loc.fullAddress) : (loc.shortAddress && loc.shortAddress.length > 32 ? loc.shortAddress.substring(0, 32) + ".." : (loc.shortAddress || loc.fullAddress || ""));
-                headerLocationMobile.innerHTML = mobileText;
-            }
-            if (selectedLocationEl) selectedLocationEl.innerText = "📍 " + loc.fullAddress;
 
             // ✅ Load products for saved location
             if (loc.lat && loc.lng && typeof $ !== 'undefined') {

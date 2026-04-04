@@ -3367,14 +3367,16 @@ select.time-boxde:focus {
 .location-boxs {
     background: #fff;
     border-radius: 12px;
-    padding: 12px 20px;
+    padding: 10px 12px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
     width: fit-content;
+    max-width: 100%;
     cursor: pointer;
-    margin: 20px;
+    margin: 12px 10px;
+    box-sizing: border-box;
   }
 
   .location-boxs i {
@@ -3387,7 +3389,8 @@ select.time-boxde:focus {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: calc(100vw - 140px);
+    max-width: 100%;
+    min-width: 0;
   }
 
   .dropdown-icon {
@@ -4186,7 +4189,7 @@ select.time-boxde:focus {
     
     .navbar {
         background-color: #f2fbe9;
-        padding: 10px 0px;
+        padding: calc(10px + env(safe-area-inset-top, 0px)) 0px 10px;
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
@@ -4225,8 +4228,26 @@ select.time-boxde:focus {
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
+        gap: 8px;
+        box-sizing: border-box;
     }
-    
+
+    /* Android / narrow phones: location row must shrink so cart stays visible */
+    .mobile-top .location-boxs {
+        flex: 1 1 0;
+        min-width: 0;
+        width: auto !important;
+        max-width: calc(100% - 56px);
+        margin: 8px 0 !important;
+        box-sizing: border-box;
+    }
+
+    .mobile-top .locations-text {
+        min-width: 0;
+        flex: 1 1 auto;
+        max-width: 100%;
+    }
+
     .navbar-brand {
         max-width: 50% !important;
         overflow: hidden !important;

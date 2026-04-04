@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\CustomerAddress;
+use Illuminate\Support\Facades\DB;
 
 class AddressController extends Controller
 {
@@ -22,31 +23,54 @@ class AddressController extends Controller
             'longitude' => 'nullable|numeric',
         ]);
 
-        $address = CustomerAddress::create([
-            'user_id' => auth()->id(),
-            'type' => $request->type,
-            'area' => $request->area,
-            'flat' => $request->flat,
-            'landmark' => $request->landmark,
-            'pincode' => $request->pincode,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'alt_phone' => $request->alt_phone,
-            'full_address' => $request->flat . ', ' . $request->area . ', ' . ($request->landmark ? $request->landmark . ', ' : '') . $request->pincode,
-        ]);
+        $userId = auth()->id();
+        $makeSelected = filter_var($request->input('is_selected', true), FILTER_VALIDATE_BOOLEAN);
 
-        return response()->json(['success' => true, 'message' => 'Address saved successfully']);
+        $address = DB::transaction(function () use ($request, $userId, $makeSelected) {
+            if ($makeSelected) {
+                CustomerAddress::where('user_id', $userId)->update(['is_selected' => false]);
+            }
+
+            return CustomerAddress::create([
+                'user_id' => $userId,
+                'type' => $request->type,
+                'area' => $request->area,
+                'flat' => $request->flat,
+                'landmark' => $request->landmark,
+                'pincode' => $request->pincode,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'alt_phone' => $request->alt_phone,
+                'full_address' => $request->flat . ', ' . $request->area . ', ' . ($request->landmark ? $request->landmark . ', ' : '') . $request->pincode,
+                'is_selected' => $makeSelected,
+            ]);
+        });
+
+        return response()->json(['success' => true, 'message' => 'Address saved successfully', 'address' => $address]);
     }
 
     public function update(Request $request, $id)
     {
-        $address = CustomerAddress::where('user_id', auth()->id())->findOrFail($id);
-
-        $address->update($request->only([
+        $userId = auth()->id();
+        $address = CustomerAddress::where('user_id', $userId)->findOrFail($id);
+        $payload = $request->only([
             'type', 'area', 'flat', 'landmark', 'pincode', 'latitude', 'longitude', 'name', 'phone', 'alt_phone'
-        ]));
+        ]);
+
+        if ($request->has('is_selected')) {
+            $makeSelected = filter_var($request->input('is_selected'), FILTER_VALIDATE_BOOLEAN);
+            DB::transaction(function () use ($userId, $address, $payload, $makeSelected) {
+                if ($makeSelected) {
+                    CustomerAddress::where('user_id', $userId)->update(['is_selected' => false]);
+                }
+                $payload['is_selected'] = $makeSelected;
+                $address->update($payload);
+            });
+        } else {
+            $address->update($payload);
+        }
 
         return response()->json(['success' => true, 'message' => 'Address updated']);
     }
@@ -73,7 +97,7 @@ class AddressController extends Controller
             return response()->json(['address' => $address]);
         }
 
-        $addresses = $query->whereNull('deleted_at')->latest()->get();
+        $addresses = $query->whereNull('deleted_at')->orderByDesc('is_selected')->latest()->get();
 
         // Filter by current location: only addresses within radius of given lat/lng
         if ($request->filled('latitude') && $request->filled('longitude')) {
@@ -89,6 +113,20 @@ class AddressController extends Controller
         }
 
         return response()->json($addresses);
+    }
+
+    public function select($id)
+    {
+        $userId = auth()->id();
+        $address = CustomerAddress::where('user_id', $userId)->findOrFail($id);
+
+        DB::transaction(function () use ($userId, $address) {
+            CustomerAddress::where('user_id', $userId)->update(['is_selected' => false]);
+            $address->is_selected = true;
+            $address->save();
+        });
+
+        return response()->json(['success' => true, 'message' => 'Address selected successfully']);
     }
 
 

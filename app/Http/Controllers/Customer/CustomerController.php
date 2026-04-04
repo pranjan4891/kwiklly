@@ -14,6 +14,7 @@ use App\Models\VendorAdmin;
 use App\Models\OrderItem;
 use App\Models\CustomerAddress;
 use App\Models\Coupon;
+use App\Services\LocationServiceability;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -68,37 +69,63 @@ class CustomerController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (auth()->attempt($credentials)) {
-            $request->session()->regenerate();
+        $user = User::where('email', $credentials['email'])->first();
 
-            // Migrate session cart
-            $sessionCart = session('cart', []);
-            foreach ($sessionCart as $item) {
-                CartItem::updateOrCreate(
-                    [
-                        'user_id' => auth()->id(),
-                        'product_id' => $item['product_id'],
-                        'variant_id' => $item['variant_id'],
-                    ],
-                    [
-                        'quantity' => DB::raw("quantity + {$item['quantity']}"),
-                        'price' => $item['price']
-                    ]
-                );
-            }
-            session()->forget('cart');
-
-            if (!empty($sessionCart)) {
-                return redirect()->route('cart.view');
-            }
-
-            // ✅ Proper redirect
-            return redirect()->intended('/');
+        if (! $user) {
+            return back()
+                ->withErrors(['email' => 'Invalid email or password.'])
+                ->withInput($request->only('email'));
         }
 
-        return back()->withErrors([
-            'email' => 'Invalid email or password.',
-        ]);
+        $storedHash = $user->getRawOriginal('password');
+        if (! $this->storedPasswordIsServiceableBcrypt($storedHash)) {
+            try {
+                $this->sendPasswordSetupOrResetEmail(
+                    $user->email,
+                    'Set your password — Kwiklly',
+                    "Please set your password using the link below:\n\n%s\n\nIf you did not request this, you can ignore this email."
+                );
+            } catch (\Throwable $e) {
+                return back()
+                    ->withErrors(['email' => 'We could not send email right now. Please use “Forgot Password?” shortly or contact support.'])
+                    ->withInput($request->only('email'));
+            }
+
+            return back()
+                ->with('success', 'Please set your password. A link has been sent to your email — open it to choose your password, then log in here.')
+                ->withInput($request->only('email'));
+        }
+
+        if (! auth()->attempt($credentials)) {
+            return back()
+                ->withErrors(['email' => 'Invalid email or password.'])
+                ->withInput($request->only('email'));
+        }
+
+        $request->session()->regenerate();
+
+        // Migrate session cart
+        $sessionCart = session('cart', []);
+        foreach ($sessionCart as $item) {
+            CartItem::updateOrCreate(
+                [
+                    'user_id' => auth()->id(),
+                    'product_id' => $item['product_id'],
+                    'variant_id' => $item['variant_id'],
+                ],
+                [
+                    'quantity' => DB::raw("quantity + {$item['quantity']}"),
+                    'price' => $item['price']
+                ]
+            );
+        }
+        session()->forget('cart');
+
+        if (! empty($sessionCart)) {
+            return redirect()->route('cart.view');
+        }
+
+        return redirect()->intended('/');
     }
     public function otpcheck(Request $request)
     {
@@ -107,9 +134,22 @@ class CustomerController extends Controller
             'otp' => 'required|digits:6',
         ]);
 
+        $pending = session('pending_otp_login');
+        if (! $pending || (string) ($pending['phone_number'] ?? '') !== (string) $request->phone_number) {
+            return back()->with('error', 'Session expired or location missing. Please request OTP again from the login page.');
+        }
+
+        $checker = app(LocationServiceability::class);
+        if (! $checker->isServiceable((float) $pending['lat'], (float) $pending['lng'])) {
+            session()->forget('pending_otp_login');
+
+            return back()->with('error', 'Delivery is not available at your selected location. Please choose a serviceable area and request OTP again.');
+        }
+
         $user = User::where('phone_number', $request->phone_number)->first();
 
         if ($user && $user->otp == $request->otp) {
+            session()->forget('pending_otp_login');
             auth()->login($user);
             $request->session()->regenerate();
 
@@ -156,6 +196,26 @@ class CustomerController extends Controller
     {
         $request->validate([
             'phone_number' => 'required|digits:10',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
+        $lat = (float) $request->latitude;
+        $lng = (float) $request->longitude;
+
+        $checker = app(LocationServiceability::class);
+        if (! $checker->isServiceable($lat, $lng)) {
+            return back()
+                ->with('error', 'Delivery is not available at your location. Please select an area where we serve, then try to log in.')
+                ->withInput($request->only('phone_number'));
+        }
+
+        session([
+            'pending_otp_login' => [
+                'phone_number' => $request->phone_number,
+                'lat' => $lat,
+                'lng' => $lng,
+            ],
         ]);
 
         $otp = rand(100000, 999999);
@@ -179,6 +239,22 @@ class CustomerController extends Controller
 
     public function resendotp(Request $request)
     {
+        $request->validate([
+            'phone_number' => 'required|digits:10',
+        ]);
+
+        $pending = session('pending_otp_login');
+        if (! $pending || (string) ($pending['phone_number'] ?? '') !== (string) $request->phone_number) {
+            return response()->json(['error' => 'Session expired. Go back to login and request OTP again.'], 403);
+        }
+
+        $checker = app(LocationServiceability::class);
+        if (! $checker->isServiceable((float) $pending['lat'], (float) $pending['lng'])) {
+            session()->forget('pending_otp_login');
+
+            return response()->json(['error' => 'Location is no longer serviceable. Please start login again.'], 403);
+        }
+
         $user = User::where('phone_number', $request->phone_number)->first();
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
@@ -311,25 +387,15 @@ class CustomerController extends Controller
             'email' => 'required|email|exists:users,email',
         ]);
 
-        $token = Str::random(64);
-
-        // Store token in password_reset_tokens
-        DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $request->email],
-            [
-                'email' => $request->email,
-                'token' => $token,
-                'created_at' => now()
-            ]
-        );
-
-        // Send reset link via email
-        $link = url('/reset-password/' . $token . '?email=' . urlencode($request->email));
-
-        Mail::raw("Click the link to reset your password: $link", function ($message) use ($request) {
-            $message->to($request->email)
-                ->subject('Password Reset Link');
-        });
+        try {
+            $this->sendPasswordSetupOrResetEmail(
+                $request->email,
+                'Password Reset Link — Kwiklly',
+                "Click the link to reset your password:\n\n%s"
+            );
+        } catch (\Throwable $e) {
+            return back()->withErrors(['email' => 'Unable to send email. Please try again.']);
+        }
 
         return back()->with('success', 'We have emailed your password reset link!');
     }
@@ -617,6 +683,46 @@ class CustomerController extends Controller
         $pdf->setPaper('A4', 'portrait');
         
         return $pdf->download($filename);
+    }
+
+    /**
+     * Non-empty bcrypt hash only — avoids RuntimeException "This password does not use the Bcrypt algorithm."
+     * when config hashing.bcrypt.verify is true and the DB holds null, plain text, or another algorithm.
+     */
+    protected function storedPasswordIsServiceableBcrypt(mixed $stored): bool
+    {
+        if (! is_string($stored) || $stored === '') {
+            return false;
+        }
+
+        return str_starts_with($stored, '$2y$')
+            || str_starts_with($stored, '$2a$')
+            || str_starts_with($stored, '$2b$');
+    }
+
+    /**
+     * Store token and email the reset / set-password link.
+     *
+     * @param  string  $bodyWithPercentSForLink  Must contain one %s for the full URL.
+     */
+    protected function sendPasswordSetupOrResetEmail(string $email, string $subject, string $bodyWithPercentSForLink): void
+    {
+        $token = Str::random(64);
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $email],
+            [
+                'email' => $email,
+                'token' => $token,
+                'created_at' => now(),
+            ]
+        );
+
+        $link = url('/reset-password/' . $token . '?email=' . urlencode($email));
+        $body = sprintf($bodyWithPercentSForLink, $link);
+
+        Mail::raw($body, function ($message) use ($email, $subject) {
+            $message->to($email)->subject($subject);
+        });
     }
 
 }

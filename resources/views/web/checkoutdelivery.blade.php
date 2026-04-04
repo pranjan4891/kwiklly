@@ -2807,7 +2807,20 @@
                     success: function(response) {
                         console.log("Success response:", response);
                         if (response.success) {
-                            window.location.href = "{{ route('delivery.address') }}";
+                            ensureSavedLocationSelectedBeforeCheckout().then(function(hasSavedAddressForLocation) {
+                                if (!hasSavedAddressForLocation) {
+                                    Swal.fire({
+                                        icon: 'info',
+                                        title: 'Save address for this location',
+                                        text: 'Aapki searched location ke liye koi saved address nahi mila. Pehle address save karein.',
+                                        confirmButtonColor: '#E94412'
+                                    }).then(function() {
+                                        window.location.href = "{{ route('delivery.address') }}";
+                                    });
+                                    return;
+                                }
+                                window.location.href = "{{ route('delivery.address') }}";
+                            });
                         } else {
                             Swal.fire({
                                 icon: 'error',
@@ -2843,6 +2856,120 @@
                         });
                     }
                 });
+            }
+
+            function ensureSavedLocationSelectedBeforeCheckout() {
+                if (!window.IS_LOGGED_IN) {
+                    return Promise.resolve(true);
+                }
+
+                let rawLocation = null;
+                try {
+                    rawLocation = (typeof window.getPreferredSavedLocationRaw === 'function')
+                        ? window.getPreferredSavedLocationRaw()
+                        : localStorage.getItem('userLocation');
+                } catch (e) {
+                    rawLocation = null;
+                }
+                if (!rawLocation) {
+                    return Promise.resolve(true);
+                }
+
+                let loc = null;
+                try {
+                    loc = JSON.parse(rawLocation);
+                } catch (e) {
+                    loc = null;
+                }
+                if (!loc || loc.lat == null || loc.lng == null || !window.ADDRESS_LIST_URL) {
+                    return Promise.resolve(true);
+                }
+
+                const lat = Number(loc.lat);
+                const lng = Number(loc.lng);
+                if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                    return Promise.resolve(true);
+                }
+
+                function coordsApproxEqualAddr(aLat, aLng, bLat, bLng) {
+                    var eps = 0.00015;
+                    return Math.abs(Number(aLat) - Number(bLat)) < eps &&
+                        Math.abs(Number(aLng) - Number(bLng)) < eps;
+                }
+
+                function postSelectAddress(id) {
+                    if (!window.ADDRESS_SELECT_URL_TEMPLATE || !id) {
+                        return Promise.resolve(true);
+                    }
+                    var selectUrl = window.ADDRESS_SELECT_URL_TEMPLATE.replace(':id', encodeURIComponent(id));
+                    return fetch(selectUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                            Accept: 'application/json'
+                        }
+                    }).then(function() { return true; }).catch(function() { return true; });
+                }
+
+                function pickExactCoordsPromise(addresses) {
+                    if (!Array.isArray(addresses) || addresses.length === 0) {
+                        return Promise.resolve(false);
+                    }
+                    var hit = addresses.find(function(a) {
+                        return a.latitude != null && a.longitude != null &&
+                            coordsApproxEqualAddr(a.latitude, a.longitude, lat, lng);
+                    });
+                    if (!hit || !hit.id) {
+                        return Promise.resolve(false);
+                    }
+                    localStorage.setItem('selectedSavedAddressId', String(hit.id));
+                    return postSelectAddress(hit.id).then(function() { return true; });
+                }
+
+                function pickFromProximityListPromise(addresses) {
+                    if (!Array.isArray(addresses) || addresses.length === 0) {
+                        return Promise.resolve(false);
+                    }
+                    var preferredId = localStorage.getItem('selectedSavedAddressId');
+                    var target = null;
+                    if (preferredId) {
+                        target = addresses.find(function(a) { return String(a.id) === String(preferredId); }) || null;
+                    }
+                    if (!target) {
+                        target = addresses.find(function(a) { return !!a.is_selected; }) || addresses[0];
+                    }
+                    if (!target || !target.id) {
+                        return Promise.resolve(false);
+                    }
+                    localStorage.setItem('selectedSavedAddressId', String(target.id));
+                    return postSelectAddress(target.id).then(function() { return true; });
+                }
+
+                return fetch(window.ADDRESS_LIST_URL, { headers: { Accept: 'application/json' } })
+                    .then(function(res) { return res.json(); })
+                    .then(function(allAddresses) {
+                        if (!Array.isArray(allAddresses)) {
+                            allAddresses = [];
+                        }
+                        return pickExactCoordsPromise(allAddresses).then(function(found) {
+                            if (found) {
+                                return true;
+                            }
+                            var listUrl = window.ADDRESS_LIST_URL + '?latitude=' + encodeURIComponent(lat) +
+                                '&longitude=' + encodeURIComponent(lng);
+                            return fetch(listUrl, { headers: { Accept: 'application/json' } })
+                                .then(function(res2) { return res2.json(); })
+                                .then(function(nearby) {
+                                    return pickFromProximityListPromise(nearby);
+                                });
+                        });
+                    })
+                    .then(function(ok) {
+                        return ok === true;
+                    })
+                    .catch(function() {
+                        return true;
+                    });
             }
         </script>
 

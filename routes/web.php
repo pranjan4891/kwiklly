@@ -127,6 +127,7 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         // Customer Address Routes
         Route::post('/address/store', [AddressController::class, 'store'])->name('address.store');
         Route::post('/address/update/{id}', [AddressController::class, 'update'])->name('address.update')->where('id', '[0-9]+');
+        Route::post('/address/select/{id}', [AddressController::class, 'select'])->name('address.select')->where('id', '[0-9]+');
         Route::delete('/address/delete/{id}', [AddressController::class, 'delete'])->name('address.delete')->where('id', '[0-9]+');
         Route::get('/customer/addresses', [AddressController::class, 'getAddresses'])->name('address.list');
         Route::get('/customer/address/{id}', [AddressController::class, 'getSingleAddress'])->name('address.single')->where('id', '[0-9]+');

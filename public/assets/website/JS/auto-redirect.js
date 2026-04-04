@@ -13,7 +13,9 @@ function autoRedirectAppUrlWithLocation() {
         (currentUrl.pathname === '/' && currentUrl.search === '')) {
 
         // Only redirect if we have a saved location
-        let savedLocation = localStorage.getItem("userLocation");
+        let savedLocation = typeof getPreferredSavedLocationRaw === 'function'
+            ? getPreferredSavedLocationRaw()
+            : localStorage.getItem("userLocation");
         if (savedLocation) {
             try {
                 let loc = JSON.parse(savedLocation);

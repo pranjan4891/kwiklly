@@ -7,22 +7,46 @@ use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use App\Models\CartItem;
+use App\Services\LocationServiceability;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class GoogleController extends Controller
 {
-    // Redirect to Google
-    public function redirectToGoogle()
+    // Redirect to Google (requires serviceable lat/lng from selected location)
+    public function redirectToGoogle(Request $request)
     {
+        $lat = $request->query('latitude');
+        $lng = $request->query('longitude');
+        $checker = app(LocationServiceability::class);
+        if (! $lat || ! $lng || ! $checker->isServiceable((float) $lat, (float) $lng)) {
+            return redirect()
+                ->route('loginbyphone')
+                ->with('error', 'Please select a serviceable delivery location in the header, then try Google login again.');
+        }
+
+        session([
+            'oauth_login_location' => [
+                'lat' => (float) $lat,
+                'lng' => (float) $lng,
+            ],
+        ]);
+
         return Socialite::driver('google')->redirect();
-        // Use ->stateless()->redirect() if you have session issues or building an API
     }
 
     // Handle callback
     public function handleGoogleCallback(Request $request)
     {
+        $loc = session('oauth_login_location');
+        $checker = app(LocationServiceability::class);
+        if (! $loc || ! $checker->isServiceable((float) ($loc['lat'] ?? 0), (float) ($loc['lng'] ?? 0))) {
+            return redirect()
+                ->route('loginbyphone')
+                ->with('error', 'Delivery is not available at your selected location. Select a serviceable area and try again.');
+        }
+
         try {
             $googleUser = Socialite::driver('google')->user();
 
@@ -30,6 +54,8 @@ class GoogleController extends Controller
             // Log error if you want: \Log::error($e->getMessage());
             return redirect('/login')->with('error', 'Unable to login using Google. Please try again.');
         }
+
+        session()->forget('oauth_login_location');
 
         // Find existing user by google_id or email
         $user = User::where('google_id', $googleUser->id)

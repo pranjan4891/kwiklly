@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Coupon;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
+use App\Services\LocationServiceability;
 
 class HomeController extends Controller
 {
@@ -1451,17 +1452,18 @@ class HomeController extends Controller
             ]);
         }
 
-        // Check if the location is within any master location polygon
-        $insideLocation = MasterLocation::where('is_active', 1)
-            ->where('is_deleted', 0)
-            ->get()
-            ->first(function($location) use ($lat, $lng) {
-                return $this->pointInPolygon($lat, $lng, $location->lat_long);
-            });
+        $checker = app(LocationServiceability::class);
+        $a = $checker->analyze((float) $lat, (float) $lng);
 
         return response()->json([
-            'is_in_master_area' => $insideLocation !== null,
-            'message' => $insideLocation ? 'Location is in a master area' : 'Location is not in any master area'
+            'is_in_master_area' => $a['is_in_master_area'],
+            'is_in_vendor_area' => $a['is_in_vendor_area'],
+            'is_valid_for_selection' => $a['is_valid_for_selection'],
+            'vendor_count' => $a['vendor_count'],
+            'vendor_ids' => $a['vendor_ids'],
+            'message' => $a['is_valid_for_selection']
+                ? 'Location is serviceable.'
+                : 'Sorry we are not providing service this location.'
         ]);
     }
 

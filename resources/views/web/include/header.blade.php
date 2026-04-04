@@ -13,6 +13,7 @@
       <link rel="stylesheet" href="{{ asset('public/assets/website/CSS/style.css')}}">
       <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
       <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+      <style>input.address-locked{background-color:#f0f0f0!important;cursor:not-allowed!important;}</style>
    </head>
    <body class="{{ $bodyClass ?? '' }}">
       <!-- Desktop sidebar cart start  -->
@@ -206,6 +207,43 @@
             <input type="text" id="autocomplete-mobile" class="addpop-search-input w-100 d-md-none" placeholder="Search Location" />
          </div>
          <p id="selected-location" class="mt-3 text-sm text-gray-700"></p>
+         <div id="location-save-actions" class="mt-2" style="display:none;">
+            <button type="button" id="openSaveLocationModalBtn" class="btn btn-sm btn-primary">Save this location</button>
+         </div>
+         <div id="saved-locations-wrapper" class="mt-3">
+            <h6 class="mb-2">Saved locations</h6>
+            <div id="saved-locations-list" class="small text-muted">No saved locations.</div>
+         </div>
+      </div>
+
+      <div class="modal fade" id="saveLocationModal" tabindex="-1" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+               <div class="modal-header">
+                  <h5 class="modal-title">Save Location</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+               </div>
+               <div class="modal-body">
+                  <form id="popupLocationAddressForm">
+                     <input type="hidden" name="type" id="popupAddressType" value="home">
+                     <div class="mb-2">
+                        <div class="d-flex gap-2">
+                           <button type="button" id="popupHomeBtn" class="btn btn-outline-secondary btn-sm active">Home</button>
+                           <button type="button" id="popupWorkBtn" class="btn btn-outline-secondary btn-sm">Work</button>
+                        </div>
+                     </div>
+                     <div class="mb-2"><input type="text" name="area" id="popupArea" class="form-control" placeholder="Area / Locality*" required></div>
+                     <div class="mb-2"><input type="text" name="flat" id="popupFlat" class="form-control" placeholder="Flat / Building no*" required></div>
+                     <div class="mb-2"><input type="text" name="landmark" id="popupLandmark" class="form-control" placeholder="Landmark (optional)"></div>
+                     <div class="mb-2"><input type="text" name="pincode" id="popupPincode" class="form-control" placeholder="Pincode*" required></div>
+                     <div class="mb-2"><input type="text" name="name" id="popupName" class="form-control" placeholder="Name*" required></div>
+                     <div class="mb-2"><input type="text" name="phone" id="popupPhone" class="form-control" placeholder="Phone Number*" required></div>
+                     <div class="mb-2"><input type="text" name="alt_phone" id="popupAltPhone" class="form-control" placeholder="Alternate Phone (optional)"></div>
+                     <button type="submit" class="btn btn-primary w-100">Save Address</button>
+                  </form>
+               </div>
+            </div>
+         </div>
       </div>
       <!-- Bottom Navigation (Only for Mobile) -->
       <div class="bottom-nav d-flex justify-content-around d-md-none">

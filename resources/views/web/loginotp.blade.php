@@ -5,6 +5,10 @@
     <div class="log-in-box">
       <h4 class="mb-4 fw-bold">Enter OTP</h4>
 
+      @if(session('error'))
+        <div class="alert alert-danger small mb-3">{{ session('error') }}</div>
+      @endif
+
       <!-- OTP Form -->
       <form id="otpForm" method="POST" action="{{ route('otpcheck') }}">
         @csrf

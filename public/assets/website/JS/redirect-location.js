@@ -5,7 +5,9 @@
 
 // --- Redirect helper ---
 function redirectWithLocation(baseUrl) {
-    let savedLocation = localStorage.getItem("userLocation");
+    let savedLocation = typeof getPreferredSavedLocationRaw === "function"
+        ? getPreferredSavedLocationRaw()
+        : localStorage.getItem("userLocation");
 
     if (savedLocation) {
         try {

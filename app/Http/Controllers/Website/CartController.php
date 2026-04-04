@@ -11,6 +11,7 @@ use App\Models\Coupon;
 use App\Models\TimeSlot;
 use App\Models\VendorAdmin;
 use App\Models\WalletTransaction;
+use App\Models\CustomerAddress;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -330,6 +331,15 @@ class CartController extends Controller
     public function viewCart()
     {
         if (auth()->check()) {
+            $hasSavedAddress = CustomerAddress::where('user_id', Auth::id())
+                ->whereNull('deleted_at')
+                ->exists();
+            if (!$hasSavedAddress) {
+                $return = route('cart.view');
+                return redirect()->to(url('/').'?requireDeliveryAddress=1&return='.rawurlencode($return))
+                    ->with('info', 'Please save a delivery address for your location before checkout.');
+            }
+
             $cartData = $this->getCartData()->getData(true);
         } else {
             $cart = session()->get("cart", []);

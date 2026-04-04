@@ -7,8 +7,9 @@
 function updateLocation(fullAddress, place = null, lat = null, lng = null, isAutoDetect = false){
     let shortAddress = typeof getShortAddress === 'function' ? getShortAddress(fullAddress, place) : fullAddress;
 
-    // Get old location
-    let oldLocation = localStorage.getItem("userLocation");
+    let oldLocation = typeof getPreferredSavedLocationRaw === "function"
+        ? getPreferredSavedLocationRaw()
+        : localStorage.getItem("userLocation");
     let newLocation = JSON.stringify({
         fullAddress: fullAddress,
         shortAddress: shortAddress,
@@ -16,8 +17,23 @@ function updateLocation(fullAddress, place = null, lat = null, lng = null, isAut
         lng: lng
     });
 
-    // Save new location
-    localStorage.setItem("userLocation", newLocation);
+    const prevCandidate = window.__lastLocationCandidate;
+    window.__lastLocationCandidate = {
+        fullAddress: fullAddress,
+        shortAddress: shortAddress,
+        lat: lat,
+        lng: lng,
+        place: place || null
+    };
+
+    if (window.IS_LOGGED_IN) {
+        localStorage.setItem("userLocation", newLocation);
+    } else {
+        try {
+            sessionStorage.removeItem("guestSessionLocation");
+            sessionStorage.removeItem("guestSessionLocationAt");
+        } catch (e) {}
+    }
 
     // Hidden inputs
     if (document.getElementById("latitude")) document.getElementById("latitude").value = lat || "";
@@ -28,29 +44,50 @@ function updateLocation(fullAddress, place = null, lat = null, lng = null, isAut
     if (document.getElementById("mobile-search-latitude")) document.getElementById("mobile-search-latitude").value = lat || "";
     if (document.getElementById("mobile-search-longitude")) document.getElementById("mobile-search-longitude").value = lng || "";
 
-    // Get header elements
-    let headerLocationDesktop = document.querySelector(".location-text");
-    let headerLocationMobile = document.querySelector(".locations-text");
-    let selectedLocationEl = document.getElementById("selected-location");
-
-    // Show full in popup
-    if (selectedLocationEl) {
-        selectedLocationEl.innerText = "📍 " + fullAddress;
-    }
-
-    // Show short in header (mobile: max 32 chars + ".." for single line)
-    if (headerLocationDesktop) headerLocationDesktop.innerHTML = shortAddress;
-    if (headerLocationMobile) {
-        let mobileText = typeof getShortAddressMobile === 'function' ? getShortAddressMobile(fullAddress, place) : (shortAddress.length > 32 ? shortAddress.substring(0, 32) + ".." : shortAddress);
-        headerLocationMobile.innerHTML = mobileText;
+    if (typeof applyUnifiedHeaderLocationText === "function") {
+        applyUnifiedHeaderLocationText(fullAddress, place);
+    } else {
+        let headerLocationDesktop = document.querySelector(".location-text");
+        let headerLocationMobile = document.querySelector(".locations-text");
+        let selectedLocationEl = document.getElementById("selected-location");
+        if (selectedLocationEl) {
+            selectedLocationEl.innerText = "\uD83D\uDCCD " + fullAddress;
+        }
+        if (headerLocationDesktop) headerLocationDesktop.innerHTML = shortAddress;
+        if (headerLocationMobile) {
+            let mobileText = typeof getShortAddressMobile === 'function' ? getShortAddressMobile(fullAddress, place) : (shortAddress.length > 32 ? shortAddress.substring(0, 32) + ".." : shortAddress);
+            headerLocationMobile.innerHTML = mobileText;
+        }
     }
 
     if (typeof closeAddpop === 'function') {
         closeAddpop();
     }
 
-    // 👉 If location changed (not same as old one), clear cart + redirect home with lat/lng
-    if (oldLocation !== newLocation) {
+    let locationChangedForRedirect = false;
+    if (!isAutoDetect) {
+        if (window.IS_LOGGED_IN) {
+            locationChangedForRedirect = oldLocation !== newLocation;
+        } else {
+            const eps = 1e-6;
+            const nla = Number(lat);
+            const nlng = Number(lng);
+            if (!prevCandidate || !Number.isFinite(nla) || !Number.isFinite(nlng)) {
+                locationChangedForRedirect = true;
+            } else {
+                const pla = Number(prevCandidate.lat);
+                const plng = Number(prevCandidate.lng);
+                locationChangedForRedirect =
+                    !Number.isFinite(pla) ||
+                    !Number.isFinite(plng) ||
+                    Math.abs(pla - nla) > eps ||
+                    Math.abs(plng - nlng) > eps;
+            }
+        }
+    }
+
+    // 👉 If location changed manually (not auto-detect/init), clear cart + redirect home with lat/lng
+    if (locationChangedForRedirect) {
         console.log("Location changed, redirecting with new location:", lat, lng);
         if (typeof $ !== 'undefined') {
             $.post(window.CART_CLEAR_URL || '/cart/clear', {
@@ -204,66 +241,182 @@ function updateLocation(fullAddress, place = null, lat = null, lng = null, isAut
             error: function(xhr, status, error) {
                 console.error("Error reloading products:", error);
                 console.error("Response:", xhr.responseText);
+                if (lat && lng && typeof checkLocationInMasterArea === "function") {
+                    checkLocationInMasterArea(lat, lng);
+                }
             }
         });
+    } else if (lat && lng && typeof checkLocationInMasterArea === "function") {
+        checkLocationInMasterArea(lat, lng);
     }
 }
 
-// Function to check if location is in master area and show modal
+function applyLocationMasterCheckResponse(response, lat, lng) {
+    console.log("Location check response:", response);
+    window.__locationDeliverable = !!(
+        response &&
+        response.is_valid_for_selection !== false &&
+        response.is_in_master_area !== false &&
+        response.is_in_vendor_area !== false
+    );
+    window.dispatchEvent(
+        new CustomEvent("location-deliverability-updated", {
+            detail: { deliverable: window.__locationDeliverable, lat: lat, lng: lng },
+        })
+    );
+
+    const latN = Number(lat);
+    const lngN = Number(lng);
+    const eps =
+        typeof window.GUEST_COORD_MATCH_EPS === "number" ? window.GUEST_COORD_MATCH_EPS : 0.00025;
+    function coordsMatchCheck(a, b, c, d) {
+        return (
+            Math.abs(Number(a) - Number(c)) < eps && Math.abs(Number(b) - Number(d)) < eps
+        );
+    }
+
+    let pertainsToGuest = false;
+    const cand = window.__lastLocationCandidate;
+    if (cand && coordsMatchCheck(cand.lat, cand.lng, latN, lngN)) {
+        pertainsToGuest = true;
+    }
+    if (!pertainsToGuest) {
+        try {
+            let raw = null;
+            try {
+                raw = localStorage.getItem("guestSessionLocation");
+            } catch (e) {}
+            if (!raw) {
+                try {
+                    raw = sessionStorage.getItem("guestSessionLocation");
+                } catch (e2) {}
+            }
+            if (raw) {
+                const p = JSON.parse(raw);
+                if (p && coordsMatchCheck(p.lat, p.lng, latN, lngN)) {
+                    pertainsToGuest = true;
+                }
+            }
+        } catch (e) {}
+    }
+
+    if (!window.__locationDeliverable && !window.IS_LOGGED_IN && pertainsToGuest) {
+        if (typeof clearExpiredGuestLocationData === "function") {
+            clearExpiredGuestLocationData();
+        }
+    }
+
+    if (window.__locationDeliverable && !window.IS_LOGGED_IN) {
+        let jsonToCommit = null;
+        if (cand && coordsMatchCheck(cand.lat, cand.lng, latN, lngN)) {
+            const sa =
+                cand.shortAddress ||
+                (typeof getShortAddress === "function"
+                    ? getShortAddress(cand.fullAddress, cand.place)
+                    : cand.fullAddress);
+            jsonToCommit = JSON.stringify({
+                fullAddress: cand.fullAddress,
+                shortAddress: sa,
+                lat: cand.lat,
+                lng: cand.lng,
+            });
+        } else {
+            try {
+                let raw = null;
+                try {
+                    raw = localStorage.getItem("guestSessionLocation");
+                } catch (e) {}
+                if (!raw) {
+                    try {
+                        raw = sessionStorage.getItem("guestSessionLocation");
+                    } catch (e2) {}
+                }
+                if (raw) {
+                    const p = JSON.parse(raw);
+                    if (p && coordsMatchCheck(p.lat, p.lng, latN, lngN)) {
+                        jsonToCommit = raw;
+                    }
+                }
+            } catch (e) {}
+        }
+        if (jsonToCommit && typeof window.commitGuestServiceableLocation === "function") {
+            window.commitGuestServiceableLocation(jsonToCommit);
+        }
+    }
+
+    if (!window.__locationDeliverable) {
+        console.log("Location is outside master area, showing modal");
+        if (typeof window.showLocationUnavailableModal === "function") {
+            window.showLocationUnavailableModal(lat, lng);
+        }
+    } else {
+        console.log("Location is in master area");
+    }
+}
+
 function checkLocationInMasterArea(lat, lng) {
     if (!lat || !lng) {
         return;
     }
-    
-    if (typeof $ === 'undefined') {
+    const latN = Number(lat);
+    const lngN = Number(lng);
+    if (!Number.isFinite(latN) || !Number.isFinite(lngN)) {
         return;
     }
-    
-    $.ajax({
-        url: window.CHECK_LOCATION_IN_MASTER_URL || '/check-location-in-master',
-        method: 'POST',
-        data: {
-            _token: $('meta[name="csrf-token"]').attr('content'),
-            latitude: lat,
-            longitude: lng
-        },
-        success: function(response) {
-            console.log("Location check response:", response);
-            if (response && response.is_in_master_area === false) {
-                // Show modal if location is outside master area
-                console.log("Location is outside master area, showing modal");
-                const modalElement = document.getElementById('locationErrorModal');
-                if (modalElement) {
-                    // Hide any existing modal instance first
-                    const existingModal = bootstrap.Modal.getInstance(modalElement);
-                    if (existingModal) {
-                        existingModal.hide();
-                    }
-                    
-                    // Use Bootstrap 5 modal
-                    const modal = new bootstrap.Modal(modalElement, {
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    modal.show();
-                    
-                    // Force show if modal doesn't appear
-                    setTimeout(function() {
-                        if (!modalElement.classList.contains('show')) {
-                            $(modalElement).modal('show');
-                        }
-                    }, 100);
-                } else {
-                    console.error("Location error modal element not found");
-                }
-            } else {
-                console.log("Location is in master area");
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error("Error checking location in master area:", error);
-        }
-    });
+
+    const token =
+        document.querySelector('meta[name="csrf-token"]')?.content ||
+        (typeof $ !== "undefined" ? $('meta[name="csrf-token"]').attr("content") : "") ||
+        "";
+    const url = window.CHECK_LOCATION_IN_MASTER_URL || "/check-location-in-master";
+
+    function runFetchCheck() {
+        const body = new URLSearchParams({
+            _token: token,
+            latitude: String(latN),
+            longitude: String(lngN),
+        });
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRF-TOKEN": token,
+            },
+            body: body,
+            credentials: "same-origin",
+        })
+            .then(function (r) {
+                return r.json();
+            })
+            .then(function (response) {
+                applyLocationMasterCheckResponse(response, lat, lng);
+            })
+            .catch(function (err) {
+                console.error("Error checking location in master area (fetch):", err);
+            });
+    }
+
+    if (typeof $ !== "undefined" && $.ajax) {
+        $.ajax({
+            url: url,
+            method: "POST",
+            data: {
+                _token: token,
+                latitude: latN,
+                longitude: lngN,
+            },
+            success: function (response) {
+                applyLocationMasterCheckResponse(response, lat, lng);
+            },
+            error: function () {
+                runFetchCheck();
+            },
+        });
+    } else {
+        runFetchCheck();
+    }
 }
 
 // --- Function to initialize/reinitialize Owl Carousels ---
