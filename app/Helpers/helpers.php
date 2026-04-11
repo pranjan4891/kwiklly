@@ -60,3 +60,21 @@ if (! function_exists('isStoreOpen')) {
         return false;
     }
 }
+
+if (! function_exists('versioned_asset')) {
+    /**
+     * Append ?v=filemtime so updated JS/CSS are fetched after deploy (avoids stale CDN/browser cache).
+     * Pass the same path you use with asset(), e.g. 'public/assets/website/JS/custom.js'.
+     */
+    function versioned_asset(string $path): string
+    {
+        $path = ltrim($path, '/');
+        $relative = str_starts_with($path, 'public/')
+            ? substr($path, strlen('public/'))
+            : $path;
+        $full = public_path($relative);
+        $v = is_file($full) ? filemtime($full) : time();
+
+        return asset($path).'?v='.$v;
+    }
+}

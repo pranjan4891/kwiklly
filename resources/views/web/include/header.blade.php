@@ -10,7 +10,7 @@
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" />
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
-      <link rel="stylesheet" href="{{ asset('public/assets/website/CSS/style.css')}}">
+      <link rel="stylesheet" href="{{ versioned_asset('public/assets/website/CSS/style.css') }}">
       <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
       <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
       <style>input.address-locked{background-color:#f0f0f0!important;cursor:not-allowed!important;}</style>

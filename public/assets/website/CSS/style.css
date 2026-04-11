@@ -4759,22 +4759,22 @@ body.suggestions-open {
         height: auto;
         display: block;
     }
-    /* Mobile Carousel - 2 items per row */
+    /* Mobile Carousel - 2 items per row (flush left with section titles: no extra left gutter) */
     .owl-carousel .owl-stage-outer {
         overflow: visible;
-        padding: 0 5px;
+        padding: 0 6px 0 0;
     }
     
     .owl-carousel .owl-stage {
         display: flex;
     }
     
-    /* Ensure each item takes exactly 50% width minus margin */
+    /* Ensure each item takes exactly 50% width minus margin; gutter only between cards */
     .owl-carousel .owl-item {
         width: calc((100% - 10px) / 2) !important;
         min-width: calc((100% - 10px) / 2) !important;
         max-width: calc((100% - 10px) / 2) !important;
-        padding: 0 5px;
+        padding: 0 6px 0 0;
     }
     
     /* Single item carousel - maintain proper width like multiple items */

@@ -342,7 +342,7 @@ $(document).ready(function () {
             responsive: {
                 0: { items: 2 },
                 600: { items: 3 },
-                1000: { items: 4 }
+                1000: { items: 6 }
             }
         });
 
@@ -455,16 +455,16 @@ function changeQty(button, change) {
   
   
   $(document).ready(function(){
-    $(".owl-carousel").owlCarousel({
+    $(".owl-carousel").not(".new-cate-owl-carousel").owlCarousel({
         loop:true,
         margin:10,
         dots:false,
         nav:true,
         navText: ['<i class="fas fa-chevron-left"></i>', '<i class="fas fa-chevron-right"></i>'],
         responsive:{
-            320: { items: 2.2 }, // 2 full products + 1/3 in mobile view
+            0: { items: 2, margin: 8 },
             600:{ items:3, nav:false },
-            1000:{ items:4, nav:true }
+            1000:{ items:6, nav:true }
         }
     });
 });

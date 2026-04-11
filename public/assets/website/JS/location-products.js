@@ -459,11 +459,11 @@ function initializeOwlCarousels() {
         
         // Determine responsive settings based on item count
         var responsiveSettings = {
-            0: { items: 2, stagePadding: 15, margin: 10 },
-            480: { items: 2, stagePadding: 15, margin: 10 },
+            0: { items: 2, stagePadding: 0, margin: 8 },
+            480: { items: 2, stagePadding: 0, margin: 8 },
             600: { items: 3, nav: false, margin: 12 },
             768: { items: 3, nav: true, margin: 15 },
-            1000: { items: 4, nav: true, margin: 15 }
+            1000: { items: 6, nav: true, margin: 15 }
         };
         
         // If only one item, adjust settings to maintain proper width

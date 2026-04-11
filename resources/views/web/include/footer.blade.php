@@ -300,8 +300,8 @@
 
     <!--------------- CUSTOM JAVASCRIPT START ----------------->
     <!-- Location related scripts - MUST load before Google Maps API -->
-    <script src="{{ asset('public/assets/website/JS/location-popup.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/location-utils.js')}}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/location-popup.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/location-utils.js') }}"></script>
     <script>
         document.addEventListener("submit", function (e) {
             var form = e.target;
@@ -320,25 +320,25 @@
             window.promoteGuestLocationAfterLogin();
         }
     </script>
-    <script src="{{ asset('public/assets/website/JS/location-detection.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/location-products.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/location-autocomplete.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/location-init.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/location-saved-flow.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/redirect-location.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/search-suggestions.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/auto-redirect.js')}}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/location-detection.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/location-products.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/location-autocomplete.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/location-init.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/location-saved-flow.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/redirect-location.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/search-suggestions.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/auto-redirect.js') }}"></script>
     
     <!-- Cart and product scripts -->
-    <script src="{{ asset('public/assets/website/JS/cart-operations.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/product-variant-modal.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/checkout-handler.js')}}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/cart-operations.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/product-variant-modal.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/checkout-handler.js') }}"></script>
     
     <!-- Other scripts -->
-    <script src="{{ asset('public/assets/website/JS/contact-popup.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/footer-categories.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/hash-cleanup.js')}}"></script>
-    <script src="{{ asset('public/assets/website/JS/custom.js')}}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/contact-popup.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/footer-categories.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/hash-cleanup.js') }}"></script>
+    <script src="{{ versioned_asset('public/assets/website/JS/custom.js') }}"></script>
     
     <!-- Google Maps API (for location autocomplete) - MUST load after location-autocomplete.js -->
     <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places&callback=initAutocomplete" async defer></script>
