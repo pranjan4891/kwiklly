@@ -234,34 +234,32 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       };
 
-// Function to update cart button state based on cart count
+// Function to update cart button state and badge visibility (hide count when 0)
 function updateCartButtonState() {
-    // Check desktop cart button
     const desktopCartCount = document.querySelector('#openCart .cart-count');
     const desktopCartButton = document.getElementById('openCart');
-
-    // Check mobile cart button
     const mobileCartCount = document.querySelector('#openCart2 .cart-count');
     const mobileCartButton = document.getElementById('openCart2');
 
-    if (desktopCartCount && desktopCartButton) {
-        const count = parseInt(desktopCartCount.textContent);
+    function syncCartBadge(countEl, buttonEl) {
+        if (!countEl || !buttonEl) return;
+        const count = parseInt(countEl.textContent, 10) || 0;
         if (count > 0) {
-            desktopCartButton.removeAttribute('disabled');
+            countEl.classList.remove('d-none');
+            countEl.setAttribute('aria-hidden', 'false');
+            buttonEl.removeAttribute('disabled');
         } else {
-            desktopCartButton.setAttribute('disabled', 'disabled');
+            countEl.classList.add('d-none');
+            countEl.setAttribute('aria-hidden', 'true');
+            buttonEl.setAttribute('disabled', 'disabled');
         }
     }
 
-    if (mobileCartCount && mobileCartButton) {
-        const count = parseInt(mobileCartCount.textContent);
-        if (count > 0) {
-            mobileCartButton.removeAttribute('disabled');
-        } else {
-            mobileCartButton.setAttribute('disabled', 'disabled');
-        }
-    }
+    syncCartBadge(desktopCartCount, desktopCartButton);
+    syncCartBadge(mobileCartCount, mobileCartButton);
 }
+
+window.updateCartButtonState = updateCartButtonState;
 
 // Update cart button state on page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -300,24 +298,33 @@ if (mobileCartCount) {
 
 
 
+/** Homepage category strip: keep visible slide count below total chunks so prev/next move the stage */
+function getCategoryOwlCarouselOptions() {
+    return {
+        loop: true,
+        margin: 12,
+        nav: true,
+        dots: false,
+        navText: [
+            '<span class="new-cate-nav-inner" aria-hidden="true"><i class="fa fa-chevron-left"></i></span>',
+            '<span class="new-cate-nav-inner" aria-hidden="true"><i class="fa fa-chevron-right"></i></span>'
+        ],
+        responsive: {
+            0: { items: 2.4 },
+            600: { items: 3 },
+            1000: { items: 2 }
+        }
+    };
+}
+window.getCategoryOwlCarouselOptions = getCategoryOwlCarouselOptions;
+
 // category slider
 $(document).ready(function () {
 
     /* ===============================
        CATEGORY SLIDER
     ================================ */
-    $(".new-cate-owl-carousel").owlCarousel({
-        loop: true,
-        margin: 12,
-        nav: true,
-        dots: false,
-        navText: ["", ""],
-        responsive: {
-            0: { items: 2.4 },
-            600: { items: 4 },
-            1000: { items: 4 }
-        }
-    });
+    $(".new-cate-owl-carousel").owlCarousel(getCategoryOwlCarouselOptions());
 
     $(".new-cate-owl-carousel").addClass("cate-slider");
 

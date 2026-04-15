@@ -25,7 +25,7 @@
             $firstAttr = $attributes ? collect($attributes)->first() : null;
         @endphp
 
-        <div class="col-md-4 pb-4 col-6 product-item" data-subcategory="{{ $product->sub_category_id }}">
+        <div class="col-md-3 pb-4 col-6 product-item" data-subcategory="{{ $product->sub_category_id }}">
             <div class="item">
                 <div class="product-card p-0">
 

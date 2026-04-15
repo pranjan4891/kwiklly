@@ -304,7 +304,7 @@ a {
     margin-bottom: 2px;
 }
 .product-info {
-    font-size: 16px;
+    font-size: 14px;
     color: #53433F;
     font-weight: 400;
     margin-bottom: 5px;
@@ -338,7 +338,7 @@ a {
 
 .price {
     color: #4CAF50;
-    font-size: 18px;
+    font-size: 16px;
     line-height: 20.7px;
     font-weight: 600;
     margin: 0;
@@ -411,7 +411,7 @@ a {
     height: auto;
     max-height: 170px;
     object-fit: contain;
-    margin: 40px auto 12px;
+    margin: 10px auto 12px;
 }
 .cart-options {
     background: #FFFFFF;
@@ -526,8 +526,8 @@ a {
     padding: 30px;
     border-radius: 10px;
     text-align: center;
-    width: 350px;
-    height: 580px;
+    width: 415px;
+    height: 455px;
     background-size: cover;
     background-position: center;
     position: relative;
@@ -877,18 +877,19 @@ a {
 }
 .headingclass{
     font-weight: 700;
-    font-size: 32px;
-    line-height: 36.8px;
+    font-size: 20px;
+    line-height: 21px;
     padding: 0px 0px 18px 0px;
 }
 .paymentspacing{
     padding: 70px 10px 15px 10px;
 }
 .rupee-symbol {
-    font-size: 12px;
-    position: relative;
-    top: -5px;
-    margin-right: -4px;
+        color: #4CAF50;
+    font-size: 16px;
+    line-height: 20.7px;
+    font-weight: 600;
+    margin: 0;
 }
 /* Left Section Styling */
 .image-container {
@@ -986,8 +987,8 @@ a {
     font-size: 16px;
 }
 .swal2-html-container{
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 500;
     color: black;
 }
 .swal2-actions button{
@@ -1227,10 +1228,10 @@ a {
     box-shadow: 0 0 0 .25rem rgb(255, 255, 255);
 }
 .rupee-symbol2 {
-    font-size: 12px;
+     font-size: 14px;
     position: relative;
-    top: -3px;
-    margin-right: -4px;
+    top: 0px;
+    margin-right: -1px;
 }
 .store-sectionde {
     position: relative;
@@ -4077,12 +4078,13 @@ select.time-boxde:focus {
       }
 
       .addpop-popup.addpop-mobile-active {
+             z-index: 2000;
         transform: translateY(0);
         opacity: 1;
         visibility: visible;
         top: 0;
         bottom: 0;
-        margin-top: 30px;
+        margin-top: -81px;
       }
 
       .addpop-close-btn {
@@ -7901,6 +7903,7 @@ body.suggestions-open {
 /* Only minimal z-index control - let Google handle everything else */
 .pac-container {
     z-index: 100000002 !important;
+    border: none !important;
 }
 
 /* Hide "powered by Google" text - More specific targeting */
@@ -8948,3 +8951,72 @@ body.suggestions-open {
     }
 }
 
+/* date-13 april 2206 */
+div:where(.swal2-container).swal2-center>.swal2-popup {
+    border-radius: 20px;
+    grid-column: 2;
+    grid-row: 2;
+    place-self: center center;
+}
+
+/* Allow full wrapped address text in location suggestions */
+.pac-container .pac-item {
+    white-space: normal !important;
+    display: block !important;
+    position: relative !important;
+    padding-left: 44px !important;
+    line-height: 1.35 !important;
+}
+
+.pac-container .pac-item *:not(.pac-icon):not(img),
+.pac-container .pac-item .pac-item-query,
+.pac-container .pac-item strong,
+.pac-container .pac-item b,
+.pac-container .pac-item span:not(.pac-icon),
+.pac-container .pac-item div:not(.pac-icon):not(.pac-attribution) {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+}
+
+.pac-container .pac-item .pac-icon,
+.pac-container .pac-item img.pac-icon {
+    position: absolute !important;
+    left: 14px !important;
+    top: 10px !important;
+    margin-right: 0 !important;
+}
+
+/* Keep a visible gap after bold matched text */
+.pac-container .pac-item .pac-item-query,
+.pac-container .pac-item strong,
+.pac-container .pac-item b {
+    display: inline-block !important;
+    margin-right: 6px !important;
+}
+
+.pac-container .pac-item .pac-item-query::after,
+.pac-container .pac-item strong::after,
+.pac-container .pac-item b::after {
+    content: " " !important;
+}
+
+/* Mobile: allow vertical page scroll while swiping carousels horizontally */
+@media (max-width: 768px) {
+    .owl-carousel,
+    .owl-carousel .owl-stage-outer,
+    .owl-carousel .owl-stage,
+    .owl-carousel .owl-item,
+    #mobileSlider,
+    #mobileSlider .carousel-inner,
+    #mobileSlider .carousel-item {
+        touch-action: pan-y !important;
+        -ms-touch-action: pan-y !important;
+    }
+
+    .owl-carousel .owl-stage-outer,
+    #mobileSlider .carousel-inner {
+        overscroll-behavior-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}

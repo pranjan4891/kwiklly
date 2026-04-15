@@ -150,6 +150,9 @@
                     </form>
                </div>
             </div>
+            @php
+                $headerCartCount = session('cart') ? count(session('cart')) : 0;
+            @endphp
             <!-- Desktop Menu (Hidden in Mobile) -->
             <div class="d-flex align-items-center desktop-menu">
                <a href="{{ route('department')}}" onclick="return redirectWithLocation(this.href)">Department</a>
@@ -161,7 +164,7 @@
                @endif
                <button class="cart-btn d-none d-md-flex" id="openCart">
                <i class="fa fa-shopping-cart"></i>
-               <span class="cart-count">{{ session('cart') ? count(session('cart')) : 0 }}</span>
+               <span class="cart-count{{ $headerCartCount > 0 ? '' : ' d-none' }}" aria-hidden="{{ $headerCartCount > 0 ? 'false' : 'true' }}">{{ $headerCartCount }}</span>
                </button>
             </div>
             <!-- Mobile: Location and Cart in one row -->
@@ -172,7 +175,7 @@
                   <i class="fas fa-chevron-down dropdown-icon"></i>
                </div>
                <button class="cart-btn" id="openCart2">
-               <i class="fas fa-shopping-cart"></i><span class="cart-count">{{ session('cart') ? count(session('cart')) : 0 }}</span>
+               <i class="fas fa-shopping-cart"></i><span class="cart-count{{ $headerCartCount > 0 ? '' : ' d-none' }}" aria-hidden="{{ $headerCartCount > 0 ? 'false' : 'true' }}">{{ $headerCartCount }}</span>
                </button>
             </div>
             <!-- Mobile Search (Separate Row) -->

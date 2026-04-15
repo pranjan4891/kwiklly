@@ -111,26 +111,11 @@ function toggleAddpop(e){
         popup.style.overflow = 'visible';
     }
     
-    // Show pac-containers when popup opens (they will be shown by autocomplete initialization)
-    // This ensures "powered by Google" is visible only when popup is open
-    setTimeout(function() {
-        const pacContainers = document.querySelectorAll('.pac-container');
-        pacContainers.forEach(function(container) {
-            // Only show if popup is still open
-            if (popup.classList.contains('addpop-desktop-active') || popup.classList.contains('addpop-mobile-active')) {
-                container.classList.add('pac-container-visible');
-                container.style.setProperty('display', 'block', 'important');
-                container.style.setProperty('visibility', 'visible', 'important');
-                container.style.setProperty('opacity', '1', 'important');
-                container.style.setProperty('height', 'auto', 'important');
-                container.style.setProperty('max-height', '300px', 'important');
-                container.style.zIndex = '100000002';
-                container.style.backgroundColor = 'white';
-                container.style.overflowY = 'auto';
-                container.style.overflowX = 'hidden';
-                console.log("Pac-container made visible on popup open, computed:", window.getComputedStyle(container).display);
-            }
-        });
+    // Clear any stale Places dropdown from a previous visit (empty box used to leave a visible bottom border)
+    setTimeout(function () {
+        if (popup.classList.contains('addpop-desktop-active') || popup.classList.contains('addpop-mobile-active')) {
+            hideGooglePlacesDropdown();
+        }
     }, 100);
     
     // Also check periodically while popup is open to ensure suggestions show
@@ -142,28 +127,9 @@ function toggleAddpop(e){
             return;
         }
         
-        // Ensure pac-containers are visible when popup is open
-        const pacContainers = document.querySelectorAll('.pac-container');
-        pacContainers.forEach(function(container) {
-            container.classList.add('pac-container-visible');
-            container.style.setProperty('display', 'block', 'important');
-            container.style.setProperty('visibility', 'visible', 'important');
-            container.style.setProperty('opacity', '1', 'important');
-            container.style.setProperty('height', 'auto', 'important');
-            container.style.setProperty('max-height', '300px', 'important');
-            container.style.zIndex = '100000002';
-            container.style.backgroundColor = 'white';
-            container.style.overflowY = 'auto';
-            container.style.overflowX = 'hidden';
-            
-            // Also ensure pac-items are visible
-            const items = container.querySelectorAll('.pac-item');
-            items.forEach(function(item) {
-                item.style.setProperty('display', 'block', 'important');
-                item.style.setProperty('visibility', 'visible', 'important');
-                item.style.setProperty('opacity', '1', 'important');
-            });
-        });
+        if (typeof ensurePacContainerVisible === 'function') {
+            ensurePacContainerVisible();
+        }
     }, 200);
     
     // Force show the appropriate input based on screen size
@@ -277,6 +243,24 @@ function toggleAddpop(e){
     }
 }
 
+/** Collapse Google Places dropdown so empty/stale boxes do not overlap #selected-location */
+function hideGooglePlacesDropdown() {
+    document.querySelectorAll('.pac-container').forEach(function (container) {
+        container.classList.remove('pac-container-visible');
+        container.style.setProperty('display', 'none', 'important');
+        container.style.setProperty('visibility', 'hidden', 'important');
+        container.style.setProperty('opacity', '0', 'important');
+        container.style.setProperty('height', '0', 'important');
+        container.style.setProperty('max-height', '0', 'important');
+        container.style.setProperty('width', '0', 'important');
+        container.style.overflow = 'hidden';
+        if (typeof hideGoogleAttribution === 'function') {
+            hideGoogleAttribution(container);
+        }
+    });
+}
+window.hideGooglePlacesDropdown = hideGooglePlacesDropdown;
+
 function closeAddpop(){
     // Get elements if not already cached
     if (!popup) popup = document.getElementById("addpopPopup");
@@ -304,23 +288,8 @@ function closeAddpop(){
 
     document.body.style.overflow = 'auto';
     
-    // Hide all pac-containers (and "powered by Google") when popup closes
-    const pacContainers = document.querySelectorAll('.pac-container');
-    pacContainers.forEach(function(container) {
-        container.classList.remove('pac-container-visible');
-        container.style.display = 'none';
-        container.style.visibility = 'hidden';
-        container.style.opacity = '0';
-        container.style.height = '0';
-        container.style.width = '0';
-        container.style.overflow = 'hidden';
-        
-        // Hide attribution when popup closes
-        if (typeof hideGoogleAttribution === 'function') {
-            hideGoogleAttribution(container);
-        }
-    });
-    
+    hideGooglePlacesDropdown();
+
     console.log("Popup closed, hiding pac-containers and attribution");
 }
 

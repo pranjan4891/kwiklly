@@ -406,10 +406,11 @@ function addToCart(button, productId, variantId) {
         // Update button to Remove
         updateButtonToRemove(button);
         
-        // Update cart count if element exists
-        if (document.querySelector('.cart-count')) {
-            document.querySelector('.cart-count').textContent = data.count || 0;
-        }
+        // Update cart count badges (desktop + mobile)
+        document.querySelectorAll('.cart-count').forEach(function (el) {
+            el.textContent = data.count || 0;
+        });
+        if (typeof window.updateCartButtonState === 'function') window.updateCartButtonState();
         
         // Refresh sidebar cart - use cart from response if available, otherwise fetch
         const refreshSidebarCart = (cartData) => {
@@ -502,10 +503,11 @@ function removeFromCart(button, key) {
             // Update button to Add Again
             updateButtonToAdd(button);
             
-            // Update cart count if element exists
-            if (document.querySelector('.cart-count')) {
-                document.querySelector('.cart-count').textContent = data.count || 0;
-            }
+            // Update cart count badges (desktop + mobile)
+            document.querySelectorAll('.cart-count').forEach(function (el) {
+                el.textContent = data.count || 0;
+            });
+            if (typeof window.updateCartButtonState === 'function') window.updateCartButtonState();
             
             // Refresh sidebar cart
             if (typeof loadSideCartItems === 'function') {

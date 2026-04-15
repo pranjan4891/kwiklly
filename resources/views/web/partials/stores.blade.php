@@ -5,7 +5,7 @@
          <!-- Store Item -->        
 
          @foreach ($stores as $store)
-         <div class="col-md-2 col-4 store-item">
+         <div class="col-md-2 col-3 store-item">
             <a href="{{route('explorestore',['vendor_id'=>$store->id,'cat_id'=>0] )}}"  onclick="return redirectWithLocation(this.href)" class="store-card-link">
                 <div class="store-image">
                 @php

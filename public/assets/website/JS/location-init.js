@@ -151,21 +151,20 @@ window.addEventListener("DOMContentLoaded", () => {
                                 $('.new-cate-owl-carousel').html(carouselHtml);
                                 
                                 // Reinitialize carousel after HTML update
-                                $('.new-cate-owl-carousel').owlCarousel({
-                                    loop: true,
-                                    margin: 10,
-                                    nav: true,
-                                    dots: false,
-                                    navText: [
-                                        "<span class='cate-custom-prev'><i class='fa fa-chevron-left'></i></span>",
-                                        "<span class='cate-custom-next'><i class='fa fa-chevron-right'></i></span>"
-                                    ],
-                                    responsive: {
-                                        320: { items: 2.4 },
-                                        600: { items: 4 },
-                                        1000: { items: 4 }
-                                    }
-                                });
+                                var catOwlOpts = typeof window.getCategoryOwlCarouselOptions === "function"
+                                    ? window.getCategoryOwlCarouselOptions()
+                                    : {
+                                        loop: true,
+                                        margin: 12,
+                                        nav: true,
+                                        dots: false,
+                                        navText: [
+                                            '<span class="new-cate-nav-inner" aria-hidden="true"><i class="fa fa-chevron-left"></i></span>',
+                                            '<span class="new-cate-nav-inner" aria-hidden="true"><i class="fa fa-chevron-right"></i></span>'
+                                        ],
+                                        responsive: { 0: { items: 2.4 }, 600: { items: 3 }, 1000: { items: 2 } }
+                                    };
+                                $('.new-cate-owl-carousel').owlCarousel(catOwlOpts);
                             }
                         }
                         

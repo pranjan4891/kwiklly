@@ -354,7 +354,7 @@
                    : json_decode($defaultVariant->attributes ?? '{}', true);
                $firstAttr = collect($attributes)->first();
                @endphp
-               <div class="col-md-4 pb-4 col-6">
+               <div class="col-md-3 pb-4 col-6">
                   <div class="item">
                      <div class="product-card p-0">
                         @if ($defaultVariant && ($defaultVariant->variant_save_price_in_percent ?? 0) > 0)

@@ -84,14 +84,6 @@ function initAutocompleteFieldsNow() {
                 fields: ['geometry', 'formatted_address', 'name', 'address_components']
             });
             
-            // Listen for when autocomplete dropdown is shown
-            google.maps.event.addListener(autocompleteDesktopInstance, 'place_changed', function() {
-                // Ensure dropdown stays visible
-                setTimeout(function() {
-                    ensurePacContainerVisible();
-                }, 100);
-            });
-            
             // Also listen for when user starts typing
             google.maps.event.addDomListener(inputDesktop, 'keydown', function() {
                 setTimeout(function() {
@@ -116,6 +108,9 @@ function initAutocompleteFieldsNow() {
                     if (typeof updateLocation === 'function') {
                         updateLocation(fullAddress, place, lat, lng, false);
                     }
+                }
+                if (typeof window.hideGooglePlacesDropdown === 'function') {
+                    window.hideGooglePlacesDropdown();
                 }
             });
             
@@ -160,7 +155,7 @@ function initAutocompleteFieldsNow() {
                         container.style.position = 'fixed';
                         container.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
                         container.style.borderRadius = '8px';
-                        container.style.border = '1px solid #e0e0e0';
+                        container.style.border = 'none';
                         
                         // Force show all pac-items (suggestions)
                         const items = container.querySelectorAll('.pac-item');
@@ -174,7 +169,7 @@ function initAutocompleteFieldsNow() {
                             item.style.cursor = 'pointer';
                             item.style.backgroundColor = '#ffffff';
                             item.style.transition = 'background-color 0.2s ease';
-                            item.style.borderBottom = '1px solid #f0f0f0';
+                            item.style.borderBottom = 'none';
                             
                             // Ensure all children are visible with proper styling
                             const children = item.querySelectorAll('*');
@@ -426,14 +421,6 @@ function initAutocompleteFieldsNow() {
                 fields: ['geometry', 'formatted_address', 'name', 'address_components']
             });
             
-            // Listen for when autocomplete dropdown is shown
-            google.maps.event.addListener(autocompleteMobileInstance, 'place_changed', function() {
-                // Ensure dropdown stays visible
-                setTimeout(function() {
-                    ensurePacContainerVisible();
-                }, 100);
-            });
-            
             // Also listen for when user starts typing
             google.maps.event.addDomListener(inputMobile, 'keydown', function() {
                 setTimeout(function() {
@@ -452,6 +439,9 @@ function initAutocompleteFieldsNow() {
                     if (typeof updateLocation === 'function') {
                         updateLocation(fullAddress, place, lat, lng, false);
                     }
+                }
+                if (typeof window.hideGooglePlacesDropdown === 'function') {
+                    window.hideGooglePlacesDropdown();
                 }
             });
             
@@ -496,7 +486,7 @@ function initAutocompleteFieldsNow() {
                         container.style.position = 'fixed';
                         container.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
                         container.style.borderRadius = '8px';
-                        container.style.border = '1px solid #e0e0e0';
+                        container.style.border = 'none';
                         
                         // Force show all pac-items (suggestions) with improved styling
                         const items = container.querySelectorAll('.pac-item');
@@ -510,7 +500,7 @@ function initAutocompleteFieldsNow() {
                             item.style.cursor = 'pointer';
                             item.style.backgroundColor = '#ffffff';
                             item.style.transition = 'background-color 0.2s ease';
-                            item.style.borderBottom = '1px solid #f0f0f0';
+                            item.style.borderBottom = 'none';
                             
                             // Ensure all children are visible with proper styling
                             const children = item.querySelectorAll('*');
@@ -582,7 +572,7 @@ function initAutocompleteFieldsNow() {
                             item.style.padding = '12px 16px';
                             item.style.backgroundColor = '#ffffff';
                             item.style.transition = 'background-color 0.2s ease';
-                            item.style.borderBottom = '1px solid #f0f0f0';
+                            item.style.borderBottom = 'none';
                             
                             // Style text elements
                             const strongElements = item.querySelectorAll('strong, b');
@@ -620,22 +610,21 @@ function initAutocompleteFieldsNow() {
                         const items = container.querySelectorAll('.pac-item');
                         console.log("Mobile input (300ms): Found", items.length, "pac-items");
                         items.forEach(function(item) {
-                            item.style.setProperty('display', 'flex', 'important');
+                            item.style.setProperty('display', 'block', 'important');
                             item.style.setProperty('visibility', 'visible', 'important');
                             item.style.setProperty('opacity', '1', 'important');
-                            item.style.setProperty('white-space', 'nowrap', 'important');
-                            item.style.padding = '12px 16px';
+                            item.style.setProperty('white-space', 'normal', 'important');
+                            item.style.padding = '12px 16px 12px 44px';
                             item.style.backgroundColor = '#ffffff';
                             item.style.transition = 'background-color 0.2s ease';
-                            item.style.borderBottom = '1px solid #f0f0f0';
-                            item.style.alignItems = 'center';
-                            item.style.flexWrap = 'nowrap';
+                            item.style.borderBottom = 'none';
+                            item.style.position = 'relative';
                             
                             // Make all child elements inline
                             const children = item.querySelectorAll('*');
                             children.forEach(function(child) {
                                 child.style.setProperty('display', 'inline', 'important');
-                                child.style.setProperty('white-space', 'nowrap', 'important');
+                                child.style.setProperty('white-space', 'normal', 'important');
                                 child.style.margin = '0';
                                 child.style.padding = '0';
                                 child.style.verticalAlign = 'baseline';
@@ -650,7 +639,7 @@ function initAutocompleteFieldsNow() {
                             const divs = item.querySelectorAll('div:not(.pac-icon):not(.pac-attribution)');
                             divs.forEach(function(div) {
                                 div.style.setProperty('display', 'inline', 'important');
-                                div.style.setProperty('white-space', 'nowrap', 'important');
+                                div.style.setProperty('white-space', 'normal', 'important');
                                 if (div.textContent.trim() && div.previousSibling && div.previousSibling.textContent.trim()) {
                                     div.style.marginLeft = '4px';
                                 }
@@ -730,7 +719,7 @@ function initAutocompleteFieldsNow() {
                             item.style.padding = '12px 16px';
                             item.style.backgroundColor = '#ffffff';
                             item.style.transition = 'background-color 0.2s ease';
-                            item.style.borderBottom = '1px solid #f0f0f0';
+                            item.style.borderBottom = 'none';
                             
                             // Style text elements
                             const strongElements = item.querySelectorAll('strong, b');
@@ -851,93 +840,97 @@ function ensurePacContainerVisible() {
         console.log("No pac-container found yet in ensurePacContainerVisible");
         return;
     }
-    
+
+    const popupElement = document.getElementById("addpopPopup");
+    const isPopupOpen = popupElement && (popupElement.classList.contains('addpop-desktop-active') || popupElement.classList.contains('addpop-mobile-active'));
+    const inputDesktop = document.getElementById("autocomplete");
+    const inputMobile = document.getElementById("autocomplete-mobile");
+    const inputFocused = document.activeElement === inputDesktop || document.activeElement === inputMobile;
+
     pacContainers.forEach(function(pacContainer, index) {
-        if (pacContainer) {
-            console.log("Ensuring pac-container visibility for container", index + 1);
-            
-            // Find the input field that triggered this
-            let inputField = null;
-            let inputDesktop = document.getElementById("autocomplete");
-            let inputMobile = document.getElementById("autocomplete-mobile");
-            
-            // Check which input is visible/active
-            if (inputDesktop && window.getComputedStyle(inputDesktop).display !== 'none') {
-                inputField = inputDesktop;
-            } else if (inputMobile && window.getComputedStyle(inputMobile).display !== 'none') {
-                inputField = inputMobile;
+        if (!pacContainer) {
+            return;
+        }
+        console.log("Ensuring pac-container visibility for container", index + 1);
+
+        const pacItems = pacContainer.querySelectorAll('.pac-item');
+
+        if (!isPopupOpen || pacItems.length === 0 || !inputFocused) {
+            pacContainer.classList.remove('pac-container-visible');
+            pacContainer.style.setProperty('display', 'none', 'important');
+            pacContainer.style.setProperty('visibility', 'hidden', 'important');
+            pacContainer.style.setProperty('opacity', '0', 'important');
+            pacContainer.style.setProperty('height', '0', 'important');
+            pacContainer.style.setProperty('max-height', '0', 'important');
+            pacContainer.style.setProperty('width', '0', 'important');
+            pacContainer.style.overflow = 'hidden';
+            if (typeof hideGoogleAttribution === 'function') {
+                hideGoogleAttribution(pacContainer);
             }
-            
-            // Position pac-container relative to input field
-            if (inputField) {
-                let inputRect = inputField.getBoundingClientRect();
-                pacContainer.style.position = 'fixed';
-                
-                // Add gap between search box and suggestion box for both mobile and web view
-                const isMobile = window.innerWidth <= 768;
-                const gap = isMobile ? 8 : 6; // 8px gap for mobile, 6px for web view
-                pacContainer.style.top = (inputRect.bottom + window.scrollY + gap) + 'px';
-                
-                pacContainer.style.left = inputRect.left + 'px';
-                pacContainer.style.width = inputRect.width + 'px';
-                console.log("Positioned pac-container at:", inputRect.left, inputRect.bottom + gap, isMobile ? '(mobile with gap)' : '(web with gap)');
-            }
-            
-            // Ensure parent popup doesn't clip it
-            let parentPopup = pacContainer.closest('.addpop-popup');
-            if (parentPopup) {
-                parentPopup.style.overflow = 'visible';
-            }
-            
-            // Ensure parent actions container doesn't clip it
-            let actions = pacContainer.closest('.addpop-actions');
-            if (actions) {
-                actions.style.overflow = 'visible';
-            }
-            
-            // Check if location popup is open before showing pac-container
-            const popupElement = document.getElementById("addpopPopup");
-            const isPopupOpen = popupElement && (popupElement.classList.contains('addpop-desktop-active') || popupElement.classList.contains('addpop-mobile-active'));
-            
-            if (isPopupOpen) {
-                // Show pac-container when popup is open - use multiple methods to ensure visibility
-                pacContainer.classList.add('pac-container-visible');
-                pacContainer.style.setProperty('display', 'block', 'important');
-                pacContainer.style.setProperty('visibility', 'visible', 'important');
-                pacContainer.style.setProperty('opacity', '1', 'important');
-                pacContainer.style.setProperty('height', 'auto', 'important');
-                pacContainer.style.setProperty('max-height', '300px', 'important');
-                pacContainer.style.zIndex = '100000002';
-                pacContainer.style.backgroundColor = 'white';
-                pacContainer.style.overflowY = 'auto';
-                pacContainer.style.overflowX = 'hidden';
-                pacContainer.style.position = 'fixed';
-                pacContainer.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
-                pacContainer.style.borderRadius = '8px';
-                pacContainer.style.border = '1px solid #e0e0e0';
-                pacContainer.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
-                pacContainer.style.borderRadius = '8px';
-                pacContainer.style.border = '1px solid #e0e0e0';
-                
-                const computedDisplay = window.getComputedStyle(pacContainer).display;
-                console.log("Pac-container shown, computed display:", computedDisplay);
-                
-                // Ensure pac-items are visible and properly styled
-                let pacItems = pacContainer.querySelectorAll('.pac-item');
-                console.log("Found", pacItems.length, "pac-items in ensurePacContainerVisible");
-                
-                pacItems.forEach(function(item) {
-                    item.style.setProperty('display', 'flex', 'important');
+            return;
+        }
+
+        let inputField = null;
+        if (inputDesktop && window.getComputedStyle(inputDesktop).display !== 'none') {
+            inputField = inputDesktop;
+        } else if (inputMobile && window.getComputedStyle(inputMobile).display !== 'none') {
+            inputField = inputMobile;
+        }
+
+        if (inputField) {
+            let inputRect = inputField.getBoundingClientRect();
+            pacContainer.style.position = 'fixed';
+
+            const isMobile = window.innerWidth <= 768;
+            const gap = isMobile ? 8 : 6;
+            pacContainer.style.top = (inputRect.bottom + window.scrollY + gap) + 'px';
+
+            pacContainer.style.left = inputRect.left + 'px';
+            pacContainer.style.width = inputRect.width + 'px';
+            console.log("Positioned pac-container at:", inputRect.left, inputRect.bottom + gap, isMobile ? '(mobile with gap)' : '(web with gap)');
+        }
+
+        let parentPopup = pacContainer.closest('.addpop-popup');
+        if (parentPopup) {
+            parentPopup.style.overflow = 'visible';
+        }
+
+        let actions = pacContainer.closest('.addpop-actions');
+        if (actions) {
+            actions.style.overflow = 'visible';
+        }
+
+        pacContainer.classList.add('pac-container-visible');
+        pacContainer.style.setProperty('display', 'block', 'important');
+        pacContainer.style.setProperty('visibility', 'visible', 'important');
+        pacContainer.style.setProperty('opacity', '1', 'important');
+        pacContainer.style.setProperty('height', 'auto', 'important');
+        pacContainer.style.setProperty('max-height', '300px', 'important');
+        pacContainer.style.zIndex = '100000002';
+        pacContainer.style.backgroundColor = 'white';
+        pacContainer.style.overflowY = 'auto';
+        pacContainer.style.overflowX = 'hidden';
+        pacContainer.style.position = 'fixed';
+        pacContainer.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
+        pacContainer.style.borderRadius = '8px';
+        pacContainer.style.border = 'none';
+
+        const computedDisplay = window.getComputedStyle(pacContainer).display;
+        console.log("Pac-container shown, computed display:", computedDisplay);
+
+        console.log("Found", pacItems.length, "pac-items in ensurePacContainerVisible");
+
+        pacItems.forEach(function(item) {
+                    item.style.setProperty('display', 'block', 'important');
                     item.style.setProperty('visibility', 'visible', 'important');
                     item.style.setProperty('opacity', '1', 'important');
                     item.style.setProperty('text-indent', '0', 'important');
-                    item.style.setProperty('white-space', 'nowrap', 'important');
-                    item.style.padding = '10px 15px';
+                    item.style.setProperty('white-space', 'normal', 'important');
+                    item.style.padding = '10px 15px 10px 44px';
                     item.style.cursor = 'pointer';
-                    item.style.borderBottom = '1px solid #f0f0f0';
+                    item.style.borderBottom = 'none';
                     item.style.color = '#333';
-                    item.style.alignItems = 'center';
-                    item.style.flexWrap = 'nowrap';
+                    item.style.position = 'relative';
                     
                     // Ensure all child elements are visible and inline
                     const children = item.querySelectorAll('*');
@@ -946,7 +939,7 @@ function ensurePacContainerVisible() {
                         child.style.setProperty('display', 'inline', 'important');
                         child.style.setProperty('visibility', 'visible', 'important');
                         child.style.setProperty('opacity', '1', 'important');
-                        child.style.setProperty('white-space', 'nowrap', 'important');
+                        child.style.setProperty('white-space', 'normal', 'important');
                         child.style.color = '#333';
                         child.style.margin = '0';
                         child.style.padding = '0';
@@ -995,12 +988,14 @@ function ensurePacContainerVisible() {
                     icon.style.setProperty('visibility', 'visible', 'important');
                     icon.style.width = '24px';
                     icon.style.height = '24px';
-                    icon.style.marginRight = '12px';
-                    icon.style.verticalAlign = 'middle';
+                    icon.style.marginRight = '0';
+                    icon.style.verticalAlign = 'top';
                     icon.style.opacity = '1';
                     icon.style.objectFit = 'contain';
                     icon.style.flexShrink = '0';
-                    icon.style.setProperty('order', '-1', 'important'); // Ensure it appears first in flex layout
+                    icon.style.position = 'absolute';
+                    icon.style.left = '14px';
+                    icon.style.top = '10px';
                     
                     // Remove all <br> tags completely
                     const brTags = item.querySelectorAll('br');
@@ -1017,7 +1012,7 @@ function ensurePacContainerVisible() {
                     const divs = item.querySelectorAll('div:not(.pac-icon):not(.pac-attribution)');
                     divs.forEach(function(div) {
                         div.style.setProperty('display', 'inline', 'important');
-                        div.style.setProperty('white-space', 'nowrap', 'important');
+                        div.style.setProperty('white-space', 'normal', 'important');
                         if (div.textContent.trim() && div.previousSibling && div.previousSibling.textContent.trim()) {
                             div.style.marginLeft = '4px';
                         }
@@ -1031,16 +1026,7 @@ function ensurePacContainerVisible() {
                     showGoogleAttribution(pacContainer);
                 }
                 
-                console.log("Pac-container visibility ensured (popup open), items:", pacItems.length, "position:", pacContainer.style.position, "display:", computedDisplay);
-            } else {
-                // Hide pac-container if popup is not open
-                pacContainer.classList.remove('pac-container-visible');
-                pacContainer.style.setProperty('display', 'none', 'important');
-                pacContainer.style.setProperty('visibility', 'hidden', 'important');
-                pacContainer.style.setProperty('opacity', '0', 'important');
-                console.log("Pac-container hidden (popup closed)");
-            }
-        }
+        console.log("Pac-container visibility ensured (popup open), items:", pacItems.length, "position:", pacContainer.style.position, "display:", computedDisplay);
     });
 }
 
@@ -1100,7 +1086,7 @@ function showGoogleAttribution(container) {
                     el.style.setProperty('margin', '0', 'important');
                     el.style.setProperty('color', '#70757a', 'important');
                     el.style.setProperty('text-align', 'left', 'important');
-                    el.style.setProperty('border-top', '1px solid #e0e0e0', 'important');
+                    el.style.setProperty('border-top', 'none', 'important');
                     el.removeAttribute('aria-hidden');
                     el.classList.add('pac-attribution-visible');
                     
@@ -1285,49 +1271,16 @@ function setupPacContainerObserver() {
                             const isPopupOpen = popup && (popup.classList.contains('addpop-desktop-active') || popup.classList.contains('addpop-mobile-active'));
                             
                             if (isPopupOpen) {
-                                // Immediately show the container
-                                node.classList.add('pac-container-visible');
-                                node.style.setProperty('display', 'block', 'important');
-                                node.style.setProperty('visibility', 'visible', 'important');
-                                node.style.setProperty('opacity', '1', 'important');
-                                node.style.setProperty('height', 'auto', 'important');
-                                node.style.setProperty('max-height', '300px', 'important');
-                                node.style.zIndex = '100000002';
-                                node.style.backgroundColor = 'white';
-                                node.style.overflowY = 'auto';
-                                node.style.overflowX = 'hidden';
-                                node.style.position = 'fixed';
-                                
-                                // Ensure items are visible and have icons
-                                setTimeout(function() {
-                                    // Add icons to all pac-items
-                                    const items = node.querySelectorAll('.pac-item');
-                                    items.forEach(function(item) {
-                                        let icon = item.querySelector('.pac-icon, img');
-                                        if (!icon) {
-                                            icon = document.createElement('img');
-                                            icon.src = window.MARKER_IMAGE_URL || '/loc.png';
-                                            icon.className = 'pac-icon';
-                                            icon.alt = 'Location';
-                                            item.insertBefore(icon, item.firstChild);
-                                        }
-                                        icon.style.setProperty('display', 'inline-block', 'important');
-                                        icon.style.width = '24px';
-                                        icon.style.height = '24px';
-                                        icon.style.marginRight = '12px';
-                                        icon.style.verticalAlign = 'middle';
-                                        icon.style.opacity = '1';
-                                        icon.style.objectFit = 'contain';
-                                        icon.style.flexShrink = '0';
-                                    });
-                                    
+                                setTimeout(function () {
                                     ensurePacContainerVisible();
                                     if (typeof showGoogleAttribution === 'function') {
                                         showGoogleAttribution(node);
                                     }
+                                }, 0);
+                                setTimeout(function () {
+                                    ensurePacContainerVisible();
                                 }, 50);
-                                
-                                console.log("Pac-container made visible immediately");
+                                console.log("Pac-container detected; visibility synced via ensurePacContainerVisible");
                             } else {
                                 node.classList.remove('pac-container-visible');
                                 node.style.display = 'none';
@@ -1342,40 +1295,14 @@ function setupPacContainerObserver() {
                             const isPopupOpen = popup && (popup.classList.contains('addpop-desktop-active') || popup.classList.contains('addpop-mobile-active'));
                             
                             if (isPopupOpen) {
-                                container.classList.add('pac-container-visible');
-                                container.style.setProperty('display', 'block', 'important');
-                                container.style.setProperty('visibility', 'visible', 'important');
-                                container.style.setProperty('opacity', '1', 'important');
-                                container.style.setProperty('height', 'auto', 'important');
-                                container.style.setProperty('max-height', '300px', 'important');
-                                container.style.zIndex = '100000002';
-                                
-                                setTimeout(function() {
-                                    // Add icons to all pac-items
-                                    const items = container.querySelectorAll('.pac-item');
-                                    items.forEach(function(item) {
-                                        let icon = item.querySelector('.pac-icon, img');
-                                        if (!icon) {
-                                            icon = document.createElement('img');
-                                            icon.src = window.MARKER_IMAGE_URL || '/loc.png';
-                                            icon.className = 'pac-icon';
-                                            icon.alt = 'Location';
-                                            item.insertBefore(icon, item.firstChild);
-                                        }
-                                        icon.style.setProperty('display', 'inline-block', 'important');
-                                        icon.style.width = '24px';
-                                        icon.style.height = '24px';
-                                        icon.style.marginRight = '12px';
-                                        icon.style.verticalAlign = 'middle';
-                                        icon.style.opacity = '1';
-                                        icon.style.objectFit = 'contain';
-                                        icon.style.flexShrink = '0';
-                                    });
-                                    
+                                setTimeout(function () {
                                     ensurePacContainerVisible();
                                     if (typeof showGoogleAttribution === 'function') {
                                         showGoogleAttribution(container);
                                     }
+                                }, 0);
+                                setTimeout(function () {
+                                    ensurePacContainerVisible();
                                 }, 50);
                             } else {
                                 container.classList.remove('pac-container-visible');

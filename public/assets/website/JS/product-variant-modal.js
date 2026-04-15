@@ -18,6 +18,7 @@
     if (window.CART_DATA_URL) {
         $.get(window.CART_DATA_URL, function (res) {
             $('.cart-count').text(res.count);
+            if (typeof window.updateCartButtonState === 'function') window.updateCartButtonState();
             if (typeof loadSideCartItems === "function") {
                 loadSideCartItems(res.cart);
             }
@@ -143,6 +144,7 @@
             },
             success: function (res) {
                 $('.cart-count').text(res.count);
+                if (typeof window.updateCartButtonState === 'function') window.updateCartButtonState();
 
                 // Always update from server response
                 let updatedQty = getQtyFromResponse(res.cart, key);
@@ -171,6 +173,7 @@
             },
             success: function (res) {
                 $('.cart-count').text(res.count);
+                if (typeof window.updateCartButtonState === 'function') window.updateCartButtonState();
 
                 let updatedQty = getQtyFromResponse(res.cart, key);
 
