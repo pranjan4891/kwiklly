@@ -3,7 +3,7 @@
  * Handles product variant modal and cart operations within modal
  */
 
-(function() {
+(function () {
     'use strict';
 
     if (typeof $ === 'undefined') {
@@ -122,8 +122,9 @@
                                     <div class="variant-option-title">${displayTitle}</div>
                                     ${showMeta ? `<div class="variant-option-meta text-muted">${volume}</div>` : ''}
                                     <div class="variant-option-prices">
+                                    <span class="price fw-bold">₹ ${selling}</span>
                                         <span class="original-price text-decoration-line-through">₹ ${actual}</span>
-                                        <span class="price fw-bold">₹ ${selling}</span>
+                                        
                                     </div>
                                 </div>
                             </div>

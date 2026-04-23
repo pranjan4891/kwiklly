@@ -465,7 +465,7 @@
             <!-- Share and Stock (dynamic per variant) -->
             <div class="d-flex justify-content-between mt-4 mb-2">
                <div class="prodetailheading">
-                  <h6 class="mt-1 product-detail-net-qty">Net Quantity : {{ $netQtyFirst }}</h6>
+                  <h6 class="mt-1 product-detail-net-qty">{{$product->sub_title}}</h6>
                </div>
                <div>
                   <p class="product-detail-availability">Availability : {{ $firstVariantForDisplay && $firstVariantForDisplay->stock > 0 ? 'In Stock' : 'Out of Stock' }}</p>
@@ -614,7 +614,8 @@
                   </span>
                   <div class="color-stock-below">
                      <span class="color-name-below">{{ $colorName }}</span>
-                     <span class="stock-below">Stock: {{ (int) $v->stock }}</span>
+                     <!-- <span class="stock-below">Stock: {{ (int) $v->stock }}</span> -->
+
                   </div>
                </div>
                @endforeach

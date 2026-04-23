@@ -72,7 +72,7 @@
             discountWrap.hide();
         }
 
-        $('.product-detail-net-qty').text('Net Quantity : ' + (variant.net_qty_display || '1 unit'));
+        // $('.product-detail-net-qty').text('Net Quantity : ' + (product.sub_title || '1 unit'));
         $('.product-detail-availability').text('Availability : ' + (stock > 0 ? 'In Stock' : 'Out of Stock'));
 
         // Mobile bar
