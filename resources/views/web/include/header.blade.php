@@ -11,8 +11,6 @@
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
       <link rel="stylesheet" href="{{ versioned_asset('public/assets/website/CSS/style.css') }}">
-      <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-      <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
       <style>input.address-locked{background-color:#f0f0f0!important;cursor:not-allowed!important;}</style>
    </head>
    <body class="{{ $bodyClass ?? '' }}">
@@ -25,41 +23,6 @@
          </div>
          <div class="cart-scrollable-content" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
             <div class=" p-3 rounded my-3 p-3">
-               <div id="deliveryOptions" class="" style="display: none;">
-                  <div class="mt-3">
-                     <div class="d-flex align-items-center mb-2">
-                        <input type="radio" name="deliveryOption" class="form-check-input me-2" checked>
-                        <div class="row w-100 gx-2">
-                           <div class="col">
-                              <select class="form-select form-select-sm">
-                                 <option>Tomorrow, 11/24</option>
-                                 <option>Today, 11/23</option>
-                              </select>
-                           </div>
-                           <div class="col">
-                              <select class="form-select form-select-sm">
-                                 <option>10:00 AM - 1:00 PM</option>
-                                 <option>1:00 PM - 4:00 PM</option>
-                              </select>
-                           </div>
-                        </div>
-                     </div>
-                     <div class="form-check mb-3">
-                        <input type="radio" name="deliveryOption" class="form-check-input me-2" id="expressOption">
-                        <label for="expressOption" class="form-check-label fw-semibold">
-                        Get order in 20 min for ₹5000
-                        </label>
-                     </div>
-                     <div class="text-center">
-                        <span class="text-muted d-block mb-2">or</span>
-                        <button class="btn btn-success w-100" id="expressBtn">
-                        <i class="fa fa-bolt me-1"></i> Express Delivery in 20 mins
-                        </button>
-                     </div>
-                  </div>
-               </div>
-               <!-- Cart Items -->
-               <!-- Cart Items -->
                <div class="cartItemsWrapper" id="cartItemsWrapper" style="padding-bottom: 100px;">
                   <!-- items will be injected dynamically -->
                </div>
@@ -70,30 +33,7 @@
          </div>
       </div>
       <!--Desktop sidebar cart end -->
-      <!-- Sidebar -->
-      {{-- <div class="pata-sidebar-overlay" id="pataSidebar">
-         <div class="pata-sidebar">
-            <!-- Header -->
-            <div class="pata-sidebar-header">
-               <span class="pata-back-btn" onclick="closePataSidebar()"><i class="fa-solid fa-arrow-left"></i></span>
-               <h5 class="mb-0">New Address</h5>
-            </div>
-            <!-- BODY -->
-            <div class="p-3 pataoverflow">
-               <!-- Your Location Title -->
-               <div class="pata-location-title">Your Location</div>
-               <div class="pata-location-desc">
-                  Cisf ground, gali no 2, near metro station gate no 3, saket, Delhi
-               </div>
-               <!-- Buttons: Home / Work -->
-               <div class="d-flex justify-content-between pata-tag-buttons mb-3">
-                  <button type="button" id="pataHomeBtn" class="pata-home active">🏠 Home</button>
-                  <button type="button" id="pataWorkBtn" class="pata-work">🏢 Work</button>
-               </div>
-               <!-- Form Start -->
-            </div>
-         </div>
-      </div> --}}
+     
       <!-- mobile side cart html start  -->
       
       <!-- Cart Overlay -->
@@ -210,39 +150,47 @@
             <input type="text" id="autocomplete-mobile" class="addpop-search-input w-100 d-md-none" placeholder="Search Location" />
          </div>
          <p id="selected-location" class="mt-3 text-sm text-gray-700"></p>
-         <div id="location-save-actions" class="mt-2" style="display:none;">
-            <button type="button" id="openSaveLocationModalBtn" class="btn btn-sm btn-primary">Save this location</button>
+         <div id="location-save-actions" class="mt-3" style="display:none;">
+            <button type="button" id="openSaveLocationModalBtn" class="btn btn-success w-100 shadow-sm" style="border-radius: 8px; padding: 10px; font-weight: 600; letter-spacing: 0.3px;">
+               <i class="fas fa-bookmark me-2"></i>Save This Location
+            </button>
          </div>
-         <div id="saved-locations-wrapper" class="mt-3">
-            <h6 class="mb-2">Saved locations</h6>
-            <div id="saved-locations-list" class="small text-muted">No saved locations.</div>
+         <div id="saved-locations-wrapper" class="mt-4">
+            <div class="d-flex align-items-center mb-3 pb-2" style="border-bottom: 1px solid #eee;">
+               <i class="fas fa-map-pin me-2 text-danger"></i>
+               <h6 class="mb-0 fw-bold text-dark" style="font-size: 15px;">Saved Locations</h6>
+            </div>
+            <div id="saved-locations-list" style="max-height: 250px; overflow-y: auto; overflow-x: hidden; padding-right: 5px;">
+               <div class="small text-muted bg-light p-4 rounded text-center" style="border: 1px dashed #ced4da;">
+                  <i class="fas fa-map-marker-alt mb-2" style="font-size: 24px; color: #dee2e6;"></i>
+                  <p class="mb-0" style="font-size: 13px;">No saved locations.</p>
+               </div>
+            </div>
          </div>
       </div>
 
-      <div class="modal fade" id="saveLocationModal" tabindex="-1" aria-hidden="true">
-         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-               <div class="modal-header">
-                  <h5 class="modal-title">Save Location</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal fade save-location-modal" id="saveLocationModal" tabindex="-1" aria-labelledby="saveLocationModalLabel" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable save-location-dialog">
+            <div class="modal-content save-location-panel border-0">
+               <div class="save-location-header mypopup-header">
+                  <h2 id="saveLocationModalLabel">Save Location</h2>
+                  <button type="button" class="save-location-dismiss mypopup-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>
                </div>
-               <div class="modal-body">
-                  <form id="popupLocationAddressForm">
+               <div class="modal-body save-location-body">
+                  <form id="popupLocationAddressForm" class="save-location-form">
                      <input type="hidden" name="type" id="popupAddressType" value="home">
-                     <div class="mb-2">
-                        <div class="d-flex gap-2">
-                           <button type="button" id="popupHomeBtn" class="btn btn-outline-secondary btn-sm active">Home</button>
-                           <button type="button" id="popupWorkBtn" class="btn btn-outline-secondary btn-sm">Work</button>
-                        </div>
+                     <div class="save-location-type-toggle" role="group" aria-label="Address type">
+                        <button type="button" id="popupHomeBtn" class="save-location-type-btn active">Home</button>
+                        <button type="button" id="popupWorkBtn" class="save-location-type-btn">Work</button>
                      </div>
-                     <div class="mb-2"><input type="text" name="area" id="popupArea" class="form-control" placeholder="Area / Locality*" required></div>
-                     <div class="mb-2"><input type="text" name="flat" id="popupFlat" class="form-control" placeholder="Flat / Building no*" required></div>
-                     <div class="mb-2"><input type="text" name="landmark" id="popupLandmark" class="form-control" placeholder="Landmark (optional)"></div>
-                     <div class="mb-2"><input type="text" name="pincode" id="popupPincode" class="form-control" placeholder="Pincode*" required></div>
-                     <div class="mb-2"><input type="text" name="name" id="popupName" class="form-control" placeholder="Name*" required></div>
-                     <div class="mb-2"><input type="text" name="phone" id="popupPhone" class="form-control" placeholder="Phone Number*" required></div>
-                     <div class="mb-2"><input type="text" name="alt_phone" id="popupAltPhone" class="form-control" placeholder="Alternate Phone (optional)"></div>
-                     <button type="submit" class="btn btn-primary w-100">Save Address</button>
+                     <div class="pata-input"><input type="text" name="area" id="popupArea" class="form-control" placeholder="Area / Locality*" required autocomplete="off"></div>
+                     <div class="pata-input"><input type="text" name="flat" id="popupFlat" class="form-control" placeholder="Flat / Building no*" required></div>
+                     <div class="pata-input"><input type="text" name="landmark" id="popupLandmark" class="form-control" placeholder="Landmark (optional)"></div>
+                     <div class="pata-input"><input type="text" name="pincode" id="popupPincode" class="form-control" placeholder="Pincode*" required inputmode="numeric"></div>
+                     <div class="pata-input"><input type="text" name="name" id="popupName" class="form-control" placeholder="Name*" required autocomplete="name"></div>
+                     <div class="pata-input"><input type="tel" name="phone" id="popupPhone" class="form-control" placeholder="Phone Number*" required autocomplete="tel" inputmode="tel"></div>
+                     <div class="pata-input"><input type="tel" name="alt_phone" id="popupAltPhone" class="form-control" placeholder="Alternate Phone (optional)" autocomplete="tel" inputmode="tel"></div>
+                     <button type="submit" class="pata-save-btn save-location-submit w-100">Save Address</button>
                   </form>
                </div>
             </div>
@@ -254,7 +202,7 @@
          <img src="{{ asset('public/assets/website/images/footlogo.png')}}" alt="" style="height:25px; margin-bottom:6px;"><br>Kwiklly
          </a>
          <a href="{{ route('department')}}" class="nav-item nav-link" onclick="return redirectWithLocation(this.href)">
-         <img src="{{ asset('public/assets/website/images/departmenticon.png')}}" alt="" style="height:25px; margin-bottom:6px;" onclick="return redirectWithLocation(this.href)">Department
+         <img src="{{ asset('public/assets/website/images/departmenticon.png')}}" alt="" style="height:25px; margin-bottom:6px;"><br>Department
          </a>
          <a href="{{ route('stores', ['slug' => 'all'])}}" class="nav-item nav-link" onclick="return redirectWithLocation(this.href)">
          <img src="{{ asset('public/assets/website/images/storeicon.png')}}" alt="" style="height:25px; margin-bottom:6px;"><br>Store  

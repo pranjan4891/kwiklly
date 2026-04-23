@@ -33,7 +33,7 @@
     }
 @endphp
 
-<div class="store-sectionde" style="background-image: url('{{ asset('public/uploads/departmentbanner.jpg') }}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+<div class="store-sectionde department-page-banner" style="background-image: url('{{ asset('public/uploads/departmentbanner.jpg') }}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
     <div class="store-infode">
         <h2>Departments</h2>
         <p>Explore the best of the premium store in your locality. We provide you the access of awesome products under one roof from the store with exclusive coupons, deals, and discounts.</p>

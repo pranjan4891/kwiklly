@@ -67,30 +67,86 @@ class BranchController extends Controller
             $cities = City::where('state_id', $branch->state_id)->get();
         }
 
-        // Fetch time slots
-        $timeSlots = TimeSlot::orderBy('id')->get();
-
-        // Decode store_time JSON into an array keyed by day_name
-        $storetime = [];
-        if (!empty($branch->store_time)) {
-            $decoded = json_decode($branch->store_time, true);
-            if (is_array($decoded)) {
-                foreach ($decoded as $day) {
-                    $storetime[$day['day_name']] = $day; // Key by day_name
-                }
-            }
-        }
-
         $title = 'Department | Profile';
 
         return view('branch.profile', compact(
             'branch',
             'title',
             'states',
-            'cities',
-            'timeSlots',
-            'storetime'
+            'cities'
         ));
+    }
+
+    /**
+     * Settings: day-wise open/close and time slots (same data shape as vendor store_time).
+     */
+    public function storeTiming()
+    {
+        $branch = Auth::guard('branch')->user();
+        if (!$branch) {
+            return redirect()->route('branch.login')
+                ->with('error', 'You are not authorized to access this page.');
+        }
+
+        $timeSlots = TimeSlot::orderBy('id')->get();
+        $storetime = $this->storeTimeKeyedByDayName($branch);
+
+        $title = 'Department | Store Timing';
+
+        return view('branch.store_timing', compact('branch', 'title', 'timeSlots', 'storetime'));
+    }
+
+    public function storeTime(Request $request)
+    {
+        $branch = Auth::guard('branch')->user();
+        if (!$branch) {
+            return redirect()->route('branch.login')
+                ->with('error', 'You are not authorized to access this page.');
+        }
+
+        $storeSchedule = [];
+        for ($i = 1; $i <= 7; $i++) {
+            $storeSchedule[] = [
+                'day_id'     => $request->input("day_id_$i") ?? null,
+                'day_name'   => $request->input("day_name_$i"),
+                'status'     => $request->input("day_oc_$i"),
+                'startTime'  => $request->input("open_time_$i"),
+                'endTime'    => $request->input("closed_time_$i"),
+            ];
+        }
+
+        $branch = VendorAdmin::find($branch->id);
+        if (!$branch) {
+            return redirect()->route('branch.store.timing')->with('error', 'Branch not found.');
+        }
+
+        $branch->store_time = json_encode($storeSchedule);
+        $branch->store_time_status = 1;
+        $branch->save();
+
+        return redirect()->route('branch.store.timing')->with('success', 'Store timings updated successfully.');
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    private function storeTimeKeyedByDayName(VendorAdmin $branch): array
+    {
+        $storetime = [];
+        $raw = $branch->store_time;
+        if (is_string($raw)) {
+            $raw = json_decode($raw, true);
+        }
+        if (!is_array($raw)) {
+            return $storetime;
+        }
+        foreach ($raw as $entry) {
+            if (!empty($entry['day_name'])) {
+                $storetime[$entry['day_name']] = $entry;
+            }
+        }
+
+        return $storetime;
     }
 
 
@@ -128,22 +184,6 @@ class BranchController extends Controller
             return redirect()->route('branch.profile')
                 ->withErrors(['error' => 'Branch not found.']);
         }
-
-        // Build store schedule array
-        $storeSchedule = [];
-        for ($i = 1; $i <= 7; $i++) {
-            $storeSchedule[] = [
-                'day_id'     => $request->input("day_id_$i") ?? null,
-                'day_name'   => $request->input("day_name_$i"),
-                'status'     => $request->input("day_oc_$i"),
-                'startTime'  => $request->input("open_time_$i"),
-                'endTime'    => $request->input("closed_time_$i")
-            ];
-        }
-
-        // Save store time JSON
-        $branch->store_time = json_encode($storeSchedule);
-        $branch->store_time_status = 1;
 
         // Update profile fields
         $branch->fill($request->except(['business_logo', 'state', 'city']));

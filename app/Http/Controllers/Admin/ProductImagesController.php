@@ -27,16 +27,17 @@ class ProductImagesController extends Controller
         $request->validate([
             'product_name' => 'required',
             'brand_name' => 'required',
-            'description' => 'nullable',
-            'feature_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'product_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'description' => 'nullable|string',
+            'feature_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'product_images' => 'nullable|array',
+            'product_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         $productImages = new ProductImages();
         $productImages->product_name = $request->input('product_name');
         $productImages->brand_name = $request->input('brand_name');
         $productImages->description = $request->input('description');
-        $productImages->is_active = 1;
+        $productImages->is_active = $request->boolean('is_active');
         $productImages->is_deleted = 0;
 
         // Feature image upload
@@ -51,7 +52,10 @@ class ProductImagesController extends Controller
         // Multiple product images
         $images = [];
         if ($request->hasFile('product_images')) {
-            foreach ($request->file('product_images') as $image) {
+            foreach ($request->file('product_images', []) as $image) {
+                if (! $image instanceof \Illuminate\Http\UploadedFile || ! $image->isValid()) {
+                    continue;
+                }
                 $imageName = time() . '_' . $image->getClientOriginalName();
                 $imagePath = 'uploads/product_images';
                 $image->move(public_path($imagePath), $imageName);
@@ -73,15 +77,19 @@ class ProductImagesController extends Controller
         $request->validate([
             'product_name' => 'required',
             'brand_name' => 'required',
-            'description' => 'nullable',
-            'feature_image' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-            'product_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'description' => 'nullable|string',
+            'feature_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'product_images' => 'nullable|array',
+            'product_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         $productImages = ProductImages::findOrFail($id);
         $productImages->product_name = $request->input('product_name');
         $productImages->brand_name = $request->input('brand_name');
-        $productImages->description = $request->input('description');
+        if ($request->has('description')) {
+            $productImages->description = $request->input('description');
+        }
+        $productImages->is_active = $request->boolean('is_active');
 
         // ✅ Update feature image (replace old one if exists)
         if ($request->hasFile('feature_image')) {
@@ -97,19 +105,24 @@ class ProductImagesController extends Controller
         }
 
         // ✅ Append new product images instead of replacing
-        $existingImages = $productImages->product_images ?? [];
+        $existingImages = $productImages->product_images;
 
         if ($request->hasFile('product_images')) {
             $newImages = [];
 
-            foreach ($request->file('product_images') as $image) {
+            foreach ($request->file('product_images', []) as $image) {
+                if (! $image instanceof \Illuminate\Http\UploadedFile || ! $image->isValid()) {
+                    continue;
+                }
                 $imageName = time() . '_' . $image->getClientOriginalName();
                 $imagePath = 'uploads/product_images';
                 $image->move(public_path($imagePath), $imageName);
                 $newImages[] = $imagePath . '/' . $imageName;
             }
 
-            $productImages->product_images = array_merge($existingImages, $newImages);
+            if ($newImages !== []) {
+                $productImages->product_images = array_merge($existingImages, $newImages);
+            }
         }
 
         if ($productImages->save()) {
@@ -151,7 +164,7 @@ class ProductImagesController extends Controller
 
         $images = $product->product_images;
 
-        if (is_array($images) && isset($images[$request->image_index])) {
+        if ($images !== [] && isset($images[$request->image_index])) {
             $imagePath = public_path($images[$request->image_index]);
 
             // Delete file from public folder

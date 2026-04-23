@@ -328,8 +328,14 @@
     <script src="{{ versioned_asset('public/assets/website/JS/redirect-location.js') }}"></script>
     <script src="{{ versioned_asset('public/assets/website/JS/search-suggestions.js') }}"></script>
     <script src="{{ versioned_asset('public/assets/website/JS/auto-redirect.js') }}"></script>
+    <script>
+        window.ajaxExplorestoreProductsUrl = @json(route('ajax.explorestore.products'));
+        window.ajaxCategorywiseProductsUrl = @json(route('ajax.categorywise.products'));
+    </script>
+    <script src="{{ versioned_asset('public/assets/website/JS/category-subcategory-ajax.js') }}"></script>
     
     <!-- Cart and product scripts -->
+    <script src="{{ versioned_asset('public/assets/website/JS/qty-section-loading.js') }}"></script>
     <script src="{{ versioned_asset('public/assets/website/JS/cart-operations.js') }}"></script>
     <script src="{{ versioned_asset('public/assets/website/JS/product-variant-modal.js') }}"></script>
     <script src="{{ versioned_asset('public/assets/website/JS/checkout-handler.js') }}"></script>

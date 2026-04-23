@@ -1,0 +1,3 @@
+{"sessionId":"00bebf","location":"custom.js:cart-exempt","message":"cart UI click skipped scroll-lock","data":{"tag":"BUTTON","y":300,"addLocked":false,"cartAjax":false},"timestamp":1776625260360,"hypothesisId":"C"}
+{"sessionId":"00bebf","location":"cart-operations.js:add-success","message":"after qty DOM replace","data":{"tapY":300,"actualY":0},"timestamp":1776625260900,"hypothesisId":"E"}
+{"sessionId":"00bebf","location":"cart-operations.js:preserveScrollMobile","message":"after rAF scroll restore","data":{"op":"unlock-add","targetY":300,"actualY":0},"timestamp":1776625261060,"hypothesisId":"D","runId":"post-fix"}

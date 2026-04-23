@@ -13,6 +13,34 @@
         return;
     }
 
+    function isMobileViewport() {
+        return typeof window.matchMedia !== 'undefined'
+            ? window.matchMedia('(max-width: 767.98px)').matches
+            : window.innerWidth < 768;
+    }
+
+    window.kwikllyCartAjaxActive = false;
+
+    var addBtnSpinnerHtml = '<span class="spinner-border spinner-border-sm add-btn-spinner" role="status" aria-hidden="true"></span>';
+
+    /** Qty overlay: window.kwikllyQtySectionLoading — see qty-section-loading.js */
+    function qtyLoading(key, on) {
+        if (typeof window.kwikllyQtySectionLoading === 'function') {
+            window.kwikllyQtySectionLoading(key, on);
+        }
+    }
+
+    /** Re-enable +/- even if overlay cleanup missed (prevents stuck disabled = no repeat spinner). */
+    function enableQtyButtonsForKey(key) {
+        var nk = String(key == null ? '' : key).trim();
+        if (!nk) return;
+        $('.increment-btn, .decrement-btn').each(function () {
+            if (String($(this).attr('data-key') || '').trim() === nk) {
+                $(this).prop('disabled', false);
+            }
+        });
+    }
+
     $(document).ready(function () {
         // Load cart initially
         if (window.CART_DATA_URL) {
@@ -26,14 +54,24 @@
         }
 
         // ADD
-        $(document).on('click', '.add-btn', function () {
-            let productId = $(this).data('product-id');
-            let variantId = $(this).data('variant-id');
+        $(document).on('click', '.add-btn', function (e) {
+            e.preventDefault();
+            var $btn = $(this);
+            let productId = $btn.data('product-id');
+            let variantId = $btn.data('variant-id');
 
             if (!variantId) return;
+            if ($btn.hasClass('disabled') || $btn.prop('disabled')) return;
 
-            let parent = $(this).closest('.qty-box');
+            let parent = $btn.closest('.qty-box');
             let key = productId + '_' + variantId;
+            var originalBtnHtml = $btn.html();
+
+            if (typeof window.kwikllyQtyBoxAddLoading === 'function') {
+                window.kwikllyQtyBoxAddLoading(productId, variantId, true);
+            } else {
+                $btn.prop('disabled', true).addClass('add-btn-loading').html(addBtnSpinnerHtml);
+            }
 
             $.ajax({
                 url: window.CART_ADD_URL || '/cart/add',
@@ -51,38 +89,67 @@
                         loadSideCartItems(res.cart);
                     }
                     var isMobileBar = parent.hasClass('qty-box-mobile') || parent.closest('.fixed-bottom-mobile').length > 0;
+                    var inVariantModalQty =
+                        parent.closest('#variantList').length > 0 || parent.hasClass('variant-option-qty');
                     var qtyContainerClass = isMobileBar ? 'qty-container qty-container-mobile' : 'qty-container';
                     var qtyBtnClass = isMobileBar ? 'qty-btn qty-btn-mobile' : 'qty-btn';
                     var qtyInputClass = isMobileBar ? 'qty-input qty-input-mobile quantity-input' : 'qty-input quantity-input';
                     let qtyContainer = `
                         <div class="${qtyContainerClass}">
-                            <button class="${qtyBtnClass} minus decrement-btn" data-key="${key}">−</button>
-                            <input type="text" class="${qtyInputClass}" value="1" readonly>
-                            <button class="${qtyBtnClass} plus increment-btn" data-key="${key}">+</button>
+                            <button class="${qtyBtnClass} minus decrement-btn" type="button" data-key="${key}">−</button>
+                            <input type="text" class="${qtyInputClass}" value="1" readonly tabindex="-1">
+                            <button class="${qtyBtnClass} plus increment-btn" type="button" data-key="${key}">+</button>
                         </div>
                     `;
+                    if (inVariantModalQty) {
+                        qtyContainer =
+                            '<div class="variant-actions-row variant-actions-row--qty variant-actions-row--qty-only">' +
+                            qtyContainer.trim() +
+                            '</div>';
+                    }
                     parent.html(qtyContainer);
-                    if (typeof openCart === "function") {
+
+                    if (!isMobileViewport() && typeof openCart === "function") {
                         openCart();
                     }
+
                     if (window.updateProgress) window.updateProgress();
                 },
                 error: function (xhr) {
                     let msg = xhr?.responseJSON?.message || 'Unable to add item. Please try again.';
+                    if (typeof window.kwikllyQtyBoxAddLoading === 'function') {
+                        window.kwikllyQtyBoxAddLoading(productId, variantId, false);
+                    }
+                    $btn.prop('disabled', false).removeClass('add-btn-loading').html(originalBtnHtml);
                     alert(msg);
+                },
+                complete: function () {
+                    if (typeof window.kwikllyQtyBoxAddLoading === 'function') {
+                        window.kwikllyQtyBoxAddLoading(productId, variantId, false);
+                    }
                 }
             });
         });
 
         // INCREMENT
-        $(document).on('click', '.increment-btn', function () {
-            let key = $(this).data('key');
+        $(document).on('click', '.increment-btn', function (e) {
+            e.preventDefault();
+            var key = String($(this).attr('data-key') || '').trim();
+            if (key === '') return;
+            if ($(this).prop('disabled')) return;
+            window.kwikllyCartAjaxActive = true;
+            qtyLoading(key, true);
             $.ajax({
                 url: window.CART_INCREMENT_URL || '/cart/increment',
                 type: 'POST',
                 data: {
                     _token: document.querySelector('meta[name="csrf-token"]')?.content || '',
                     key: key
+                },
+                complete: function () {
+                    window.kwikllyCartAjaxActive = false;
+                    qtyLoading(key, false);
+                    enableQtyButtonsForKey(key);
                 },
                 success: function (res) {
                     $('.cart-count').text(res.count);
@@ -116,9 +183,14 @@
         });
 
         // DECREMENT
-        $(document).on('click', '.decrement-btn', function () {
-            let key = $(this).data('key');
-            $.post(window.CART_DECREMENT_URL || '/cart/decrement', {
+        $(document).on('click', '.decrement-btn', function (e) {
+            e.preventDefault();
+            var key = String($(this).attr('data-key') || '').trim();
+            if (key === '') return;
+            if ($(this).prop('disabled')) return;
+            window.kwikllyCartAjaxActive = true;
+            qtyLoading(key, true);
+            var decrementXhr = $.post(window.CART_DECREMENT_URL || '/cart/decrement', {
                 _token: document.querySelector('meta[name="csrf-token"]')?.content || '',
                 key: key
             }, function (res) {
@@ -140,12 +212,22 @@
                 });
 
                 if (!stillExists) {
-                    let cartIconUrl = window.CART_ICON_URL || '/public/assets/website/images/cart.svg';
-                    productQtyBox.html(`
-                        <button class="add-btn" data-product-id="${productId}" data-variant-id="${variantId}">
-                            Add <img src="${cartIconUrl}" class="ms-2">
-                        </button>
-                    `);
+                    var inVariantModal = productQtyBox.closest('#variantList').length > 0;
+                    var cartIconUrl = window.CART_ICON_URL || '/public/assets/website/images/cart.svg';
+                    if (inVariantModal) {
+                        productQtyBox.html(
+                            '<div class="variant-actions-row variant-actions-row--add">' +
+                            '<button type="button" class="add-btn" data-product-id="' + productId + '" data-variant-id="' + variantId + '">' +
+                            'Add <img src="' + cartIconUrl + '" class="variant-add-cart-icon" alt="">' +
+                            '</button></div>'
+                        );
+                    } else {
+                        productQtyBox.html(
+                            '<button class="add-btn" type="button" data-product-id="' + productId + '" data-variant-id="' + variantId + '">' +
+                            'Add <img src="' + cartIconUrl + '" class="ms-2">' +
+                            '</button>'
+                        );
+                    }
                 } else {
                     // Update qty in UI (support .qty-box and .qty-container)
                     $.each(res.cart, function (business, items) {
@@ -156,6 +238,10 @@
                 }
 
                 if (window.updateProgress) window.updateProgress();
+            }).always(function () {
+                window.kwikllyCartAjaxActive = false;
+                qtyLoading(key, false);
+                enableQtyButtonsForKey(key);
             });
         });
     });
@@ -166,6 +252,7 @@
         let total = 0;
 
         if (cartGroups && Object.keys(cartGroups).length > 0) {
+           // e.preventDefault();
             $.each(cartGroups, function (businessName, items) {
                 // Pick vendor_id from the first item of the group
                 let firstItemKey = Object.keys(items)[0];
@@ -222,7 +309,7 @@
                                     </small>
                                 </div>
                             </div>
-                            <div class="input-group input-group-sm sidecartbutton" style="width: 90px; padding-top: 11px;">
+                            <div class="input-group input-group-sm sidecartbutton sidecart-qty-wrap">
                                 <button class="btn btn-danger decrement-btn" data-key="${key}">-</button>
                                 <input type="text" class="form-control text-center quantity-input" value="${quantity}" disabled>
                                 <button class="btn btn-danger increment-btn" data-key="${key}">+</button>
@@ -300,4 +387,66 @@
     window.updateBillSummary = updateBillSummary;
     window.openCart = openCart;
     window.closeCart = closeCart;
+
+    /**
+     * Legacy UI (storedetail / order summaries): swap Add for local qty controls only — no server cart.
+     * Inline onclick="convertToQty(this)" pages rely on these globals.
+     */
+    window.convertToQty = function (button) {
+        var parent = button.parentElement;
+        var originalBtn = button.cloneNode(true);
+        originalBtn.onclick = function () {
+            window.convertToQty(this);
+        };
+
+        parent.dataset.originalButton = parent.innerHTML;
+
+        var qtyContainer = document.createElement('div');
+        qtyContainer.classList.add('qty-container');
+
+        var minusBtn = document.createElement('button');
+        minusBtn.innerHTML = '−';
+        minusBtn.classList.add('qty-btn', 'minus');
+        minusBtn.onclick = function () {
+            window.changeQty(this, -1);
+        };
+
+        var qtyInput = document.createElement('input');
+        qtyInput.value = 1;
+        qtyInput.classList.add('qty-input');
+        qtyInput.setAttribute('readonly', 'true');
+
+        var plusBtn = document.createElement('button');
+        plusBtn.innerHTML = '+';
+        plusBtn.classList.add('qty-btn', 'plus');
+        plusBtn.onclick = function () {
+            window.changeQty(this, 1);
+        };
+
+        qtyContainer.appendChild(minusBtn);
+        qtyContainer.appendChild(qtyInput);
+        qtyContainer.appendChild(plusBtn);
+
+        parent.replaceChild(qtyContainer, button);
+    };
+
+    window.changeQty = function (button, change) {
+        var qtyContainer = button.parentElement;
+        var qtyInput = qtyContainer.querySelector('.qty-input');
+        var newValue = parseInt(qtyInput.value, 10) + change;
+
+        if (newValue < 1) {
+            var wrap = qtyContainer.parentElement;
+            wrap.innerHTML = wrap.dataset.originalButton;
+
+            var addBtn = wrap.querySelector('button');
+            if (addBtn) {
+                addBtn.onclick = function () {
+                    window.convertToQty(this);
+                };
+            }
+        } else {
+            qtyInput.value = newValue;
+        }
+    };
 })();

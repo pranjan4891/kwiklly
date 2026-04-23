@@ -104,34 +104,58 @@
         const wrap = qs("saved-locations-list");
         if (!wrap) return;
         if (!addresses || !addresses.length) {
-            wrap.innerHTML = '<div class="text-muted">No saved locations.</div>';
+            wrap.innerHTML = `
+               <div class="small text-muted bg-light p-4 rounded text-center" style="border: 1px dashed #ced4da;">
+                  <i class="fas fa-map-marker-alt mb-2" style="font-size: 24px; color: #dee2e6;"></i>
+                  <p class="mb-0" style="font-size: 13px;">No saved locations.</p>
+               </div>
+            `;
             return;
         }
         const selectedId = localStorage.getItem("selectedSavedAddressId");
         wrap.innerHTML = addresses.map((addr) => {
-            const label = [addr.flat, addr.area, addr.landmark, addr.pincode].filter(Boolean).join(", ");
+            const fullAddress = [addr.name, addr.flat, addr.area, addr.landmark, addr.pincode].filter(Boolean).join(", ");
             const isChecked = !!addr.is_selected || (selectedId && String(addr.id) === String(selectedId));
+            const icon = addr.type === 'work' ? '🏢' : '🏠';
             return `
-                <label class="d-flex align-items-start gap-2 border rounded p-2 mb-2" style="cursor:pointer;">
-                    <input type="radio" name="saved_location_radio" value="${addr.id}" ${isChecked ? "checked" : ""}>
-                    <span>
-                        <strong>${(addr.type || "home").toUpperCase()}</strong><br>
-                        ${label}
-                    </span>
+                <label class="address-card ${isChecked ? 'selected' : ''}" style="cursor:pointer; width: 100%; margin-bottom: 12px; box-sizing: border-box; display: flex; text-align: left;">
+                    <input type="radio" name="saved_location_radio" value="${addr.id}" ${isChecked ? "checked" : ""} style="display:none;">
+                    <div class="address-left" style="flex: 1; min-width: 0;">
+                       <span class="address-icon" style="margin-top: -5px;">${icon}</span>
+                       <div style="min-width: 0;">
+                          <strong style="color: #333;">${(addr.type || "home").toUpperCase()}</strong>
+                          <p class="mb-1 text-muted" style="font-size: 13px; line-height: 1.4; white-space: normal; overflow: hidden; text-overflow: ellipsis;">${fullAddress}</p>
+                          ${addr.phone ? `<p class="mb-0 text-muted" style="font-size: 13px;">Phone: ${addr.phone}</p>` : ''}
+                       </div>
+                    </div>
+                    <div class="address-right align-self-start ms-2" style="flex-shrink: 0;">
+                       <span class="check" style="${isChecked ? '' : 'display:none;'} color: green; font-size: 18px;">✔</span>
+                    </div>
                 </label>
             `;
         }).join("");
 
         wrap.querySelectorAll('input[name="saved_location_radio"]').forEach((input) => {
             input.addEventListener("change", function () {
+                // Update styling logic on change
+                wrap.querySelectorAll('.address-card').forEach(c => c.classList.remove('selected'));
+                wrap.querySelectorAll('.check').forEach(ch => ch.style.display = 'none');
+                
+                const myCard = this.closest('.address-card');
+                if (myCard) {
+                    myCard.classList.add('selected');
+                    const myCheck = myCard.querySelector('.check');
+                    if (myCheck) myCheck.style.display = 'inline';
+                }
+
                 const id = this.value;
                 const selectedAddress = addresses.find((a) => String(a.id) === String(id));
                 if (!selectedAddress) return;
                 setSelectedSavedAddress(id);
                 selectAddressOnServer(id);
                 if (typeof window.updateLocation === "function") {
-                    const fullAddress = selectedAddress.full_address || [selectedAddress.flat, selectedAddress.area, selectedAddress.landmark, selectedAddress.pincode].filter(Boolean).join(", ");
-                    window.updateLocation(fullAddress, null, selectedAddress.latitude, selectedAddress.longitude, false);
+                    const fullAddressToUpdate = selectedAddress.full_address || [selectedAddress.flat, selectedAddress.area, selectedAddress.landmark, selectedAddress.pincode].filter(Boolean).join(", ");
+                    window.updateLocation(fullAddressToUpdate, null, selectedAddress.latitude, selectedAddress.longitude, false);
                 }
             });
         });
@@ -174,7 +198,13 @@
     function loadSavedLocations() {
         if (!isAuthenticated()) {
             const wrap = qs("saved-locations-list");
-            if (wrap) wrap.innerHTML = '<div class="text-muted">Login to view saved locations.</div>';
+            if (wrap) wrap.innerHTML = `
+                <div class="text-center p-3 bg-light rounded" style="border: 1px dashed #ced4da;">
+                    <i class="fas fa-user-lock mb-2" style="font-size: 24px; color: #dee2e6;"></i>
+                    <p class="mb-3 text-muted" style="font-size: 13px;">Login to view your saved locations.</p>
+                    <a href="${window.LOGIN_PAGE_URL || '/login-by-phone'}" class="btn btn-sm" style="border: 1px solid #f97316; color: #f97316; border-radius: 20px; padding: 5px 20px; font-weight: 500; text-decoration: none;">Login</a>
+                </div>
+            `;
             return;
         }
         fetch(window.ADDRESS_LIST_URL, { headers: { Accept: "application/json" } })
@@ -336,6 +366,9 @@
             if (!isAuthenticated()) {
                 window.location.href = window.LOGIN_PAGE_URL || "/login-by-phone";
                 return;
+            }
+            if (typeof window.closeAddpop === "function") {
+                window.closeAddpop();
             }
             populateSaveFormFromLocation();
             if (!saveModalInstance) {

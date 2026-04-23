@@ -45,16 +45,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Prevent body scroll when suggestions are shown (mobile only)
         let savedScrollPosition = 0;
+        /** Only true while mobile suggestions overlay has locked body scroll — avoids scrollTo(0,0) on every tap. */
+        let mobileSuggestionsScrollLocked = false;
         function preventBodyScroll(prevent) {
             if (window.innerWidth < 768 && searchBoxId === 'mobile-search-box') { // Mobile only
                 if (prevent) {
                     // Save current scroll position
                     savedScrollPosition = window.pageYOffset || document.documentElement.scrollTop || 0;
+                    mobileSuggestionsScrollLocked = true;
                     document.body.classList.add('suggestions-open');
                     document.body.style.top = `-${savedScrollPosition}px`;
                     document.body.style.position = 'fixed';
                     document.body.style.width = '100%';
-                    // Prevent navbar from scrolling
                     const navbar = document.querySelector('.navbar');
                     if (navbar) {
                         navbar.style.position = 'fixed';
@@ -64,15 +66,24 @@ document.addEventListener("DOMContentLoaded", function() {
                         navbar.style.zIndex = '1050';
                     }
                 } else {
+                    if (!mobileSuggestionsScrollLocked) {
+                        return;
+                    }
+                    mobileSuggestionsScrollLocked = false;
                     document.body.classList.remove('suggestions-open');
                     document.body.style.top = '';
                     document.body.style.position = '';
                     document.body.style.width = '';
-                    // Restore scroll position
-                    if (savedScrollPosition !== undefined && savedScrollPosition !== null) {
-                        window.scrollTo(0, savedScrollPosition);
-                        savedScrollPosition = 0;
+                    const navbar = document.querySelector('.navbar');
+                    if (navbar) {
+                        navbar.style.position = '';
+                        navbar.style.top = '';
+                        navbar.style.left = '';
+                        navbar.style.right = '';
+                        navbar.style.zIndex = '';
                     }
+                    window.scrollTo(0, savedScrollPosition);
+                    savedScrollPosition = 0;
                 }
             }
         }

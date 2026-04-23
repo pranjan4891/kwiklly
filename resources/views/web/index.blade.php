@@ -63,13 +63,20 @@
    </div>
 </section>
 
-<section id="trending-products-section">
-  @if(isset($trending_products) && count($trending_products) > 0)
-      @include('web.partials.trending', ['trending_products' => $trending_products])
-   
+<!--<section id="trending-products-section">-->
+<!--  @if(isset($trending_products) && count($trending_products) > 0)-->
+<!--      @include('web.partials.trending', ['trending_products' => $trending_products])-->
+<!--   @endif-->
+<!--</section>-->
+
+<section id="top-selling-products-section">
+   @if(isset($top_selling_products) && count($top_selling_products) > 0)
+      @include('web.partials.trending', [
+          'trending_products' => $top_selling_products,
+          'sectionTitle' => 'Top Selling Products',
+      ])
    @endif
 </section>
-
 
 {{-- Category slider: sirf wahi categories jinke products vendor delivery location ke andar hain --}}
 @if(isset($categories) && $categories->count() > 0)
@@ -82,9 +89,11 @@
                $categoryBanner = collect($banners)->firstWhere('banner_cat_id', 3);
             @endphp
             @if ($categoryBanner)
-               <div class="new-cate-promo-box" style="background-image: url('{{ asset('public/' . $categoryBanner['desktop_image']) }}');">
-                  <a href="{{$categoryBanner['banner_url']}}" class="btn btn-light" onclick="return redirectWithLocation(this.href)">Know More</a>
-               </div>      
+               <a href="{{$categoryBanner['banner_url']}}" onclick="return redirectWithLocation(this.href)">
+    <div class="new-cate-promo-box" 
+         style="background-image: url('{{ asset('public/' . $categoryBanner['desktop_image']) }}');">
+    </div>
+</a>     
             @endif               
          </div>
          
@@ -92,29 +101,7 @@
          <div class="col-md-8 new-cate">
             <h4 class="py-3 m-0 new-cate-category-title headingclass">Categories</h4>
             <div class="new-cate-owl-carousel owl-carousel owl-theme">
-               @php
-               $uniqueCategories = $categories->unique('id')->values();
-               @endphp
-               @foreach ($uniqueCategories->chunk(2) as $chunk)
-               <div class="new-cate-item p-0">
-                  @foreach ($chunk as $cat)
-                  @php
-                     $categoryName = strtolower($cat['name']);
-                     // Replace & with & (with spaces) if not already spaced
-                     $categoryName = preg_replace('/\s*&\s*/', ' & ', $categoryName);
-                     // Convert to title case
-                     $categoryName = ucwords($categoryName);
-                  @endphp
-                  <a href="{{route('stores', ['slug' => $cat->slug])}}" class="text-decoration-none text-dark"  onclick="return redirectWithLocation(this.href)">
-                     <div class="product-carded">
-                        <img src="{{ asset('public/' . $cat->image) }}" alt="{{ $categoryName }}">
-                         <div class="py-2 text-center catename "><b>{{ $categoryName }}</b></div>
-                     </div>
-
-                  </a>
-                  @endforeach
-               </div>
-               @endforeach
+               @include('web.partials.category_odd_even_grid', ['categories' => $categories, 'layout' => 'desktop'])
             </div>
          </div>
       </div>
@@ -131,37 +118,26 @@
       <!-- Left Promo Section -->
       <div class="col-md-4">
          @if ($categoryBanner)
-         <div class="new-cate-promo-box" style="background-image: url('{{ asset('public/' . $categoryBanner['desktop_image']) }}');">
-            <a href="{{$categoryBanner['banner_url']}}" class="btn btn-light" onclick="return redirectWithLocation(this.href)">Know More</a>
-         </div>
+        <a href="{{$categoryBanner['banner_url']}}" onclick="return redirectWithLocation(this.href)">
+    <div class="new-cate-promo-box" 
+         style="background-image: url('{{ asset('public/' . $categoryBanner['desktop_image']) }}');">
+    </div>
+</a>
          @endif
       </div>
       <!-- Right Category Slider -->
       <div class="col-md-8 new-cate">
          <h4 class="pb-3 new-cate-category-title headingclass">Categories</h4>
+         @php
+            $mobileCategoryCount = $categories->unique('id')->count();
+         @endphp
          <div class="row" id="category-container">
-            @php
-            $uniqueCategoriesMobile = $categories->unique('id')->values();
-            @endphp
-            @foreach ($uniqueCategoriesMobile as $cat)
-                @php
-                   $categoryName = strtolower($cat['name']);
-                   // Replace & with & (with spaces) if not already spaced
-                   $categoryName = preg_replace('/\s*&\s*/', ' & ', $categoryName);
-                   // Convert to title case
-                   $categoryName = ucwords($categoryName);
-                @endphp
-                <div class="col-md-4 col-4 new-cate-item-wrap">
-                <div class="new-cate-item">
-                    <a href="{{route('stores', ['slug' => $cat->slug])}}" class="text-decoration-none text-dark"  onclick="return redirectWithLocation(this.href)">
-                        <div class="product-carded">
-                            <img src="{{ asset('public/' . $cat->image) }}" alt="{{ $categoryName }}">
-                        </div>
-                        <div class="py-2 text-center catename"><b>{{ $categoryName }}</b></div>
-                    </a>
-                </div>
-                </div>
-                @endforeach
+            @include('web.partials.category_odd_even_grid', ['categories' => $categories, 'layout' => 'mobile'])
+         </div>
+         <div class="text-center w-100 category-load-more-wrap" id="categoryLoadMoreWrap" style="{{ $mobileCategoryCount > 8 ? '' : 'display:none;' }}">
+            <button type="button" class="view-all-btn mt-3" id="categoryLoadMoreBtn" aria-expanded="false">
+               Load More <i class="fa fa-angles-down ms-2"></i>
+            </button>
          </div>
       </div>
    </div>

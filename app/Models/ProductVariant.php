@@ -51,10 +51,30 @@ class ProductVariant extends Model
         return $attrs[$attributeName] ?? null;
     }
 
-    /** First image URL for this variant (e.g. for color thumbnail on product page). */
+    /** First stored image path for this variant (uses eager-loaded `images` when present). */
     public function getFirstImagePath(): ?string
     {
+        if ($this->relationLoaded('images')) {
+            $path = $this->images->first()?->image_path;
+            return $path !== null && $path !== '' ? $path : null;
+        }
         $first = $this->images()->first();
-        return $first ? $first->image_path : null;
+
+        return $first && $first->image_path !== '' ? $first->image_path : null;
+    }
+
+    /** Card/list image: variant upload if any, else product feature image, else site default. */
+    public function displayImageUrlForProduct(Product $product): string
+    {
+        $path = $this->getFirstImagePath();
+        if ($path !== null && $path !== '') {
+            return asset('public/' . ltrim($path, '/'));
+        }
+        $feature = $product->featureImage;
+        if ($feature && ! empty($feature->feature_image)) {
+            return asset('public/' . ltrim($feature->feature_image, '/'));
+        }
+
+        return asset('public/assets/website/images/default.png');
     }
 }

@@ -23,6 +23,11 @@
 
             $attributes = $defaultVariant ? json_decode($defaultVariant->attributes ?? '{}', true) : [];
             $firstAttr = $attributes ? collect($attributes)->first() : null;
+            $listingProductImg = $defaultVariant
+                ? $defaultVariant->displayImageUrlForProduct($product)
+                : ($product->featureImage && $product->featureImage->feature_image
+                    ? asset('public/' . $product->featureImage->feature_image)
+                    : asset('public/assets/website/images/product11.png'));
         @endphp
 
         <div class="col-md-3 pb-4 col-6 product-item" data-subcategory="{{ $product->sub_category_id }}">
@@ -34,20 +39,12 @@
                     @endif
                     @if($product->is_physical)
                     <a href="{{ route('productdetails', $product->slug) }}"  onclick="return redirectWithLocation(this.href)">
-                        @if($product->featureImage && $product->featureImage->feature_image)
-                            <img src="{{ asset('public/' . $product->featureImage->feature_image) }}" class="product-image" alt="{{ $product->title }}">
-                        @else
-                            <img src="{{ asset('public/assets/website/images/product11.png') }}" class="product-image" alt="{{ $product->title }}">
-                        @endif
+                        <img src="{{ $listingProductImg }}" class="product-image" alt="{{ $product->title }}">
                     </a>
                     @else
-                        <a href="javascript:void(0)">
-                        @if($product->featureImage && $product->featureImage->feature_image)
-                            <img src="{{ asset('public/' . $product->featureImage->feature_image) }}" class="product-image" alt="{{ $product->title }}">
-                        @else
-                            <img src="{{ asset('public/assets/website/images/product11.png') }}" class="product-image" alt="{{ $product->title }}">
-                        @endif
-                    </a>
+                        <div class="product-image-wrap">
+                        <img src="{{ $listingProductImg }}" class="product-image" alt="{{ $product->title }}">
+                    </div>
                     @endif
                     <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
 
@@ -81,8 +78,8 @@
                             @if ($isOpen)
                                 {{-- ✅ Store is open --}}
                                 @if ($hasMultipleVariants)
-                                    <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                            onclick="openPopup({{ $product->id }})">
+                                    <button type="button" class="add-btn d-flex flex-column align-items-center position-relative"
+                                            onclick="openPopup({{ $product->id }}, event)">
                                         <div class="d-flex align-items-center">
                                             Add
                                             <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
@@ -96,10 +93,9 @@
                                         <span class="add-btn btn disabled text-muted">Out of Stock</span>
                                     @else
                                         @if (!$inCart)
-                                            <button class="add-btn"
+                                            <button type="button" class="add-btn"
                                                     data-product-id="{{ $product->id }}"
-                                                    data-variant-id="{{ $firstVariant->id }}"
-                                                    onclick="addToCart(this)">
+                                                    data-variant-id="{{ $firstVariant->id }}">
                                                 Add
                                                 <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                             </button>

@@ -139,6 +139,7 @@
                     <a href="#"><i class="ion-navicon-round"></i> <span class="nav-label">Setting</span></a>
                     <ul class="list-unstyled">
                         <li><a href="{{route('branch.profile')}}">Profile</a></li>
+                        <li><a href="{{route('branch.store.timing')}}">Store Timing</a></li>
                         <li><a href="{{route('branch.password.change')}}">Change Password</a></li>
                     </ul>
                 </li>

@@ -11,12 +11,20 @@
                 <span class="discount-label">{{ (int) round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
             @endif
 
-            {{-- 🔹 Product Image --}}
-            <a href="{{ $product->is_physical ? route('productdetails', $product->slug) : 'javascript:void(0);' }}">
-                <img src="{{ asset('public/' . optional($product->featureImage)->feature_image) }}"
-                     class="product-image"
-                     alt="{{ $product->title }}">
-            </a>
+            {{-- 🔹 Product Image — non-physical: no <a href="javascript:void(0)"> (mobile scroll/jump); physical: navigate with location --}}
+            @if ($product->is_physical)
+                <a href="{{ route('productdetails', $product->slug) }}" onclick="return redirectWithLocation(this.href)">
+                    <img src="{{ $defaultVariant->displayImageUrlForProduct($product) }}"
+                         class="product-image"
+                         alt="{{ $product->title }}">
+                </a>
+            @else
+                <div class="product-image-wrap">
+                    <img src="{{ $defaultVariant->displayImageUrlForProduct($product) }}"
+                         class="product-image"
+                         alt="{{ $product->title }}">
+                </div>
+            @endif
 
             {{-- 🔹 Product Title --}}
             <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
@@ -71,15 +79,15 @@
                     @if ($isOpen)
                         {{-- If multiple variants → Open Popup --}}
                         @if ($hasMultipleVariants)
-                            <button class="add-btn d-flex position-relative"
-                                    onclick="openPopup({{ $product->id }})">
+                            <button type="button" class="add-btn d-flex position-relative"
+                                    onclick="openPopup({{ $product->id }}, event)">
                                 Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                 <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
                             </button>
                         @else
                             {{-- If not in cart → Show Add button --}}
                             @if (!$inCart)
-                                <button class="add-btn"
+                                <button type="button" class="add-btn"
                                         data-product-id="{{ $product->id }}"
                                         data-variant-id="{{ $variantId }}">
                                     Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
@@ -88,14 +96,14 @@
                                 {{-- If already in cart → Show Qty Controls --}}
                                 <div class="qty-container">
                                     <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
-                                    <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
+                                    <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly tabindex="-1">
                                     <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
                                 </div>
                             @endif
                         @endif
                     @else
                          {{-- ❌ Store is closed --}}
-                        <button class="add-btn disabled" disabled>
+                        <button type="button" class="add-btn disabled" disabled>
                             Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                         </button>
                     @endif

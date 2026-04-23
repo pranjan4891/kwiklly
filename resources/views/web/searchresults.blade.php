@@ -27,14 +27,14 @@
 
                                     @if ($product->is_physical)
                                         <a href="{{ route('productdetails', $product->slug) }}" onclick="return redirectWithLocation(this.href)">
-                                            <img src="{{ $product->featureImage ? asset('public/' . $product->featureImage->feature_image) : asset('public/assets/website/images/default.png') }}"
+                                            <img src="{{ $defaultVariant->displayImageUrlForProduct($product) }}"
                                                 class="product-image" alt="{{ $product->title }}">
                                         </a>
                                     @else
-                                        <a href="javascript:void(0);">
-                                            <img src="{{ $product->featureImage ? asset('public/' . $product->featureImage->feature_image) : asset('public/assets/website/images/default.png') }}"
+                                        <div class="product-image-wrap">
+                                            <img src="{{ $defaultVariant->displayImageUrlForProduct($product) }}"
                                                 class="product-image" alt="{{ $product->title }}">
-                                        </a>
+                                        </div>
                                     @endif
 
                                     <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
@@ -86,8 +86,8 @@
 
                                             @if ($isOpen)
                                                 @if ($hasMultipleVariants)
-                                                    <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                                            onclick="openPopup({{ $product->id }})">
+                                                    <button type="button" class="add-btn d-flex flex-column align-items-center position-relative"
+                                                            onclick="openPopup({{ $product->id }}, event)">
                                                         <div class="d-flex align-items-center">
                                                             Add
                                                             <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
@@ -98,10 +98,9 @@
                                                     @if(!$variantInStock)
                                                         <span class="add-btn btn disabled text-muted">Out of Stock</span>
                                                     @elseif (!$inCart)
-                                                        <button class="add-btn"
+                                                        <button type="button" class="add-btn"
                                                                 data-product-id="{{ $product->id }}"
-                                                                data-variant-id="{{ $firstVariant->id }}"
-                                                                onclick="addToCart(this)">
+                                                                data-variant-id="{{ $firstVariant->id }}">
                                                             Add
                                                             <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                                         </button>

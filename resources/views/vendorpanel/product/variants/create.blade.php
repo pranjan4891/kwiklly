@@ -148,7 +148,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h3 class="panel-title">Product Variants</h3></div>
                 <div class="panel-body">
-                    <table class="table table-bordered table-striped">
+                    <table class="table table-bordered table-striped datatable" id="datatable">
                         <thead>
                             <tr>
                                 <th>#</th>

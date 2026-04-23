@@ -165,7 +165,7 @@
 
                                         <!-- Edit Modal -->
                                         <div class="modal fade" id="editModal{{ $product->id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel{{ $product->id }}" aria-hidden="true">
-                                            <div class="modal-dialog" role="document">
+                                            <div class="modal-dialog modal-lg" role="document">
                                                 <form method="POST" action="{{ route('admin.product.images.update', $product->id) }}" enctype="multipart/form-data">
                                                     @csrf
                                                     <div class="modal-content">
@@ -185,19 +185,27 @@
                                                             </div>
 
                                                             <div class="form-group">
-                                                                <label>Feature Image</label><br>
-                                                                @if($product->feature_image)
-                                                                    <img src="{{ asset('public/' . $product->feature_image) }}" style="width: 80px; margin-bottom: 10px;">
-                                                                @endif
-                                                                <input type="file" name="feature_image" class="form-control">
-                                                                <small>Leave blank to keep current image</small>
+                                                                <label>Description</label>
+                                                                <textarea name="description" class="form-control" rows="3">{{ old('description', $product->description) }}</textarea>
                                                             </div>
 
                                                             <div class="form-group">
-                                                                <label>Product Detail Images</label>
-                                                                <input type="file" name="product_images[]" class="form-control" multiple>
-                                                                <small>Optional: Upload more product detail images</small>
+                                                                <label>Feature Image</label><br>
+                                                                <div style="min-height: 92px; margin-bottom: 10px; padding: 12px; border: 1px solid #e2e2e2; background: #fafafa; border-radius: 4px;">
+                                                                    @if($product->feature_image)
+                                                                        <img src="{{ \App\Models\ProductImages::publicAssetUrl($product->feature_image) }}" alt="" style="width: 80px; height: 80px; object-fit: contain; display: inline-block; border: 1px solid #ddd; background: #fff; border-radius: 3px; padding: 4px;">
+                                                                    @else
+                                                                        <span class="text-muted" style="line-height: 80px; display: inline-block;">No feature image.</span>
+                                                                    @endif
+                                                                </div>
+                                                                <input type="file" name="feature_image" class="form-control" accept="image/*">
+                                                                <small class="text-muted" style="display: block; margin-top: 6px;">Leave blank to keep the current image.</small>
                                                             </div>
+
+                                                            @include('partials.product-images-edit-detail-images', [
+                                                                'product' => $product,
+                                                                'extraHelp' => 'To remove a detail image, open View and use Delete.',
+                                                            ])
 
                                                             <div class="form-group">
                                                                 <label>
@@ -226,7 +234,7 @@
                                                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        @if(!empty($product->product_images) && is_array($product->product_images))
+                                                        @if(!empty($product->product_images))
                                                             <div class="row">
                                                                 @foreach ($product->product_images as $index => $image)
                                                                     <div class="col-md-3 mb-3 text-center">

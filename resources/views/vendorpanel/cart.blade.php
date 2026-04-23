@@ -29,7 +29,7 @@
                             @csrf
                             <input type="hidden" value="{{ $vendorId }}" name="vendor_id">
                             <div class="table-responsive">
-                                <table class="table table-bordered table-hover">
+                                <table class="table table-bordered table-hover datatable" id="datatable">
                                     <thead>
                                         <tr>
                                             <th>#</th>

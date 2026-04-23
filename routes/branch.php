@@ -82,6 +82,8 @@ Route::group(['prefix' => 'branch'], function () {
         Route::get('profile', [BranchController::class, 'profile'])->name('branch.profile');
         Route::post('profile/update', [BranchController::class, 'updateProfile'])->name('branch.profile.update');
 
+        Route::get('settings/store-timing', [BranchController::class, 'storeTiming'])->name('branch.store.timing');
+        Route::post('settings/store-time', [BranchController::class, 'storeTime'])->name('branch.update.store.time');
 
         // Change Password
         Route::get('change-password', [BranchController::class, 'showChangePasswordForm'])->name('branch.password.change');

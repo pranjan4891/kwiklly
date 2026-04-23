@@ -1,5 +1,148 @@
 @extends('web.include.main')
 @section('content')
+<style>
+/* Explore store hero — mobile: readable height (no clip), top row pushed below search/safe area */
+@media (max-width: 767.98px) {
+  section.extrapadding .explorestore-page-banner {
+    width: min(400px, 100%);
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 12px;
+    /* Let content define height — fixed square + overflow:hidden was clipping logo / Coupons / text */
+    min-height: 0;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    background-size: cover !important;
+    background-position: center center !important;
+  }
+
+  section.extrapadding .explorestore-page-banner .xyz-gradient {
+    margin-top:40px;
+    min-height: 0;
+    height: auto;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 10px 12px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+  }
+
+  section.extrapadding .explorestore-page-banner .xyz-gradient > .container {
+    padding-left: var(--kw-page-gutter, 12px);
+    padding-right: var(--kw-page-gutter, 12px);
+    flex: 0 1 auto;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* FSSAI + Coupons — extra top space so row sits clearly below navbar/search */
+  section.extrapadding .explorestore-page-banner .xyz-gradient > .container > .d-flex.justify-content-between {
+    margin-bottom: 0.5rem !important;
+    padding-top: 8px !important;
+    margin-top: 4px !important;
+    flex-shrink: 0;
+  }
+
+  section.extrapadding .explorestore-page-banner .xyz-gradient > .container > .d-flex img[alt="Logo"] {
+    height: 26px !important;
+    width: auto !important;
+  }
+
+  section.extrapadding .explorestore-page-banner .btn.border12 {
+    padding: 3px 9px !important;
+    font-size: 10px !important;
+    line-height: 1.2;
+  }
+
+  section.extrapadding .explorestore-page-banner .explorestore-banner-row {
+    flex: 0 1 auto;
+    min-height: auto;
+    overflow: visible;
+    margin-left: -6px;
+    margin-right: -6px;
+  }
+
+  section.extrapadding .explorestore-page-banner .explorestore-banner-row > [class*="col-"] {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  section.extrapadding .explorestore-page-banner .col7xyz,
+  section.extrapadding .explorestore-page-banner .explorestore-col-main {
+    margin-top: 0 !important;
+    padding-bottom: 0.35rem !important;
+  }
+
+  section.extrapadding .explorestore-page-banner .col7xyz h3,
+  section.extrapadding .explorestore-page-banner .explorestore-col-main h3 {
+    font-size: 0.95rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 0.2rem !important;
+  }
+
+  section.extrapadding .explorestore-page-banner .xyz-location-text {
+    font-size: 10px !important;
+    gap: 5px;
+    line-height: 1.25;
+  }
+
+  section.extrapadding .explorestore-page-banner .xyz-location-text i {
+    font-size: 9px;
+  }
+
+  section.extrapadding .explorestore-page-banner .xyz-time-box {
+    font-size: 9px !important;
+    padding: 2px 8px !important;
+    margin-top: 4px !important;
+    border-radius: 12px;
+    line-height: 1.25;
+  }
+
+  section.extrapadding .explorestore-page-banner .xyz-info-box {
+    padding: 6px 8px !important;
+    margin-top: 4px;
+    border-radius: 8px;
+  }
+
+  section.extrapadding .explorestore-page-banner .xyz-info-box img {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  section.extrapadding .explorestore-page-banner .xyz-info-box .ms-3 {
+    margin-left: 0.5rem !important;
+  }
+
+  section.extrapadding .explorestore-page-banner .coupontext,
+  section.extrapadding .explorestore-page-banner .coupontext b {
+    font-size: 10px !important;
+    line-height: 1.25 !important;
+  }
+
+  section.extrapadding .explorestore-page-banner .xyz-right-text {
+    font-size: 9px !important;
+    margin-top: 4px !important;
+  }
+
+  section.extrapadding .explorestore-page-banner .xyz-progress {
+    height: 4px;
+  }
+
+  section.extrapadding .explorestore-page-banner #cook-section.mb-2 {
+    margin-bottom: 0.35rem !important;
+  }
+
+  section.extrapadding .explorestore-page-banner .xyz-clickable-div {
+    margin-top: 4px !important;
+  }
+}
+</style>
 <!-- first section start  -->
 <script>
    @php
@@ -155,22 +298,22 @@
    @endif
 </script>
 <section class="extrapadding">
-   <div class="xyz-banner"
+   <div class="xyz-banner explorestore-page-banner"
       style="background: url('{{ $vendor && $vendor->business_banner
       ? asset('public/' . $vendor->business_banner)
       : asset('public/assets/website/images/default-banner.jpg') }}')
       no-repeat center center / cover;">
       <div class="xyz-gradient">
          <div class="container">
-            <div class="d-flex justify-content-between align-items-start mb-3 mt-0 mt-md-5 pt-5">
+            <div class="d-flex justify-content-between align-items-start mb-2 mb-md-3 mt-0 mt-md-5 pt-2 pt-md-5">
                <img src="{{ asset('public/assets/website/images/fssai.png')}}" alt="Logo" height="40">
                <div class="text-end">
                   <button class="btn btn-light text-danger border12" onclick="showModal()"><b>Coupons</b></button>
                </div>
             </div>
-            <div class="row">
+            <div class="row explorestore-banner-row">
                <!-- Left column -->
-               <div class="col-md-7 pb-4 col7xyz">
+               <div class="col-12 col-md-7 pb-2 pb-md-4 col7xyz explorestore-col-main">
                   <h3>{{ $vendor->business_name ?? 'No Store Found' }}</h3>
                   <div class="xyz-location-text">
                      <i class="fas fa-map-marker-alt"></i>
@@ -237,7 +380,7 @@
                   $showProgressSection = ($minimumForCook > 0) || ($minimumForDelivery > 0);
                @endphp
                @if($showProgressSection)
-               <div class="col-md-5">
+               <div class="col-12 col-md-5">
                   <div class="xyz-info-box">
                      @if($minimumForCook > 0)
                      <div class="d-flex align-items-center mb-2" id="cook-section">
@@ -271,7 +414,7 @@
 <!-- first section end  -->
 <!-- second section start  -->
 <section>
-   <div class="container mt-4 headingde">
+   <div class="container mt-1 headingde">
       <h3>Inspiration for your order</h3>
       <div class="row">
          <div class="col-md-3">
@@ -282,12 +425,12 @@
                   <li class="sidebar-itemde {{ isset($subcategory) && $subcategoryItem->id == $subcategory->id ? 'active' : '' }}">
                      <img src="{{ asset('public/uploads/subcategories/'.$subcategoryItem->image) }}" >
                      @if($vendor && ($subcategoryItem->category_id || isset($subcategoryItem->category)))
-                     <a href="{{ route('subcategory.products', [
-                        $vendor->id,
-                        $subcategoryItem->category_id ?? $subcategoryItem->category->id,
-                        $subcategoryItem->id
-                        ]) }}"
-                        class="text-decoration-none text-dark" onclick="return redirectWithLocation(this.href)">
+                     <a href="javascript:void(0)"
+                        class="text-decoration-none text-dark js-explorestore-subcat-ajax"
+                        role="button"
+                        data-vendor-id="{{ $vendor->id }}"
+                        data-category-id="{{ $subcategoryItem->category_id ?? $subcategoryItem->category->id }}"
+                        data-subcategory-id="{{ $subcategoryItem->id }}">
                      {{ $subcategoryItem->sub_cat_name }}
                      </a>
                      @else
@@ -306,12 +449,12 @@
                 <div class="sidebar-itemde {{ isset($subcategory) && $subcategoryItem->id == $subcategory->id ? 'active' : '' }}">
                     <img src="{{ asset('public/uploads/subcategories/'.$subcategoryItem->image) }}" alt="{{ $subcategoryItem->sub_cat_name }}">
                     @if($vendor && ($subcategoryItem->category_id || isset($subcategoryItem->category)))
-                    <a href="{{ route('subcategory.products', [
-                        $vendor->id,
-                        $subcategoryItem->category_id ?? $subcategoryItem->category->id,
-                        $subcategoryItem->id
-                        ]) }}"
-                        class="text-decoration-none text-dark" onclick="return redirectWithLocation(this.href)">
+                    <a href="javascript:void(0)"
+                        class="text-decoration-none text-dark js-explorestore-subcat-ajax"
+                        role="button"
+                        data-vendor-id="{{ $vendor->id }}"
+                        data-category-id="{{ $subcategoryItem->category_id ?? $subcategoryItem->category->id }}"
+                        data-subcategory-id="{{ $subcategoryItem->id }}">
                         <div>{{ $subcategoryItem->sub_cat_name }}</div>
                     </a>
                     @else
@@ -327,124 +470,7 @@
 
          </div>
          <div class="col-md-9 fixedheight" id="products-section">
-            <div class="row pt-3">
-               @if($products && $products->count())
-               @foreach ($products as $product)
-               @php
-               $defaultVariant = $product->variants->firstWhere('stock', '>', 0) ?? $product->variants->first();
-               $hasMultipleVariants = $product->variants->count() > 1;
-               $firstVariant = $defaultVariant;
-               $variantInStock = $firstVariant && $firstVariant->stock > 0;
-               $key = $product->id . '_' . ($firstVariant->id ?? 0);
-               if (auth()->check()) {
-               $cartItem = \App\Models\CartItem::where([
-               'user_id' => auth()->id(),
-               'product_id' => $product->id,
-               'variant_id' => $firstVariant->id ?? 0,
-               ])->first();
-               $inCart = $cartItem !== null;
-               $quantity = $inCart ? $cartItem->quantity : 1;
-               } else {
-               $cart = session('cart', []);
-               $inCart = isset($cart[$key]);
-               $quantity = $inCart ? $cart[$key]['quantity'] : 1;
-               }
-               $attributes = is_array($defaultVariant->attributes ?? null) 
-                   ? ($defaultVariant->attributes ?? []) 
-                   : json_decode($defaultVariant->attributes ?? '{}', true);
-               $firstAttr = collect($attributes)->first();
-               @endphp
-               <div class="col-md-3 pb-4 col-6">
-                  <div class="item">
-                     <div class="product-card p-0">
-                        @if ($defaultVariant && ($defaultVariant->variant_save_price_in_percent ?? 0) > 0)
-                        <span class="discount-label">{{ (int) round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
-                        @endif
-                        <a href="{{ $product->is_physical ? route('productdetails', $product->slug) : 'javascript:void(0);' }}"  onclick="return redirectWithLocation(this.href)">
-                        <img src="{{ $product->featureImage
-                           ? asset('public/' . $product->featureImage->feature_image)
-                           : asset('public/assets/website/images/default.png') }}"
-                           class="product-image" alt="{{ $product->title }}">
-                        </a>
-                        <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
-                        @if (!empty($firstAttr))
-                        <div class="product-info cardpadding">{{ $firstAttr }}</div>
-                        @else
-                        <div class="product-info cardpadding">{{ $defaultVariant->variant_name ?? '' }}</div>
-                        @endif
-                        <div class="price-container cardpadding">
-                           <div class="price-wrapper">
-                               <span class="price">
-                                   <span class="rupee-symbol">₹</span> {{ $defaultVariant ? intval($defaultVariant->variant_selling_price) : '--' }}
-                               </span>
-                               @if ($defaultVariant && $defaultVariant->variant_selling_price < $defaultVariant->variant_actual_price)
-                               <span class="original-price">
-                                   <span class="rupee-symbol2">₹</span> {{ intval($defaultVariant->variant_actual_price) }}
-                               </span>
-                               @endif
-                           </div>
-                           <div class="qty-box"
-                              data-product-id="{{ $product->id }}"
-                              data-variant-id="{{ $firstVariant->id ?? '' }}"
-                              data-key="{{ $key }}">
-                              @php
-                              $isOpen = \App\Helpers\StoreHelper::isStoreOpen($product->vendor->store_time);
-                              @endphp
-                              @if ($isOpen)
-                              {{-- ✅ Store is open --}}
-                              @if ($hasMultipleVariants)
-                              <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                 onclick="openPopup({{ $product->id }})">
-                                 <div class="d-flex align-items-center">
-                                    Add
-                                    <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
-                                 </div>
-                                 <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
-                              </button>
-                              @else
-                              @if (!$defaultVariant)
-                              <button class="add-btn" disabled>Unavailable</button>
-                              @elseif(!$variantInStock)
-                              <span class="add-btn btn disabled text-muted">Out of Stock</span>
-                              @else
-                              @if (!$inCart)
-                              <button class="add-btn"
-                                 data-product-id="{{ $product->id }}"
-                                 data-variant-id="{{ $firstVariant->id }}"
-                                 onclick="addToCart(this)">
-                              Add
-                              <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
-                              </button>
-                              @else
-                              <div class="qty-container">
-                                 <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
-                                 <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
-                                 <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
-                              </div>
-                              @endif
-                              @endif
-                              @endif
-                              @else
-                              {{-- ❌ Store is closed --}}
-                              <button class="add-btn disabled" disabled>
-                              Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
-                              </button>
-                              @endif
-                           </div>
-                        </div>
-                        <div class="store-info">
-                           <span><a href="{{ route('explorestore', ['vendor_id' => $product->vendor_id,'cat_id'=>$product->category_id]) }}" onclick="return redirectWithLocation(this.href)">{{ $product->vendor->business_name ?? '' }}</a></span>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               @endforeach
-               @else
-               <div class="no-products text-center py-5">
-                  <h5 class="mt-3">Product not available</h5>
-               </div>
-               @endif
-            </div>
+            @include('web.partials.explorestore_products_grid', ['products' => $products ?? collect()])
          </div>
       </div>
    </div>

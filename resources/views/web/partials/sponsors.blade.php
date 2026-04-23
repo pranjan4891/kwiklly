@@ -174,7 +174,7 @@
     
 </style>
 {{-- {{dd($sponsors_products)}} --}}
-<div class="container mt-4">
+<div class="container mt-1 mt-md-2">
       <h4 class="pb-3  headingclass">Sponsored Products</h4>
       <div class="owl-carousel owl-theme mb-4">
          @foreach ($sponsors_products as $product)
@@ -191,12 +191,12 @@
 
                      @if ($product->is_physical)
                         <a href="{{ route('productdetails', $product->slug) }}" onclick="return redirectWithLocation(this.href)">
-                           <img src="{{ asset('public/' . $product->featureImage->feature_image) }}" class="product-image" alt="{{ $product->title }}">
+                           <img src="{{ $defaultVariant->displayImageUrlForProduct($product) }}" class="product-image" alt="{{ $product->title }}">
                         </a>
                      @else
-                        <a href="javascript:void(0);">
-                           <img src="{{ asset('public/' . $product->featureImage->feature_image) }}" class="product-image" alt="{{ $product->title }}">
-                        </a>
+                        <div class="product-image-wrap">
+                           <img src="{{ $defaultVariant->displayImageUrlForProduct($product) }}" class="product-image" alt="{{ $product->title }}">
+                        </div>
                      @endif
 
                      <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
@@ -251,8 +251,8 @@
                             @if ($isOpen)
                                 {{-- ✅ Store is open --}}
                                 @if ($hasMultipleVariants)
-                                    <button class="add-btn d-flex flex-column align-items-center position-relative"
-                                            onclick="openPopup({{ $product->id }})">
+                                    <button type="button" class="add-btn d-flex flex-column align-items-center position-relative"
+                                            onclick="openPopup({{ $product->id }}, event)">
                                         <div class="d-flex align-items-center newimg">
                                             Add
                                             <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
@@ -266,10 +266,9 @@
                                         <span class="add-btn btn disabled text-muted">Out of Stock</span>
                                     @else
                                         @if (!$inCart)
-                                            <button class="add-btn"
+                                            <button type="button" class="add-btn"
                                                     data-product-id="{{ $product->id }}"
-                                                    data-variant-id="{{ $firstVariant->id }}"
-                                                    onclick="addToCart(this)">
+                                                    data-variant-id="{{ $firstVariant->id }}">
                                                 Add
                                                 <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                             </button>

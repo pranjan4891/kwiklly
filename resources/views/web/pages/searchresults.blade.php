@@ -47,14 +47,14 @@
                                 {{-- Product Image --}}
                                 @if ($product->is_physical)
                                     <a href="{{ route('productdetails', $product->slug) }}">
-                                        <img src="{{ $product->featureImage ? asset('public/' . $product->featureImage->feature_image) : asset('public/assets/website/images/default.png') }}"
+                                        <img src="{{ $defaultVariant ? $defaultVariant->displayImageUrlForProduct($product) : asset('public/assets/website/images/default.png') }}"
                                             class="product-image img-fluid" alt="{{ $product->title }}">
                                     </a>
                                 @else
-                                    <a href="javascript:void(0);">
-                                        <img src="{{ $product->featureImage ? asset('public/' . $product->featureImage->feature_image) : asset('public/assets/website/images/default.png') }}"
+                                    <div class="product-image-wrap">
+                                        <img src="{{ $defaultVariant ? $defaultVariant->displayImageUrlForProduct($product) : asset('public/assets/website/images/default.png') }}"
                                             class="product-image" alt="{{ $product->title }}">
-                                    </a>
+                                    </div>
                                 @endif
 
                                 {{-- Product Title --}}
@@ -112,13 +112,13 @@
 
                                         @if ($isOpen)
                                             @if ($hasMultipleVariants)
-                                                <button class="add-btn d-flex position-relative" onclick="openPopup({{ $product->id }})">
+                                                <button type="button" class="add-btn d-flex position-relative" onclick="openPopup({{ $product->id }}, event)">
                                                     Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                                     <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
                                                 </button>
                                             @else
                                                 @if (!$inCart)
-                                                    <button class="add-btn" data-product-id="{{ $product->id }}" data-variant-id="{{ $firstVariant->id }}">
+                                                    <button type="button" class="add-btn" data-product-id="{{ $product->id }}" data-variant-id="{{ $firstVariant->id }}">
                                                         Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                                     </button>
                                                 @else

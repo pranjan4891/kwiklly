@@ -1,3 +1,7 @@
+:root {
+    /* Same edge rhythm on mobile and desktop (scales smoothly between viewports) */
+    --kw-page-gutter: clamp(12px, 2.75vw + 4px, 26px);
+}
 
 body {
     font-family: 'Helvetica', sans-serif;
@@ -17,7 +21,7 @@ a {
 }
 .navbar {
     background-color: #f2fbe9;
-    padding: 10px 20px;
+    padding: 10px var(--kw-page-gutter);
     background: linear-gradient(to bottom, #DDF7D9, #FFFFFF);
 }
 
@@ -207,7 +211,7 @@ a {
 /* Mobile Carousel Image Styling */
 #mobileSlider {
     margin: 15px 0;
-    padding: 0 10px;
+    padding: 0 var(--kw-page-gutter);
 }
 #mobileSlider .carousel-inner {
     border-radius: 10px;
@@ -248,6 +252,18 @@ a {
     height: auto;
     max-height: 250px;
     object-fit: contain;
+}
+/* Non-digital products: image not wrapped in <a href="javascript:void(...)"> — avoids mobile scroll jump */
+.product-card .product-image-wrap {
+    display: block;
+}
+
+@media (max-width: 767.98px) {
+    /* Reduce spurious scroll/jump when tapping product cards (Owl + iOS focus/tap) */
+    .product-card {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
 }
 .product-title {
     font-size: 14px;
@@ -371,6 +387,27 @@ a {
     cursor: not-allowed !important;
     opacity: 0.6;
 }
+
+/* Add-to-cart: spinner in button (Bootstrap .spinner-border-sm; see cart-operations.js) */
+.add-btn.add-btn-loading {
+    pointer-events: none;
+    justify-content: center;
+}
+.add-btn-loading .add-btn-spinner,
+.add-btn-loading .spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.15em;
+    border-color: rgba(255, 255, 255, 0.35);
+    border-right-color: #fff;
+}
+
+.add-btn.add-btn-loading:disabled {
+    background: #E94412 !important;
+    color: transparent !important;
+    opacity: 1 !important;
+    cursor: wait !important;
+}
 .owl-nav button {
     position: absolute;
     top: 50%;
@@ -462,6 +499,33 @@ a {
     padding: 2px 0;
 }
 
+.qty-section-loading {
+    position: relative;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* Same tint as Add button (#E94412) — white spinner on top */
+.qty-spinner-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(233, 68, 18, 0.88);
+    z-index: 10;
+    border-radius: 4px;
+}
+
+.qty-spinner-overlay .spinner-border {
+    border-color: rgba(255, 255, 255, 0.35);
+    border-right-color: #fff;
+}
+
+.input-group.qty-section-loading {
+    align-items: stretch;
+}
+
 .qty-btn {
     background: #E94412;
     color: white;
@@ -543,9 +607,47 @@ a {
     font-weight: bold;
     margin-bottom: 15px;
 }
+/* Mobile categories: Bootstrap row + col-md-4 col-4 (demo-style) */
+.categoryformobile #category-container.row .new-cate-item-wrap {
+    margin-bottom: 12px;
+}
+.categoryformobile #category-container:not(.is-expanded) .new-cate-item-wrap--extra {
+    display: none !important;
+}
+.categoryformobile #category-container.is-expanded .new-cate-item-wrap--extra {
+    display: block;
+}
+/* Desktop Owl: har item = ek column (2 categories stacked) */
+.new-cate-owl-carousel .new-cate-item.p-0 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+}
+.new-cate-owl-carousel .new-cate-item.p-0 > a {
+    display: block;
+    width: 100%;
+    max-width: 168px;
+    margin: 0 auto;
+    text-decoration: none;
+    color: inherit;
+}
 .new-cate-owl-carousel .new-cate-item {
     text-align: center;
-    /* padding: 10px; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.new-cate-owl-carousel .product-carded {
+    width: 100%;
+    max-width: 148px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+}
+.new-cate-owl-carousel .catename {
+    width: 100%;
+    max-width: 148px;
 }
 .new-cate-owl-carousel .new-cate-item img {
     max-width: 100%;
@@ -796,6 +898,16 @@ a {
 .view-all-btn:hover {
     background: #4CAF50;
     color: white;
+}
+/* Homepage category block: View All beside title on small screens */
+.view-all-btn--inline-header {
+    padding: 6px 14px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+.category-products-heading-row .headingclass {
+    line-height: 1.25;
+    min-width: 0;
 }
 .view-all {
     display: block;
@@ -1622,7 +1734,7 @@ select.time-boxde:focus {
     display: none;
     overflow-x: auto;
     white-space: nowrap;
-    padding: 15px 10px;
+    /* padding: 15px 10px; */
     background: #fff;
     margin-bottom: 20px;
     -ms-overflow-style: none;
@@ -1895,11 +2007,11 @@ select.time-boxde:focus {
 }
 
 .headingde h3{
-    font-size: 32px;
+    font-size: 30px;
     font-weight: 700;
     line-height: 100%;
-    margin-bottom: 25px;
-    padding-top: 20px;
+    margin-bottom: 10px;
+    padding-top: 10px;
     color: #231917;
 }
 
@@ -2612,6 +2724,11 @@ select.time-boxde:focus {
     min-width: 90px !important;
     max-width: 90px !important;
     margin-left: auto;
+    align-self: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    box-sizing: border-box;
   }
 
   /* Make quantity buttons smaller - Global */
@@ -3280,6 +3397,151 @@ select.time-boxde:focus {
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
+  }
+
+  /* Save Location modal — responsive (header + mobile / desktop) */
+  .save-location-modal .modal-content.save-location-panel {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  }
+
+  .save-location-dialog {
+    width: 100%;
+    max-width: min(420px, calc(100vw - 2rem));
+    margin: 0.5rem auto;
+  }
+
+  .save-location-modal .save-location-header.mypopup-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #e5e7eb;
+    align-items: flex-start;
+  }
+
+  .save-location-modal .save-location-header.mypopup-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    padding-right: 12px;
+  }
+
+  .save-location-modal .save-location-dismiss.mypopup-close {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    margin: -4px -6px 0 0;
+    line-height: 1;
+    opacity: 0.7;
+    border: 0;
+    background: transparent;
+    font-size: 1.75rem;
+  }
+
+  .save-location-modal .save-location-dismiss.mypopup-close:hover {
+    opacity: 1;
+  }
+
+  .save-location-modal .save-location-body.modal-body {
+    padding: 20px 20px 24px;
+  }
+
+  .save-location-modal .save-location-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .save-location-type-toggle {
+    display: flex;
+    background: #f3f4f6;
+    padding: 4px;
+    border-radius: 12px;
+    gap: 4px;
+  }
+
+  .save-location-type-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    padding: 10px 12px;
+    border-radius: 8px;
+    min-height: 44px;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .save-location-type-btn:hover {
+    color: #374151;
+  }
+
+  .save-location-type-btn:focus-visible {
+    outline: 2px solid #f97316;
+    outline-offset: 2px;
+  }
+
+  .save-location-type-btn.active {
+    background: #374151;
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  }
+
+  .save-location-modal .pata-input {
+    margin-bottom: 0 !important;
+  }
+
+  .save-location-modal .pata-input .form-control {
+    width: 100%;
+    margin-bottom: 0;
+    padding: 12px 14px;
+    min-height: 48px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    font-size: 15px;
+    line-height: 1.35;
+  }
+
+  .save-location-modal .pata-input .form-control:focus {
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.22);
+  }
+
+  .save-location-modal .form-control.address-locked {
+    background-color: #f3f4f6;
+    color: #374151;
+    cursor: default;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .save-location-modal .save-location-submit.pata-save-btn {
+    margin-top: 4px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  @media (min-width: 768px) {
+    .save-location-dialog {
+      max-width: min(440px, calc(100vw - 3rem));
+      margin: 1.25rem auto;
+    }
+
+    .save-location-modal .save-location-body.modal-body {
+      padding: 22px 26px 28px;
+    }
+
+    .save-location-modal .save-location-header.mypopup-header {
+      padding: 20px 26px 16px;
+    }
+
+    .save-location-modal .save-location-header.mypopup-header h2 {
+      font-size: 1.375rem;
+    }
   }
 
   .mypopup-image {
@@ -4215,8 +4477,8 @@ select.time-boxde:focus {
         max-width: 100% !important;
         overflow-x: hidden !important;
         overflow-y: visible !important;
-        padding-left: 10px !important;
-        padding-right: 10px !important;
+        padding-left: var(--kw-page-gutter) !important;
+        padding-right: var(--kw-page-gutter) !important;
         position: relative;
         /* Ensure suggestions stay within navbar */
         z-index: 1050;
@@ -4226,7 +4488,7 @@ select.time-boxde:focus {
         width: 100% !important;
         max-width: 100% !important;
         overflow-x: hidden !important;
-        padding: 0 10px !important;
+        padding: 0 var(--kw-page-gutter) !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
@@ -5205,6 +5467,7 @@ body.suggestions-open {
         text-align: left !important;
         margin: 0 5px !important;
         padding: 2px 0 !important;
+        overflow-anchor: none;
     }
 
     .qty-box .qty-container,
@@ -5252,6 +5515,8 @@ body.suggestions-open {
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        /* Reduce scroll jump when Add → qty controls swaps (mobile scroll anchoring) */
+        overflow-anchor: none;
     }
 
     /* Mobile Product Image Styling */
@@ -5404,6 +5669,13 @@ body.suggestions-open {
         color: #666666 !important;
         cursor: not-allowed !important;
         opacity: 0.6 !important;
+    }
+
+    .product-card .add-btn.add-btn-loading:disabled {
+        background: #E94412 !important;
+        color: transparent !important;
+        cursor: wait !important;
+        opacity: 1 !important;
     }
     
     /* Ensure qty-box is visible */
@@ -5786,7 +6058,7 @@ body.suggestions-open {
         max-width: 100%;
     }
     .register-section {
-        padding: 0 10px;
+        padding: 0 var(--kw-page-gutter);
         width: 100%;
         max-width: 100%;
         overflow-x: hidden;
@@ -6127,8 +6399,8 @@ body.suggestions-open {
     .registrationspace .container,
     .followpadding .container,
     section .container {
-        padding-left: 10px;
-        padding-right: 10px;
+        padding-left: var(--kw-page-gutter);
+        padding-right: var(--kw-page-gutter);
         width: 100%;
         max-width: 100%;
         overflow-x: hidden;
@@ -6143,8 +6415,8 @@ body.suggestions-open {
     }
     .registrationspace .row > [class*="col-"],
     .followpadding .row > [class*="col-"] {
-        padding-left: 10px;
-        padding-right: 10px;
+        padding-left: var(--kw-page-gutter);
+        padding-right: var(--kw-page-gutter);
         width: 100%;
         max-width: 100%;
     }
@@ -6326,8 +6598,8 @@ body.suggestions-open {
     }
     .mobile-sidebar {
         display: flex;
-        padding: 15px 10px;
-        margin-bottom: 20px;
+        /* padding: 15px 10px;
+        margin-bottom: 20px; */
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         position: relative;
@@ -6651,16 +6923,16 @@ body.suggestions-open {
         font-size: 24px;
         font-weight: 700;
         line-height: 120%;
-        margin-bottom: 15px;
-        padding-top: 10px;
+        margin-bottom: 5px;
+        padding-top: 5px;
         color: #231917;
     }
     #vendor-header{
-      margin-top: 25%;
+      margin-top: 40px;
     }
     #products-container {
-        padding-left: 10px;
-        padding-right: 10px;
+        padding-left: var(--kw-page-gutter);
+        padding-right: var(--kw-page-gutter);
         position: relative;
         z-index: 10;
     }
@@ -6847,8 +7119,8 @@ body.suggestions-open {
     }
 
     #products-container {
-        padding-left: 10px;
-        padding-right: 10px;
+        padding-left: var(--kw-page-gutter);
+        padding-right: var(--kw-page-gutter);
         position: relative;
         z-index: 10;
     }
@@ -7439,29 +7711,141 @@ body.suggestions-open {
  z-index: 9999999;
 }
 
-/* Modal container */
+/* Modal container — hug content, no extra bottom gap */
 .xyz-modal {
  background: #fff;
- border-radius: 15px;
- max-width: 500px;
- width: 90%;
- padding: 20px;
+ border-radius: 12px;
+ width: min(400px, 92vw);
+ max-width: 400px;
+ padding: 12px 14px 14px;
+ box-sizing: border-box;
  animation: slideDown 0.3s ease-out;
  max-height: 90vh;
  overflow-y: auto;
+ box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
 }
 
-/* Coupon row styling */
+.xyz-modal-header {
+ margin-bottom: 8px;
+}
+
+.xyz-modal h5,
+.xyz-modal-header h5 {
+ font-size: 1rem;
+ font-weight: 700;
+ margin: 0;
+ color: #000;
+}
+
+.xyz-modal-empty {
+ font-size: 13px;
+ color: #666;
+ padding: 10px 0 !important;
+}
+
+/* Standard coupon card (explore store + checkout modals) */
 .xyz-coupon-row {
  background-color: #f2f7ff;
+ border: 1px solid #e6e9ef;
  border-radius: 10px;
- padding: 15px;
- margin-bottom: 15px;
+ padding: 10px 12px;
+ margin-bottom: 8px;
+ max-width: 360px;
+ margin-left: auto;
+ margin-right: auto;
+ box-sizing: border-box;
+ box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.xyz-coupon-row:last-child {
+ margin-bottom: 0;
+}
+
+.xyz-coupon-row-inner {
+ margin-left: 0;
+ margin-right: 0;
+}
+
+.xyz-coupon-discount {
+ margin: 0 0 4px 0;
+ font-size: 1.125rem;
+ font-weight: 700;
+ color: #000;
+ line-height: 1.2;
+}
+
+.xyz-coupon-discount strong {
+ font-weight: 700;
+ font-size: inherit;
+}
+
+.xyz-coupon-min-order {
+ color: #3B6939;
+ font-size: 12px;
+ font-weight: 500;
+ margin-bottom: 2px;
+ line-height: 1.3;
+}
+
+.xyz-coupon-code {
+ font-size: 11px;
+ color: #666;
+ display: block;
+ margin: 0;
+ line-height: 1.35;
+}
+
+.xyz-coupon-code b {
+ color: #000;
+ font-weight: 600;
+}
+
+.xyz-coupon-expiry {
+ font-size: 10px;
+ color: #333;
+ font-weight: 500;
+ margin-bottom: 0;
+ line-height: 1.3;
+}
+
+.xyz-coupon-expiry-date {
+ color: #666;
+ font-size: 10px;
+ line-height: 1.3;
+}
+
+.xyz-coupon-applied-on {
+ margin-top: 8px;
+ padding-top: 6px;
+ border-top: 1px solid #e0e0e0;
+}
+
+.xyz-coupon-applied-line {
+ color: #333;
+ font-size: 10px;
+ line-height: 1.35;
+ display: block;
+}
+
+.xyz-coupon-apply-btn {
+ background-color: #E94412;
+ color: #fff;
+ font-size: 12px;
+ font-weight: 600;
+ cursor: pointer;
+ display: inline-block;
+ padding: 6px 16px;
+ border: none;
+ border-radius: 999px;
+ box-shadow: 0 2px 6px rgba(233, 68, 18, 0.2);
 }
 
 .xyz-coupon-logo {
- height: 30px;
- margin-bottom: 5px;
+ height: 28px;
+ width: auto;
+ max-width: 44px;
+ margin-bottom: 4px;
+ object-fit: contain;
 }
 
 .xyz-close {
@@ -7518,31 +7902,36 @@ body.suggestions-open {
 
  .xyz-modal {
    position: relative;
-   width: 92%;
-   max-width: 380px;
-   border-radius: 16px;
+   width: min(360px, calc(100vw - 24px));
+   max-width: 360px;
+   border-radius: 12px;
    animation: fadeInMobile 0.3s ease-out;
-   max-height: 85vh;
+   max-height: 88vh;
    margin: 0 auto;
-   padding: 18px 16px;
-   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+   padding: 10px 12px 12px;
+   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
  }
 
- .xyz-modal h5 {
-   font-size: 22px;
+ .xyz-modal-header {
+   margin-bottom: 6px;
+ }
+
+ .xyz-modal h5,
+ .xyz-modal-header h5 {
+   font-size: 0.95rem !important;
    font-weight: 700;
-   margin-bottom: 18px;
+   margin-bottom: 0 !important;
+   padding-right: 28px;
    color: #000;
-   padding-right: 35px;
  }
 
  .xyz-close {
-   font-size: 32px;
+   font-size: 26px;
    font-weight: 300;
    color: #333;
    padding: 0;
-   width: 35px;
-   height: 35px;
+   width: 30px;
+   height: 30px;
    display: flex;
    align-items: center;
    justify-content: center;
@@ -7558,83 +7947,96 @@ body.suggestions-open {
  }
 
  .xyz-coupon-row {
-   padding: 16px 14px;
-   margin-bottom: 14px;
-   border-radius: 14px;
+   padding: 8px 10px !important;
+   margin-bottom: 8px !important;
+   max-width: 100%;
+   border-radius: 10px;
    background-color: #f2f7ff;
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+   border: 1px solid #e6e9ef;
+   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
  }
 
- .xyz-coupon-row .row {
-   margin: 0;
+ .xyz-coupon-row .row,
+ .xyz-coupon-row-inner {
+   margin-left: 0;
+   margin-right: 0;
    align-items: flex-start;
  }
 
- .xyz-coupon-row h6 {
-   font-size: 19px;
-   font-weight: 700;
-   margin-bottom: 10px;
-   line-height: 1.4;
-   color: #000;
+ .xyz-coupon-discount {
+   font-size: 0.95rem !important;
+   margin-bottom: 2px !important;
  }
 
- .xyz-coupon-row h6 strong {
-   font-size: 22px;
-   color: #000;
+ .xyz-coupon-discount strong {
+   font-size: inherit !important;
+ }
+
+ .xyz-coupon-min-order {
+   font-size: 10px !important;
+ }
+
+ .xyz-coupon-code {
+   font-size: 10px !important;
+ }
+
+ .xyz-coupon-expiry,
+ .xyz-coupon-expiry-date {
+   font-size: 9px !important;
+ }
+
+ .xyz-coupon-logo {
+   height: 26px !important;
+   max-width: 40px !important;
+   margin-bottom: 2px !important;
+   width: auto;
+   object-fit: contain;
+ }
+
+ .xyz-coupon-applied-on {
+   margin-top: 6px !important;
+   padding-top: 5px !important;
+ }
+
+ .xyz-coupon-applied-line {
+   font-size: 9px !important;
+ }
+
+ .xyz-coupon-apply-btn {
+   font-size: 11px !important;
+   padding: 5px 12px !important;
  }
 
  .xyz-coupon-row > .row > div:first-child {
-   padding-right: 10px;
+   padding-right: 6px;
    padding-left: 0;
  }
 
  .xyz-coupon-row > .row > div:last-child {
-   padding-left: 10px;
+   padding-left: 6px;
    padding-right: 0;
    text-align: right;
  }
 
  .xyz-coupon-row div[style*="color: green"] {
-   font-size: 15px;
-   margin-bottom: 8px;
+   font-size: 10px !important;
+   margin-bottom: 4px;
    font-weight: 600;
    color: #3B6939 !important;
-   line-height: 1.4;
+   line-height: 1.3;
  }
 
- .xyz-coupon-row small {
-   font-size: 14px;
-   display: block;
-   margin-top: 6px;
-   line-height: 1.5;
-   color: #555;
+ .xyz-coupon-row small:not(.xyz-coupon-applied-line):not(.xyz-coupon-expiry):not(.xyz-coupon-expiry-date) {
+   font-size: 10px !important;
+   line-height: 1.35;
  }
 
- .xyz-coupon-row small b {
-   font-weight: 700;
-   color: #000;
-   font-size: 15px;
- }
-
- .xyz-coupon-logo {
-   height: 38px;
-   margin-bottom: 10px;
-   width: auto;
-   max-width: 100%;
-   object-fit: contain;
- }
-
- .xyz-coupon-row > .row > div:last-child small {
-   font-size: 13px;
+ .xyz-modal p.text-center,
+ .xyz-modal .xyz-modal-empty {
+   font-size: 12px !important;
    color: #666;
-   margin-top: 6px;
-   font-weight: 500;
- }
-
- .xyz-modal p.text-center {
-   font-size: 15px;
-   color: #666;
-   padding: 20px 0;
+   padding: 8px 0 !important;
+   margin: 0 !important;
  }
 
  .col7xyz
@@ -7657,30 +8059,30 @@ body.suggestions-open {
  /* Very small screens */
  @media (max-width: 480px) {
    .xyz-modal {
-     width: 95%;
-     max-width: 100%;
-     padding: 16px 14px;
-     border-radius: 14px;
+     width: min(100%, calc(100vw - 16px));
+     max-width: 360px;
+     padding: 10px 10px 12px;
+     border-radius: 12px;
    }
 
-   .xyz-modal h5 {
-     font-size: 20px;
-     margin-bottom: 16px;
+   .xyz-modal h5,
+   .xyz-modal-header h5 {
+     font-size: 0.9rem !important;
    }
 
    .xyz-coupon-row {
-     padding: 14px 12px;
-     margin-bottom: 12px;
+     padding: 8px 8px !important;
+     margin-bottom: 8px !important;
    }
 
-   .xyz-coupon-row h6 strong {
-     font-size: 20px;
+   .xyz-coupon-discount {
+     font-size: 0.9rem !important;
    }
 
    .xyz-coupon-row > .row > div:first-child,
    .xyz-coupon-row > .row > div:last-child {
-     padding-left: 8px;
-     padding-right: 8px;
+     padding-left: 4px;
+     padding-right: 4px;
    }
 
    .xyz-coupon-row > .row > div:last-child {
@@ -8748,7 +9150,7 @@ body.suggestions-open {
 @media (max-width: 768px) {
     .payment-result-container {
         min-height: auto;
-        padding: 20px 10px 20px 10px;
+        padding: 20px var(--kw-page-gutter) 20px var(--kw-page-gutter);
         margin-top: 0;
         padding-top: 120px;
         margin-bottom: 20px;
@@ -8756,7 +9158,7 @@ body.suggestions-open {
     }
 
     .payment-result-container .container {
-        padding: 0 10px;
+        padding: 0 var(--kw-page-gutter);
     }
 
     .payment-result-box {
@@ -9001,7 +9403,7 @@ div:where(.swal2-container).swal2-center>.swal2-popup {
     content: " " !important;
 }
 
-/* Mobile: allow vertical page scroll while swiping carousels horizontally */
+/* Mobile: allow both horizontal carousel swipe and vertical page scroll (pan-y alone caused stuck gestures) */
 @media (max-width: 768px) {
     .owl-carousel,
     .owl-carousel .owl-stage-outer,
@@ -9010,13 +9412,19 @@ div:where(.swal2-container).swal2-center>.swal2-popup {
     #mobileSlider,
     #mobileSlider .carousel-inner,
     #mobileSlider .carousel-item {
-        touch-action: pan-y !important;
-        -ms-touch-action: pan-y !important;
+        touch-action: pan-x pan-y !important;
+        -ms-touch-action: pan-x pan-y !important;
     }
 
     .owl-carousel .owl-stage-outer,
     #mobileSlider .carousel-inner {
         overscroll-behavior-y: auto;
         -webkit-overflow-scrolling: touch;
+    }
+
+    /* Site-wide: less scroll anchoring jump when Add ↔ qty swaps after cart AJAX */
+    .qty-box,
+    .qty-container {
+        overflow-anchor: none;
     }
 }

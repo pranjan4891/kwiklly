@@ -135,26 +135,32 @@ function updateLocation(fullAddress, place = null, lat = null, lng = null, isAut
             success: function(res){
                 console.log("Products reloaded successfully", res);
                 
-                // Update each section if it exists and has content
-                if ($('#trending-products-section').length && res.trending_html) {
+                // Update each section (use typeof so empty string still clears/replaces)
+                if ($('#trending-products-section').length && typeof res.trending_html !== 'undefined') {
                     $('#trending-products-section').html(res.trending_html);
                 }
-                if ($('#best-offers-products-section').length && res.best_offers_html) {
+                if ($('#top-selling-products-section').length && typeof res.top_selling_html !== 'undefined') {
+                    $('#top-selling-products-section').html(res.top_selling_html);
+                }
+                if ($('#best-offers-products-section').length && typeof res.best_offers_html !== 'undefined') {
                     $('#best-offers-products-section').html(res.best_offers_html);
                 }
-                if ($('#sponsors-products-section').length && res.sponsors_html) {
+                if ($('#sponsors-products-section').length && typeof res.sponsors_html !== 'undefined') {
                     $('#sponsors-products-section').html(res.sponsors_html);
                 }
-                if ($('#stores-section').length && res.stores_html) {
+                if ($('#stores-section').length && typeof res.stores_html !== 'undefined') {
                     $('#stores-section').html(res.stores_html);
                 }
-                if ($('#categories-section').length && res.categories_html) {
+                if ($('#categories-section').length && typeof res.categories_html !== 'undefined') {
                     $('#categories-section').html(res.categories_html);
                 }
                 
                 // Update homepage categories slider (mobile view)
                 if ($('#category-container').length && res.homepage_categories_html) {
                     $('#category-container').html(res.homepage_categories_html);
+                    if (typeof window.initCategoryLoadMore === 'function') {
+                        window.initCategoryLoadMore();
+                    }
                 }
                 
                 // Update desktop categories carousel
@@ -181,17 +187,9 @@ function updateLocation(fullAddress, place = null, lat = null, lng = null, isAut
                             }
                         });
                         
-                        let carouselHtml = '';
-                        // Group unique categories in chunks of 2 for carousel
-                        for (let i = 0; i < uniqueCategoryItems.length; i += 2) {
-                            carouselHtml += '<div class="new-cate-item p-0">';
-                            // Add first category
-                            carouselHtml += uniqueCategoryItems[i].outerHTML;
-                            if (i + 1 < uniqueCategoryItems.length) {
-                                carouselHtml += uniqueCategoryItems[i + 1].outerHTML;
-                            }
-                            carouselHtml += '</div>';
-                        }
+                        let carouselHtml = typeof window.buildDesktopCategoryOwlSlidesHtml === 'function'
+                            ? window.buildDesktopCategoryOwlSlidesHtml(uniqueCategoryItems)
+                            : '';
                         $('.new-cate-owl-carousel').html(carouselHtml);
                         
                         // Reinitialize carousel after HTML update
@@ -206,7 +204,7 @@ function updateLocation(fullAddress, place = null, lat = null, lng = null, isAut
                                     '<span class="new-cate-nav-inner" aria-hidden="true"><i class="fa fa-chevron-left"></i></span>',
                                     '<span class="new-cate-nav-inner" aria-hidden="true"><i class="fa fa-chevron-right"></i></span>'
                                 ],
-                                responsive: { 0: { items: 2.4 }, 600: { items: 3 }, 1000: { items: 2 } }
+                                        responsive: { 0: { items: 2 }, 600: { items: 3 }, 1000: { items: 4 } }
                             };
                         $('.new-cate-owl-carousel').owlCarousel(catOwlOpts);
                     }
@@ -442,7 +440,7 @@ function initializeOwlCarousels() {
                     '<span class="new-cate-nav-inner" aria-hidden="true"><i class="fa fa-chevron-left"></i></span>',
                     '<span class="new-cate-nav-inner" aria-hidden="true"><i class="fa fa-chevron-right"></i></span>'
                 ],
-                responsive: { 0: { items: 2.4 }, 600: { items: 3 }, 1000: { items: 2 } }
+                                        responsive: { 0: { items: 2 }, 600: { items: 3 }, 1000: { items: 4 } }
             };
         $('.new-cate-owl-carousel').owlCarousel(catOwlOpts);
     }

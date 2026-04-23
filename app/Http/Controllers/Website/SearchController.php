@@ -34,7 +34,7 @@ class SearchController extends Controller
                     'subcategory',
                     'vendor',
                     'featureImage',
-                    'variants'
+                    'variants.images',
                 ])
                 ->where('is_active', 1)
                 ->where('is_deleted', 0)

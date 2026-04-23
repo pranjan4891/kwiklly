@@ -1,199 +1,21 @@
-
-// Prevent scroll to top on mobile view - PREVENT BEFORE IT HAPPENS
-(function() {
+/**
+ * Mobile: only disable automatic history scroll restoration.
+ * Older code used capture-phase click locks + scroll listeners that called scrollTo() repeatedly;
+ * that fought cart-operations.js (Add/qty AJAX) and overflow:hidden during add-to-cart → jump/jitter.
+ */
+(function () {
     'use strict';
-    
-    function isMobileView() {
-        return window.innerWidth < 768;
+    function arm() {
+        if (window.innerWidth >= 768) return;
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     }
-    
-    // Initialize only on mobile
-    if (!isMobileView()) {
-        // Re-check on resize
-        window.addEventListener('resize', function() {
-            if (isMobileView() && !window.mobileScrollFixInitialized) {
-                initMobileScrollFix();
-            }
-        });
-        return;
-    }
-    
-    function initMobileScrollFix() {
-        if (window.mobileScrollFixInitialized) return;
-        window.mobileScrollFixInitialized = true;
-        
-        // Save scroll position
-        let savedScrollPosition = 0;
-        let isLockingScroll = false;
-        
-        // Prevent scroll restoration
-        if ('scrollRestoration' in history) {
-            history.scrollRestoration = 'manual';
-        }
-        
-        // Save scroll position continuously
-        function saveScrollPosition() {
-            if (!isLockingScroll) {
-                savedScrollPosition = window.pageYOffset || document.documentElement.scrollTop || 0;
-            }
-        }
-        
-        // Update saved position on scroll (only if not locking)
-        let scrollTimeout;
-        window.addEventListener('scroll', function() {
-            if (!isLockingScroll) {
-                clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(saveScrollPosition, 50);
-            } else {
-                // If scroll is locked, immediately restore position
-                window.scrollTo(0, savedScrollPosition);
-            }
-        }, { passive: false }); // NOT passive - we need to prevent scroll
-        
-        // Save initial position
-        saveScrollPosition();
-        
-        // PREVENT scroll BEFORE it happens - lock scroll during clicks
-        document.addEventListener('click', function(e) {
-            if (!isMobileView()) return;
-            
-            // Save scroll position BEFORE any action
-            savedScrollPosition = window.pageYOffset || document.documentElement.scrollTop || 0;
-            
-            // Lock scroll position
-            isLockingScroll = true;
-            
-            const target = e.target;
-            const clickable = target.closest('button, .btn, .add-btn, .qty-btn, .increment-btn, .decrement-btn, a, [onclick], [role="button"]');
-            
-            // Handle anchor links with href="#"
-            const link = target.closest('a');
-            if (link) {
-                const href = link.getAttribute('href');
-                
-                if (href === '#' || href === '#!') {
-                    // Only prevent if it's not a modal/dropdown trigger
-                    if (!link.hasAttribute('data-bs-toggle') && 
-                        !link.hasAttribute('data-toggle') && 
-                        !link.hasAttribute('data-bs-target') &&
-                        !link.hasAttribute('data-target')) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        // Execute onclick if exists
-                        if (link.onclick) {
-                            link.onclick(e);
-                        }
-                        
-                        // Unlock after a delay
-                        setTimeout(function() {
-                            isLockingScroll = false;
-                        }, 100);
-                        return false;
-                    }
-                }
-            }
-            
-            // For all clickable elements, lock scroll for a short period
-            if (clickable) {
-                // Keep scroll locked for 200ms to prevent any scroll jumps
-                setTimeout(function() {
-                    const currentScroll = window.pageYOffset || document.documentElement.scrollTop || 0;
-                    // If scroll changed, restore it immediately
-                    if (Math.abs(currentScroll - savedScrollPosition) > 10) {
-                        window.scrollTo(0, savedScrollPosition);
-                    }
-                    // Unlock after ensuring position is maintained
-                    setTimeout(function() {
-                        isLockingScroll = false;
-                    }, 50);
-                }, 200);
-            } else {
-                // Unlock immediately if not a clickable element
-                setTimeout(function() {
-                    isLockingScroll = false;
-                }, 100);
-            }
-        }, true); // Use capture phase - intercept EARLIEST
-        
-        // Prevent scroll on form submissions
-        document.addEventListener('submit', function(e) {
-            if (!isMobileView()) return;
-            
-            saveScrollPosition();
-            isLockingScroll = true;
-            
-            // Unlock after form submission
-            setTimeout(function() {
-                const currentScroll = window.pageYOffset || document.documentElement.scrollTop || 0;
-                if (Math.abs(currentScroll - savedScrollPosition) > 10) {
-                    window.scrollTo(0, savedScrollPosition);
-                }
-                isLockingScroll = false;
-            }, 100);
-        }, true);
-        
-        // Continuous monitoring - prevent any unwanted scroll to top
-        let lastScrollCheck = 0;
-        setInterval(function() {
-            if (!isMobileView()) return;
-            
-            const currentScroll = window.pageYOffset || document.documentElement.scrollTop || 0;
-            
-            // If scroll jumped to top unexpectedly, restore immediately
-            if (currentScroll < 50 && savedScrollPosition > 100 && !isLockingScroll) {
-                isLockingScroll = true;
-                window.scrollTo(0, savedScrollPosition);
-                setTimeout(function() {
-                    isLockingScroll = false;
-                }, 100);
-            } else if (currentScroll > 0 && !isLockingScroll) {
-                // Update saved position if scroll is valid
-                savedScrollPosition = currentScroll;
-            }
-            
-            lastScrollCheck = currentScroll;
-        }, 20); // Check every 20ms for very fast response
-    }
-    
-    // Initialize immediately
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initMobileScrollFix);
-    } else {
-        initMobileScrollFix();
-    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm);
+    else arm();
+    window.addEventListener('resize', arm);
 })();
 
-// side cart quantity increaser start
-document.addEventListener("DOMContentLoaded", function () {
-  const inputGroups = document.querySelectorAll(".input-group");
-
-  inputGroups.forEach(function (group) {
-    const decrementBtn = group.querySelector(".decrement-btn");
-    const incrementBtn = group.querySelector(".increment-btn");
-    const quantityInput = group.querySelector(".quantity-input");
-
-    decrementBtn.addEventListener("click", function (e) {
-      if (window.innerWidth < 768) {
-        e.preventDefault();
-      }
-      let value = parseInt(quantityInput.value);
-      if (value > 1) {
-        quantityInput.value = value - 1;
-      }
-    });
-
-    incrementBtn.addEventListener("click", function (e) {
-      if (window.innerWidth < 768) {
-        e.preventDefault();
-      }
-      let value = parseInt(quantityInput.value);
-      quantityInput.value = value + 1;
-    });
-  });
-});
-// side cart quantity increaser end
-
+/* Qty +/- is handled only by cart-operations.js (delegated). Old duplicate listeners here
+   fired on mobile with preventDefault() and fought the server-backed cart → tap/scroll quirks. */
 
 // desktop side cart functions start
       document.getElementById("openCart").addEventListener("click", function (e) {
@@ -298,11 +120,11 @@ if (mobileCartCount) {
 
 
 
-/** Homepage category strip: keep visible slide count below total chunks so prev/next move the stage */
+/** Homepage category carousel: har Owl item = ek column (upar+neeche pair); ~4 columns visible. */
 function getCategoryOwlCarouselOptions() {
     return {
         loop: true,
-        margin: 12,
+        margin: 10,
         nav: true,
         dots: false,
         navText: [
@@ -310,16 +132,108 @@ function getCategoryOwlCarouselOptions() {
             '<span class="new-cate-nav-inner" aria-hidden="true"><i class="fa fa-chevron-right"></i></span>'
         ],
         responsive: {
-            0: { items: 2.4 },
+            0: { items: 2 },
             600: { items: 3 },
-            1000: { items: 2 }
+            1000: { items: 4 }
         }
     };
 }
 window.getCategoryOwlCarouselOptions = getCategoryOwlCarouselOptions;
 
+/**
+ * Flat mobile wraps (id order, row-major 1–8) → desktop column slides (pairs col + col+rowSize).
+ */
+function buildDesktopCategoryOwlSlidesHtml(wrapElements) {
+    function escAttr(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+    function anchorFromWrap(wrapEl) {
+        var $a = $(wrapEl).find('a').first();
+        if (!$a.length) {
+            return '';
+        }
+        var href = $a.attr('href') || '#';
+        var onclick = $a.attr('onclick');
+        var onclickAttr = onclick ? ' onclick="' + escAttr(onclick) + '"' : '';
+        var $img = $a.find('.product-carded img').length ? $a.find('.product-carded img').first() : $a.find('img').first();
+        var imgSrc = $img.attr('src') || '';
+        var alt = $img.attr('alt') || '';
+        var nameText = $.trim($a.find('.catename').first().text()) || alt;
+        return (
+            '<a href="' + escAttr(href) + '" class="text-decoration-none text-dark"' + onclickAttr + '>' +
+            '<div class="product-carded">' +
+            '<img src="' + escAttr(imgSrc) + '" alt="' + escAttr(alt) + '">' +
+            '</div>' +
+            '<div class="py-2 text-center catename"><b>' + escAttr(nameText) + '</b></div>' +
+            '</a>'
+        );
+    }
+    var html = '';
+    var list = wrapElements;
+    for (var c = 0; c < list.length; c += 8) {
+        var chunk = [];
+        var chunkLen = Math.min(8, list.length - c);
+        for (var i = 0; i < chunkLen; i++) {
+            chunk.push(list[c + i]);
+        }
+        var n = chunk.length;
+        var rowSize = Math.ceil(n / 2);
+        for (var col = 0; col < rowSize; col++) {
+            var topEl = chunk[col];
+            var bottomIdx = col + rowSize;
+            var bottomEl = bottomIdx < n ? chunk[bottomIdx] : null;
+            html += '<div class="new-cate-item p-0">';
+            html += anchorFromWrap(topEl);
+            if (bottomEl) {
+                html += anchorFromWrap(bottomEl);
+            }
+            html += '</div>';
+        }
+    }
+    return html;
+}
+window.buildDesktopCategoryOwlSlidesHtml = buildDesktopCategoryOwlSlidesHtml;
+
+/** Mobile category grid: pehli 8 categories, baaki Load More se */
+function initCategoryLoadMore() {
+    var $container = $('#category-container');
+    var $wrap = $('#categoryLoadMoreWrap');
+    var $btn = $('#categoryLoadMoreBtn');
+    if (!$container.length) {
+        return;
+    }
+    var $items = $container.find('.new-cate-item-wrap');
+    var total = $items.length;
+    var hiddenCount = $items.filter('.new-cate-item-wrap--extra').length;
+
+    $container.removeClass('is-expanded');
+
+    if ($wrap.length && $btn.length) {
+        if (hiddenCount > 0) {
+            $wrap.show();
+            $btn.show().attr('aria-expanded', 'false').html('Load More <i class="fa fa-angles-down ms-2"></i>');
+        } else {
+            $wrap.hide();
+        }
+    }
+
+    $btn.off('click.categoryLoadMore').on('click.categoryLoadMore', function () {
+        $container.addClass('is-expanded');
+        $(this).attr('aria-expanded', 'true').hide();
+        $wrap.hide();
+    });
+}
+window.initCategoryLoadMore = initCategoryLoadMore;
+
 // category slider
 $(document).ready(function () {
+
+    initCategoryLoadMore();
 
     /* ===============================
        CATEGORY SLIDER
@@ -358,55 +272,6 @@ $(document).ready(function () {
 
 });
 
-
-// button converter and pop up for product quantity
-function convertToQty(button) {
-    let parent = button.parentElement;
-    let originalBtn = button.cloneNode(true);
-    originalBtn.onclick = function () { convertToQty(this); };
-
-    parent.dataset.originalButton = parent.innerHTML;
-
-    let qtyContainer = document.createElement("div");
-    qtyContainer.classList.add("qty-container");
-
-    let minusBtn = document.createElement("button");
-    minusBtn.innerHTML = "−";
-    minusBtn.classList.add("qty-btn", "minus");
-    minusBtn.onclick = function () { changeQty(this, -1); };
-
-    let qtyInput = document.createElement("input");
-    qtyInput.value = 1;
-    qtyInput.classList.add("qty-input");
-    qtyInput.setAttribute("readonly", "true");
-
-    let plusBtn = document.createElement("button");
-    plusBtn.innerHTML = "+";
-    plusBtn.classList.add("qty-btn", "plus");
-    plusBtn.onclick = function () { changeQty(this, 1); };
-
-    qtyContainer.appendChild(minusBtn);
-    qtyContainer.appendChild(qtyInput);
-    qtyContainer.appendChild(plusBtn);
-
-    parent.replaceChild(qtyContainer, button);
-}
-
-function changeQty(button, change) {
-    let qtyContainer = button.parentElement;
-    let qtyInput = qtyContainer.querySelector(".qty-input");
-    let newValue = parseInt(qtyInput.value) + change;
-
-    if (newValue < 1) {
-        let parent = qtyContainer.parentElement;
-        parent.innerHTML = parent.dataset.originalButton;
-
-        let addBtn = parent.querySelector("button");
-        addBtn.onclick = function () { convertToQty(this); };
-    } else {
-        qtyInput.value = newValue;
-    }
-}
 
 // js for vendor registration
     let step = 0;
@@ -459,19 +324,5 @@ function changeQty(button, change) {
     });
     }
   });
-  
-  
-  $(document).ready(function(){
-    $(".owl-carousel").not(".new-cate-owl-carousel").owlCarousel({
-        loop:true,
-        margin:10,
-        dots:false,
-        nav:true,
-        navText: ['<i class="fas fa-chevron-left"></i>', '<i class="fas fa-chevron-right"></i>'],
-        responsive:{
-            0: { items: 2, margin: 8 },
-            600:{ items:3, nav:false },
-            1000:{ items:6, nav:true }
-        }
-    });
-});
+  /* Product owl carousels: init only in the block above — a second .owlCarousel() here re-inited the same
+     nodes with different options (loop:true) and caused mobile scroll/jump on taps inside product cards. */

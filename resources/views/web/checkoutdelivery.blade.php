@@ -21,12 +21,7 @@
             .swal2-backdrop-show {
                 z-index: 99999998 !important;
             }
-            /* Ensure coupon modal has lower z-index than SweetAlert */
-            .xyz-modal-overlay {
-                z-index: 9999999 !important;
-            }
-
-            /* Coupon Modal Styles - Match Home Page Design */
+            /* Coupon modal — compact (aligned with site style.css); below SweetAlert */
             .xyz-modal-overlay {
                 position: fixed;
                 top: 0;
@@ -37,111 +32,122 @@
                 display: none;
                 justify-content: center;
                 align-items: center;
-                z-index: 9999999;
+                z-index: 9999999 !important;
             }
 
             .xyz-modal {
                 background: #fff;
-                border-radius: 15px;
-                max-width: 500px;
-                width: 90%;
-                padding: 20px;
+                border-radius: 12px;
+                width: min(400px, 92vw);
+                max-width: 400px;
+                padding: 12px 14px 14px;
+                box-sizing: border-box;
                 animation: slideDown 0.3s ease-out;
                 max-height: 90vh;
                 overflow-y: auto;
+                box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
             }
 
-            .xyz-modal h5 {
-                font-size: 20px;
+            .xyz-modal-header {
+                margin-bottom: 8px;
+            }
+
+            .xyz-modal h5,
+            .xyz-modal-header h5 {
+                font-size: 1rem;
                 font-weight: 700;
-                margin-bottom: 20px;
+                margin: 0;
                 color: #000;
             }
 
-            /* Close Button */
             .xyz-close {
                 background: none;
                 border: none;
                 font-size: 24px;
+                line-height: 1;
                 cursor: pointer;
+                padding: 0;
             }
 
-            /* Coupon Row Styling - Match Home Page */
             .xyz-coupon-row {
                 background-color: #f2f7ff;
+                border: 1px solid #e6e9ef;
                 border-radius: 10px;
-                padding: 15px;
-                margin-bottom: 15px;
+                padding: 10px 12px;
+                margin-bottom: 8px;
+                max-width: 360px;
+                margin-left: auto;
+                margin-right: auto;
+                box-sizing: border-box;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
             }
 
-            .xyz-coupon-row h6 {
-                font-size: 18px;
+            .xyz-coupon-row:last-child {
+                margin-bottom: 0;
+            }
+
+            .xyz-coupon-discount {
+                margin: 0 0 4px 0;
+                font-size: 1.125rem;
                 font-weight: 700;
                 color: #000;
-                margin-bottom: 8px;
+                line-height: 1.2;
             }
 
-            .xyz-coupon-row h6 strong {
-                font-size: 20px;
-                color: #000;
-            }
-
-            .xyz-coupon-row .col-7 {
-                padding-right: 10px;
-            }
-
-            .xyz-coupon-row .col-5 {
-                padding-left: 10px;
-            }
-
-            .xyz-coupon-row div[style*="color: #3B6939"],
-            .xyz-coupon-row div[style*="color: green"] {
-                color: #3B6939 !important;
-                font-size: 13px;
-                font-weight: 500;
-                margin-bottom: 6px;
-            }
-
-            .xyz-coupon-row small {
+            .xyz-coupon-min-order {
+                color: #3B6939;
                 font-size: 12px;
+                font-weight: 500;
+                margin-bottom: 2px;
+            }
+
+            .xyz-coupon-code {
+                font-size: 11px;
                 color: #666;
                 display: block;
-                margin-bottom: 4px;
+                margin: 0;
+                line-height: 1.35;
             }
 
-            .xyz-coupon-row small b {
-                font-weight: 600;
-                color: #000;
-            }
-
-            .xyz-coupon-row .text-end {
-                text-align: right;
-            }
-
-            .xyz-coupon-row .text-end small {
-                color: #333;
-                font-weight: 500;
-                font-size: 11px;
+            .xyz-coupon-expiry,
+            .xyz-coupon-expiry-date {
+                font-size: 10px;
+                line-height: 1.3;
             }
 
             .xyz-coupon-logo {
-                height: auto;
-                max-width: 50px;
-                margin-bottom: 10px;
+                height: 28px;
+                width: auto;
+                max-width: 44px;
+                margin-bottom: 4px;
                 object-fit: contain;
             }
 
-            .apply-coupon-btn {
+            .xyz-coupon-applied-on {
+                margin-top: 8px;
+                padding-top: 6px;
+                border-top: 1px solid #e0e0e0;
+            }
+
+            .xyz-coupon-applied-line {
+                color: #333;
+                font-size: 10px;
+                line-height: 1.35;
+                display: block;
+            }
+
+            .apply-coupon-btn,
+            .xyz-coupon-apply-btn {
                 text-decoration: none !important;
                 background-color: #E94412 !important;
                 color: #fff !important;
-                font-size: 14px !important;
-                font-weight: 700 !important;
-                padding: 10px 24px !important;
+                font-size: 12px !important;
+                font-weight: 600 !important;
+                padding: 6px 16px !important;
                 border: none !important;
-                border-radius: 50px !important;
-                transition: all 0.3s ease !important;
-                box-shadow: 0 2px 8px rgba(233, 68, 18, 0.2) !important;
+                border-radius: 999px !important;
+                transition: all 0.2s ease !important;
+                box-shadow: 0 2px 6px rgba(233, 68, 18, 0.2) !important;
                 display: inline-block !important;
                 cursor: pointer !important;
                 pointer-events: auto !important;
@@ -149,24 +155,18 @@
                 position: relative !important;
             }
 
-            .apply-coupon-btn:hover {
+            .apply-coupon-btn:hover,
+            .xyz-coupon-apply-btn:hover {
                 background-color: #d63a0f !important;
-                transform: translateY(-1px) !important;
-                box-shadow: 0 4px 12px rgba(233, 68, 18, 0.4) !important;
             }
 
-            .apply-coupon-btn:active {
-                transform: translateY(0) !important;
-                box-shadow: 0 2px 6px rgba(233, 68, 18, 0.3) !important;
+            .xyz-modal-empty {
+                font-size: 13px;
+                color: #666;
+                padding: 10px 0 !important;
+                margin: 0 !important;
             }
 
-            .xyz-coupon-applied-on {
-                margin-top: 12px;
-                padding-top: 10px;
-                border-top: 1px solid #e0e0e0;
-            }
-
-            /* Modal Animation */
             @keyframes slideDown {
                 from {
                     opacity: 0;
@@ -178,113 +178,79 @@
                 }
             }
 
-            /* Mobile improvements for coupon modal */
             @media (max-width: 768px) {
                 .xyz-modal {
-                    width: 95% !important;
-                    max-width: 100% !important;
-                    padding: 16px 14px !important;
+                    width: min(360px, calc(100vw - 24px)) !important;
+                    max-width: 360px !important;
+                    padding: 10px 12px 12px !important;
                     margin: 10px !important;
                 }
 
-                .xyz-modal h5 {
-                    font-size: 18px !important;
-                    margin-bottom: 12px !important;
+                .xyz-modal-header {
+                    margin-bottom: 6px;
+                }
+
+                .xyz-modal h5,
+                .xyz-modal-header h5 {
+                    font-size: 0.95rem !important;
+                }
+
+                .xyz-close {
+                    font-size: 22px !important;
                 }
 
                 .xyz-coupon-row {
-                    padding: 14px 12px !important;
-                    margin-bottom: 12px !important;
+                    padding: 8px 10px !important;
+                    margin-bottom: 8px !important;
+                    max-width: 100%;
                 }
 
-                .xyz-coupon-row .row {
-                    margin: 0 !important;
+                .xyz-coupon-discount {
+                    font-size: 0.95rem !important;
                 }
 
-                .xyz-coupon-row .col-7,
-                .xyz-coupon-row .col-5 {
-                    padding-left: 8px !important;
-                    padding-right: 8px !important;
+                .xyz-coupon-min-order {
+                    font-size: 10px !important;
                 }
 
-                .xyz-coupon-row h6 {
-                    font-size: 18px !important;
-                    margin-bottom: 6px !important;
+                .xyz-coupon-code {
+                    font-size: 10px !important;
                 }
 
-                .xyz-coupon-row h6 strong {
-                    font-size: 20px !important;
-                }
-
-                .xyz-coupon-row div[style*="color: #3B6939"] {
-                    font-size: 12px !important;
-                }
-
-                .xyz-coupon-row small {
-                    font-size: 11px !important;
+                .xyz-coupon-expiry,
+                .xyz-coupon-expiry-date {
+                    font-size: 9px !important;
                 }
 
                 .xyz-coupon-logo {
-                    max-width: 45px !important;
-                    height: auto !important;
-                    margin-bottom: 8px !important;
+                    height: 26px !important;
+                    max-width: 40px !important;
+                    margin-bottom: 2px !important;
                 }
 
-                .apply-coupon-btn {
-                    font-size: 13px !important;
-                    padding: 10px 20px !important;
-                    border-radius: 50px !important;
+                .xyz-coupon-applied-line {
+                    font-size: 9px !important;
                 }
 
-                .apply-coupon-btn:hover {
-                    background-color: #d63a0f !important;
-                    transform: translateY(-1px) !important;
-                    box-shadow: 0 4px 12px rgba(233, 68, 18, 0.4) !important;
-                }
-
-                .xyz-coupon-applied-on {
-                    margin-top: 10px !important;
-                    padding-top: 8px !important;
-                }
-
-                .xyz-coupon-applied-on small {
-                    font-size: 10px !important;
-                    line-height: 1.5 !important;
+                .apply-coupon-btn,
+                .xyz-coupon-apply-btn {
+                    font-size: 11px !important;
+                    padding: 5px 12px !important;
                 }
             }
 
             @media (max-width: 480px) {
                 .xyz-modal {
-                    width: 98% !important;
-                    padding: 14px 12px !important;
+                    width: min(100%, calc(100vw - 16px)) !important;
+                    padding: 10px 10px 12px !important;
                 }
 
                 .xyz-coupon-row {
-                    padding: 12px 10px !important;
+                    padding: 8px 8px !important;
                 }
 
-                .xyz-coupon-row .col-7 {
-                    width: 100% !important;
-                    margin-bottom: 12px;
-                }
-
-                .xyz-coupon-row .col-5 {
-                    width: 100% !important;
-                    text-align: left !important;
-                }
-
-                .xyz-coupon-row h6 strong {
-                    font-size: 18px !important;
-                }
-
-                .xyz-coupon-logo {
-                    max-width: 40px !important;
-                }
-
-                .apply-coupon-btn {
-                    font-size: 12px !important;
-                    padding: 8px 18px !important;
-                    border-radius: 50px !important;
+                .xyz-coupon-discount {
+                    font-size: 0.9rem !important;
                 }
             }
         </style>
@@ -598,6 +564,7 @@
             </div>
         </nav>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="{{ asset('public/assets/website/JS/qty-section-loading.js') }}"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
         <!--------------- CUSTOM JAVASCRIPT START ----------------->
         {{-- <script src="{{asset('public/assets/website/JS/custom.js')}}"></script> --}}
@@ -730,6 +697,9 @@
                 // Increment Quantity
                 $(document).on('click', '.increment-btn', function () {
                     const key = $(this).data('key');
+                    if (typeof window.kwikllyQtySectionLoading === 'function') {
+                        window.kwikllyQtySectionLoading(key, true);
+                    }
                     $.post("{{ route('cart.increment') }}", {
                         _token: "{{ csrf_token() }}",
                         key: key
@@ -756,12 +726,19 @@
                             text: 'Failed to update cart. Please try again.',
                             confirmButtonColor: '#E94412'
                         });
+                    }).always(function () {
+                        if (typeof window.kwikllyQtySectionLoading === 'function') {
+                            window.kwikllyQtySectionLoading(key, false);
+                        }
                     });
                 });
 
                 // Decrement Quantity
                 $(document).on('click', '.decrement-btn', function () {
                     const key = $(this).data('key');
+                    if (typeof window.kwikllyQtySectionLoading === 'function') {
+                        window.kwikllyQtySectionLoading(key, true);
+                    }
 
                     $.post("{{ route('cart.decrement') }}", {
                         _token: "{{ csrf_token() }}",
@@ -853,6 +830,10 @@
                             text: 'Failed to update cart. Please try again.',
                             confirmButtonColor: '#E94412'
                         });
+                    }).always(function () {
+                        if (typeof window.kwikllyQtySectionLoading === 'function') {
+                            window.kwikllyQtySectionLoading(key, false);
+                        }
                     });
                 });
 

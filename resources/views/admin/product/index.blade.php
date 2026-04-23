@@ -25,9 +25,9 @@
                                     <th>Vendor Name</th>
                                     <th>Category</th>
                                     <th>Subcategory</th>
-                                    <th>Add Inventory</th>
+                                    <!-- <th>Add Inventory</th> -->
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <!-- <th>Actions</th> -->
                                 </tr>
                             </thead>
                             <tbody>
@@ -51,9 +51,9 @@
 
                                         <td>{{ $product->subcategory->sub_cat_name ?? 'N/A' }}</td>
 
-                                        <td><a href="{{ route('product.variant.create', $product->id) }}" class="btn btn-primary btn-sm" title="Edit">
+                                        <!-- <td><a href="{{ route('product.variant.create', $product->id) }}" class="btn btn-primary btn-sm" title="Edit">
                                                 <i class="fa fa-plus"></i> Add Inventory
-                                            </a></td>
+                                            </a></td> -->
 
                                         <td>
                                             @if ($product->is_active)
@@ -63,7 +63,7 @@
                                             @endif
                                         </td>
 
-                                        <td>
+                                        <!-- <td>
                                             <a href="{{ route('admin.product.edit', $product->id) }}" class="btn btn-primary btn-sm" title="Edit">
                                                 <i class="fa fa-pencil"></i>
                                             </a>
@@ -74,7 +74,7 @@
                                                     <i class="fa fa-trash"></i>
                                                 </button>
                                             </form>
-                                        </td>
+                                        </td> -->
                                     </tr>
                                 @endforeach
 

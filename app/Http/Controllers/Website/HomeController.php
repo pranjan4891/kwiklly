@@ -25,6 +25,7 @@ use App\Models\Coupon;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 use App\Services\LocationServiceability;
+use Illuminate\Support\Collection;
 
 class HomeController extends Controller
 {
@@ -37,6 +38,7 @@ class HomeController extends Controller
 
         // Initialize empty collections
         $data['trending_products'] = collect();
+        $data['top_selling_products'] = collect();
         $data['best_offers_products'] = collect();
         $data['sponsors_products'] = collect();
         $data['stores'] = collect();
@@ -61,35 +63,15 @@ class HomeController extends Controller
             }
 
             if ($vendorIds->count() > 0) {
-                    // Fetch trending products
-                    $data['trending_products'] = Product::with('variants', 'vendor')
-                        ->whereIn('vendor_id', $vendorIds)
-                        ->where('is_deleted', 0)
-                        ->where('is_active', 1)
-                        ->where('top_selling', 1)
-                        ->inStock()
-                        ->take(20)
-                        ->get();
-
-                    // Fetch best offers products
-                    $data['best_offers_products'] = Product::with('variants', 'vendor')
-                        ->whereIn('vendor_id', $vendorIds)
-                        ->where('is_deleted', 0)
-                        ->where('is_active', 1)
-                        ->where('best_offers', 1)
-                        ->inStock()
-                        ->take(20)
-                        ->get();
-
-                    // Fetch sponsored products
-                    $data['sponsors_products'] = Product::with('variants', 'vendor')
-                        ->whereIn('vendor_id', $vendorIds)
-                        ->where('is_deleted', 0)
-                        ->where('is_active', 1)
-                        ->where('spons_product', 1)
-                        ->inStock()
-                        ->take(20)
-                        ->get();
+                    $data['trending_products'] = $this->homepageTrendingProducts($vendorIds);
+                    $data['top_selling_products'] = $this->homepageTopSellingProducts($vendorIds, $data['trending_products']);
+                    $data['best_offers_products'] = $this->homepageBestOffersProducts($vendorIds);
+                    $excludeCarouselIds = $data['trending_products']->pluck('id')
+                        ->merge($data['top_selling_products']->pluck('id'))
+                        ->unique()
+                        ->filter()
+                        ->values();
+                    $data['sponsors_products'] = $this->homepageSponsorProducts($vendorIds, $excludeCarouselIds);
 
                     // Fetch stores - ensure at least one store renders the section
                     $data['stores'] = $vendors->where('is_home_request', 2)->map(function ($store) {
@@ -117,7 +99,7 @@ class HomeController extends Controller
                         ->where('is_home', '1')
                         ->get()
                         ->map(function ($category) use ($vendorIds) {
-                            $category->products = Product::with('variants', 'vendor')
+                            $category->products = Product::with(['variants.images', 'featureImage', 'vendor'])
                                 ->where('category_id', $category->id)
                                 ->where('is_deleted', 0)
                                 ->where('is_active', 1)
@@ -161,6 +143,7 @@ class HomeController extends Controller
             $footerCategoriesHtml = $this->getFooterCategoriesHtml($lat, $lng);
             return response()->json([
                 'trending_html'       => '',
+                'top_selling_html'    => '',
                 'best_offers_html'    => '',
                 'sponsors_html'       => '',
                 'stores_html'         => '',
@@ -179,33 +162,16 @@ class HomeController extends Controller
             ->orderBy('order_by', 'asc')
             ->get();
 
-        // 3. ✅ Fetch vendor products - strictly by category flags only
-        $trending_products = Product::with('variants', 'vendor')
-            ->whereIn('vendor_id', $vendorIds)
-            ->where('is_deleted', 0)
-            ->where('is_active', 1)
-            ->where('top_selling', 1)
-            ->inStock()
-            ->take(20)
-            ->get();
-
-        $best_offers_products = Product::with('variants', 'vendor')
-            ->whereIn('vendor_id', $vendorIds)
-            ->where('is_deleted', 0)
-            ->where('is_active', 1)
-            ->where('best_offers', 1)
-            ->inStock()
-            ->take(20)
-            ->get();
-
-        $sponsors_products = Product::with('variants', 'vendor')
-            ->whereIn('vendor_id', $vendorIds)
-            ->where('is_deleted', 0)
-            ->where('is_active', 1)
-            ->where('spons_product', 1)
-            ->inStock()
-            ->take(20)
-            ->get();
+        // 3. ✅ Homepage product strips (shared logic with index())
+        $trending_products = $this->homepageTrendingProducts($vendorIds);
+        $top_selling_products = $this->homepageTopSellingProducts($vendorIds, $trending_products);
+        $best_offers_products = $this->homepageBestOffersProducts($vendorIds);
+        $excludeCarouselIds = $trending_products->pluck('id')
+            ->merge($top_selling_products->pluck('id'))
+            ->unique()
+            ->filter()
+            ->values();
+        $sponsors_products = $this->homepageSponsorProducts($vendorIds, $excludeCarouselIds);
 
         $stores = $vendors->where('is_home_request',2)->map(function ($store) {
             if ($store->business_category) {
@@ -232,7 +198,7 @@ class HomeController extends Controller
             ->where('is_home', '1')
             ->get()
             ->map(function ($category) use ($vendorIds) {
-                $category->products = Product::with('variants', 'vendor')
+                $category->products = Product::with(['variants.images', 'featureImage', 'vendor'])
                     ->where('category_id', $category->id)
                     ->where('is_deleted', 0)
                     ->where('is_active', 1)
@@ -258,6 +224,10 @@ class HomeController extends Controller
         // 4. ✅ Return updated sections
         return response()->json([
             'trending_html'       => view('web.partials.trending', compact('trending_products'))->render(),
+            'top_selling_html'    => view('web.partials.trending', [
+                'trending_products' => $top_selling_products,
+                'sectionTitle' => 'Top Selling Products',
+            ])->render(),
             'best_offers_html'    => view('web.partials.best-offers', compact('best_offers_products'))->render(),
             'sponsors_html'       => view('web.partials.sponsors', compact('sponsors_products'))->render(),
             'stores_html'         => view('web.partials.stores', compact('stores'))->render(),
@@ -269,15 +239,17 @@ class HomeController extends Controller
 
     public function getProductVariants($id)
     {
-        $product = Product::with(['variants', 'featureImage'])->findOrFail($id);
+        $product = Product::with(['variants.images', 'featureImage'])->findOrFail($id);
 
-        $image = asset('public/assets/website/images/default.png');
+        $productFallbackImage = asset('public/assets/website/images/default.png');
         if ($product->featureImage && $product->featureImage->feature_image) {
-            $image = asset('public/' . $product->featureImage->feature_image);
+            $productFallbackImage = asset('public/' . $product->featureImage->feature_image);
         }
 
-        // Return variants with stock so modal can show variant-wise quantity and availability
-        $variants = $product->variants->map(function ($v) {
+        // Per variant: image = uploaded variant image if any, else product feature image
+        $variants = $product->variants->map(function ($v) use ($product, $productFallbackImage) {
+            $variantImageUrl = $v->displayImageUrlForProduct($product);
+
             return [
                 'id' => $v->id,
                 'variant_name' => $v->variant_name ?? '',
@@ -285,12 +257,13 @@ class HomeController extends Controller
                 'variant_actual_price' => $v->variant_actual_price,
                 'variant_selling_price' => $v->variant_selling_price,
                 'stock' => (int) $v->stock,
+                'image' => $variantImageUrl,
             ];
         });
 
         return response()->json([
             'product_name' => $product->title,
-            'image' => $image,
+            'image' => $productFallbackImage,
             'variants' => $variants,
         ]);
     }
@@ -341,7 +314,7 @@ class HomeController extends Controller
         $subcategories = collect();
 
         if ($selectedVendor) {
-            $products = Product::with('variants')
+            $products = Product::with(['variants.images', 'featureImage'])
                 ->where('vendor_id', $selectedVendor->id)
                 ->where('is_active', '1')
                 ->inStock()
@@ -420,7 +393,7 @@ class HomeController extends Controller
         }
 
         // ✅ Products (only in-stock)
-        $products = Product::with('variants')
+        $products = Product::with(['variants.images', 'featureImage'])
             ->where('vendor_id', $selectedVendor->id)
             ->where('is_deleted', '0')
             ->where('is_active', '1')
@@ -569,7 +542,7 @@ class HomeController extends Controller
                 ->where('is_deleted', 0)
                 ->where('is_active', 1)
                 ->whereNotNull('sub_category_id')
-                ->with('variants')
+                ->with(['variants.images', 'featureImage'])
                 ->inStock()
                 ->get();
 
@@ -690,7 +663,7 @@ class HomeController extends Controller
                 ->where('is_deleted', 0)
                 ->where('is_active', 1)
                 ->whereNotNull('sub_category_id')
-                ->with('variants')
+                ->with(['variants.images', 'featureImage'])
                 ->inStock()
                 ->get();
 
@@ -917,7 +890,7 @@ class HomeController extends Controller
             ->where('sub_category_id', $subcategory_id)
             ->where('is_deleted', 0)
             ->where('is_active', 1)
-            ->with('variants')
+            ->with(['variants.images', 'featureImage'])
             ->inStock()
             ->get();
 
@@ -983,7 +956,7 @@ class HomeController extends Controller
             ])->with('error', 'No products available in your area.');
         }
 
-        $products = Product::with(['variants', 'vendor'])
+        $products = Product::with(['variants.images', 'featureImage', 'vendor'])
             ->where('category_id', $category_id)
             ->whereIn('vendor_id', $vendorIds)
             ->where('is_deleted', '0')
@@ -1038,7 +1011,7 @@ class HomeController extends Controller
         }
 
         // ✅ Get all products for this category to filter subcategories (only in-stock)
-        $allCategoryProducts = Product::with(['variants', 'vendor'])
+        $allCategoryProducts = Product::with(['variants.images', 'featureImage', 'vendor'])
             ->where('category_id', $category_id)
             ->whereIn('vendor_id', $vendorIds)
             ->where('is_deleted', '0')
@@ -1057,6 +1030,112 @@ class HomeController extends Controller
 
         return view('web.categorywiseproduct', compact('category', 'subcategory', 'subcategories', 'products'));
     }
+
+    /**
+     * AJAX: store page subcategory — products only, URL unchanged.
+     */
+    public function ajaxExplorestoreProducts(Request $request)
+    {
+        $validated = $request->validate([
+            'vendor_id' => 'required|integer',
+            'category_id' => 'required|integer',
+            'subcategory_id' => 'required|integer',
+            'latitude' => 'nullable',
+            'longitude' => 'nullable',
+        ]);
+
+        $lat = $request->input('latitude');
+        $lng = $request->input('longitude');
+
+        if ($lat && $lng) {
+            $deliveryVendorIds = $this->getVendorIdsByDeliveryLocation($lat, $lng);
+            if ($deliveryVendorIds->isEmpty() || ! $deliveryVendorIds->contains((int) $validated['vendor_id'])) {
+                return response()->json([
+                    'success' => false,
+                    'html' => '',
+                    'message' => 'Store not available in your location.',
+                ]);
+            }
+        }
+
+        $vendor_id = (int) $validated['vendor_id'];
+        $category_id = (int) $validated['category_id'];
+        $subcategory_id = (int) $validated['subcategory_id'];
+
+        $products = Product::where('vendor_id', $vendor_id)
+            ->where('category_id', $category_id)
+            ->where('sub_category_id', $subcategory_id)
+            ->where('is_deleted', 0)
+            ->where('is_active', 1)
+            ->with(['variants.images', 'featureImage', 'vendor'])
+            ->inStock()
+            ->get();
+
+        $html = view('web.partials.explorestore_products_grid', compact('products'))->render();
+
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'active_subcategory_id' => $subcategory_id,
+        ]);
+    }
+
+    /**
+     * AJAX: category-wise page subcategory filter — products only, URL unchanged.
+     */
+    public function ajaxCategorywiseProducts(Request $request)
+    {
+        $validated = $request->validate([
+            'category_id' => 'required|integer',
+            'subcategory_id' => 'required|integer',
+            'latitude' => 'nullable',
+            'longitude' => 'nullable',
+        ]);
+
+        $lat = $request->input('latitude');
+        $lng = $request->input('longitude');
+
+        if (! $lat || ! $lng) {
+            return response()->json([
+                'success' => false,
+                'html' => '',
+                'message' => 'Please enable location.',
+            ]);
+        }
+
+        $vendorIds = $this->getVendorIdsByDeliveryLocation($lat, $lng);
+        if ($vendorIds->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'html' => '',
+                'message' => 'No delivery in your area.',
+            ]);
+        }
+
+        $category_id = (int) $validated['category_id'];
+        $subcategory_id = (int) $validated['subcategory_id'];
+
+        $allCategoryProducts = Product::with(['variants.images', 'featureImage', 'vendor'])
+            ->where('category_id', $category_id)
+            ->whereIn('vendor_id', $vendorIds)
+            ->where('is_deleted', '0')
+            ->where('is_active', '1')
+            ->inStock()
+            ->get();
+
+        $products = $allCategoryProducts->filter(function ($product) use ($subcategory_id) {
+            return (int) $product->sub_category_id === $subcategory_id;
+        })->values();
+
+        $html = view('web.partials.categorywise_products_grid', compact('products'))->render();
+
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'active_subcategory_id' => $subcategory_id,
+        ]);
+    }
+
     public function getVendorProgress($vendor_id)
     {
         $vendor = VendorAdmin::findOrFail($vendor_id);
@@ -1131,7 +1210,7 @@ class HomeController extends Controller
             ->first();
 
         // Get similar products from same subcategory - only from vendors in user's area (in-stock only)
-        $similarProducts = Product::with(['featureImage', 'variants'])
+        $similarProducts = Product::with(['featureImage', 'variants.images'])
             ->where('sub_category_id', $product->sub_category_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', 1)
@@ -1145,7 +1224,7 @@ class HomeController extends Controller
             ->get();
 
         // Get other products by same vendor - in-stock only
-        $otherVendorProducts = Product::with(['featureImage', 'variants'])
+        $otherVendorProducts = Product::with(['featureImage', 'variants.images'])
             ->where('vendor_id', $product->vendor_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', 1)
@@ -1256,6 +1335,131 @@ class HomeController extends Controller
         }
         return $inside;
     }
+
+    private function newHomepageProductQuery(Collection $vendorIds): \Illuminate\Database\Eloquent\Builder
+    {
+        return Product::with(['variants.images', 'featureImage', 'vendor'])
+            ->whereIn('vendor_id', $vendorIds)
+            ->where('is_deleted', 0)
+            ->where('is_active', 1)
+            ->inStock();
+    }
+
+    /**
+     * "Trending" = recently updated in-stock products in the user’s delivery zone.
+     */
+    private function homepageTrendingProducts(Collection $vendorIds): Collection
+    {
+        if ($vendorIds->isEmpty()) {
+            return collect();
+        }
+
+        return $this->newHomepageProductQuery($vendorIds)
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->take(20)
+            ->get();
+    }
+
+    /**
+     * Admin-flagged top sellers; if none, show latest in-zone products so the block is not empty.
+     * Avoids repeating the same fallback items as the Trending strip when possible.
+     */
+    private function homepageTopSellingProducts(Collection $vendorIds, ?Collection $trendingProducts = null): Collection
+    {
+        if ($vendorIds->isEmpty()) {
+            return collect();
+        }
+
+        $flagged = $this->newHomepageProductQuery($vendorIds)
+            ->where(function ($w) {
+                $w->where('top_selling', 1)
+                    ->orWhere('top_selling', '1');
+            })
+            ->take(20)
+            ->get();
+
+        if ($flagged->isNotEmpty()) {
+            return $flagged;
+        }
+
+        $query = $this->newHomepageProductQuery($vendorIds)->orderByDesc('id');
+        if ($trendingProducts instanceof Collection && $trendingProducts->isNotEmpty()) {
+            $query->whereNotIn('id', $trendingProducts->pluck('id')->filter()->values()->all());
+        }
+
+        $fallback = $query->take(20)->get();
+
+        return $fallback->isNotEmpty()
+            ? $fallback
+            : $this->newHomepageProductQuery($vendorIds)->orderByDesc('id')->take(20)->get();
+    }
+
+    /**
+     * Best offers flag, or any in-zone product with a discount on at least one variant.
+     */
+    private function homepageBestOffersProducts(Collection $vendorIds): Collection
+    {
+        if ($vendorIds->isEmpty()) {
+            return collect();
+        }
+
+        $flagged = $this->newHomepageProductQuery($vendorIds)
+            ->where(function ($w) {
+                $w->where('best_offers', 1)
+                    ->orWhere('best_offers', '1');
+            })
+            ->take(20)
+            ->get();
+
+        if ($flagged->isNotEmpty()) {
+            return $flagged;
+        }
+
+        return $this->newHomepageProductQuery($vendorIds)
+            ->whereHas('variants', function ($v) {
+                $v->whereColumn('variant_selling_price', '<', 'variant_actual_price');
+            })
+            ->orderByDesc('id')
+            ->take(20)
+            ->get();
+    }
+
+    /**
+     * Sponsored flag, or latest in-zone products if no sponsored items (keeps section visible).
+     */
+    private function homepageSponsorProducts(Collection $vendorIds, ?Collection $excludeProductIds = null): Collection
+    {
+        if ($vendorIds->isEmpty()) {
+            return collect();
+        }
+
+        $flagged = $this->newHomepageProductQuery($vendorIds)
+            ->where(function ($w) {
+                $w->where('spons_product', 1)
+                    ->orWhere('spons_product', '1');
+            })
+            ->take(20)
+            ->get();
+
+        if ($flagged->isNotEmpty()) {
+            return $flagged;
+        }
+
+        $exclude = $excludeProductIds instanceof Collection ? $excludeProductIds->filter()->values()->all() : [];
+
+        $query = $this->newHomepageProductQuery($vendorIds)->orderByDesc('id');
+        if (count($exclude) > 0) {
+            $query->whereNotIn('id', $exclude);
+        }
+
+        $fallback = $query->take(20)->get();
+
+        return $fallback->isNotEmpty()
+            ? $fallback
+            : $this->newHomepageProductQuery($vendorIds)->orderByDesc('id')->take(20)->get();
+    }
+
     /**
      * Sirf wahi categories jo vendor delivery location ke andar products rakhte hain.
      * getVendorIdsByDeliveryLocation se vendor IDs aati hain, phir unhi vendors ke products wali categories.

@@ -62,6 +62,8 @@ use PhpOffice\PhpSpreadsheet\Calculation\TextData\Search;
         Route::get('/productdetails/{slug}', [HomeController::class, 'productdetails'])->name('productdetails');
         Route::get('/explorestore/{vendor_id}/{cat_id}', [HomeController::class, 'explorestore'])->name('explorestore');
         Route::get('/explorestore/{vendor_id}/{category_id}/{subcategory_id}', [HomeController::class, 'subcategoryProducts'])->name('subcategory.products');
+        Route::post('/ajax/explorestore-products', [HomeController::class, 'ajaxExplorestoreProducts'])->name('ajax.explorestore.products');
+        Route::post('/ajax/categorywise-products', [HomeController::class, 'ajaxCategorywiseProducts'])->name('ajax.categorywise.products');
         Route::get('/product/{id}/variants', function ($id) {
             $product = Product::with('variants')->findOrFail($id);
             return response()->json($product->variants);

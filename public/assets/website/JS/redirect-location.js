@@ -5,6 +5,10 @@
 
 // --- Redirect helper ---
 function redirectWithLocation(baseUrl) {
+    if (!baseUrl || typeof baseUrl !== 'string') return false;
+    var u = baseUrl.trim().toLowerCase();
+    if (u.indexOf('javascript:') === 0) return false;
+
     let savedLocation = typeof getPreferredSavedLocationRaw === "function"
         ? getPreferredSavedLocationRaw()
         : localStorage.getItem("userLocation");

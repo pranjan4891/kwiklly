@@ -46,6 +46,27 @@
         <script type="text/javascript" src="{{ asset('public/assets/vendor/js/plugins/moment.min.js') }}"></script>
         <script type="text/javascript" src="{{ asset('public/assets/vendor/js/plugins/daterangepicker/daterangepicker.js') }}"></script>
         <script type="text/javascript" src="{{ asset('public/assets/vendor/js/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+        
+        <script>
+            $(document).ready(function() {
+                var tableOptions = {
+                    "paging": true,
+                    "lengthChange": true,
+                    "searching": true,
+                    "ordering": true,
+                    "info": true,
+                    "autoWidth": false,
+                    "responsive": true,
+                    "destroy": true
+                };
+                if($('table.datatable').length > 0) {
+                    $('table.datatable').DataTable(tableOptions);
+                }
+                if($('table#datatable').length > 0) {
+                    $('table#datatable').DataTable(tableOptions);
+                }
+            });
+        </script>
 
         <script type="text/javascript" src="{{ asset('public/assets/vendor/js/plugins/bootstrap/bootstrap-datepicker.js') }}"></script>
         <script type="text/javascript" src="{{ asset('public/assets/vendor/js/plugins/bootstrap/bootstrap-timepicker.min.js') }}"></script>

@@ -2,9 +2,18 @@
     @if ($categorywiseproducts && count($categorywiseproducts) > 0)
         @foreach ($categorywiseproducts as $categoryData)
             @if ($categoryData['products']->count() > 0)
-            <div class="container mt-4">
-                {{-- 🔹 Category Title --}}
-                <h4 class="pb-3 pt-4 headingclass">{{ ucfirst(strtolower($categoryData['name'])) }}</h4>
+            <div class="container mt-1 mt-md-2">
+                {{-- Category title row: mobile = View All on same line (right); desktop keeps View All below sliders --}}
+                <div class="d-flex justify-content-between align-items-center gap-2 pt-4 pb-3 category-products-heading-row">
+                    <h4 class="headingclass mb-0 text-truncate flex-grow-1 min-w-0">{{ ucfirst(strtolower($categoryData['name'])) }}</h4>
+                    @if ($categoryData['products']->count() > 0)
+                        <a href="{{ route('allcategorywiseproduct', ['category_id' => $categoryData['products']->first()->category_id]) }}"
+                           class="view-all-btn view-all-btn--inline-header d-md-none flex-shrink-0 text-decoration-none"
+                           onclick="return redirectWithLocation(this.href)">
+                            View All <i class="fa fa-angles-right ms-2" aria-hidden="true"></i>
+                        </a>
+                    @endif
+                </div>
 
                 {{-- 🔹 First Carousel (first 8 products) --}}
                 <div class="owl-carousel owl-theme mb-4">
@@ -22,12 +31,20 @@
                                         <span class="discount-label">{{ (int) round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
                                     @endif
 
-                                    {{-- 🔹 Product Image --}}
-                                    <a href="{{ $product->is_physical ? route('productdetails', $product->slug) : 'javascript:void(0);' }}" onclick="return redirectWithLocation(this.href)">
-                                        <img src="{{ asset('public/' . optional($product->featureImage)->feature_image) }}"
-                                             class="product-image"
-                                             alt="{{ $product->title }}">
-                                    </a>
+                                    {{-- 🔹 Product Image — redirectWithLocation only when real product URL (not javascript:void) --}}
+                                    @if ($product->is_physical)
+                                        <a href="{{ route('productdetails', $product->slug) }}" onclick="return redirectWithLocation(this.href)">
+                                            <img src="{{ $defaultVariant ? $defaultVariant->displayImageUrlForProduct($product) : asset('public/assets/website/images/default.png') }}"
+                                                 class="product-image"
+                                                 alt="{{ $product->title }}">
+                                        </a>
+                                    @else
+                                        <div class="product-image-wrap">
+                                            <img src="{{ $defaultVariant ? $defaultVariant->displayImageUrlForProduct($product) : asset('public/assets/website/images/default.png') }}"
+                                                 class="product-image"
+                                                 alt="{{ $product->title }}">
+                                        </div>
+                                    @endif
 
                                     {{-- 🔹 Product Title --}}
                                     <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
@@ -81,8 +98,8 @@
 
                                             @if ($isOpen)
                                                 @if ($hasMultipleVariants)
-                                                    <button class="add-btn d-flex position-relative"
-                                                            onclick="openPopup({{ $product->id }})">
+                                                    <button type="button" class="add-btn d-flex position-relative"
+                                                            onclick="openPopup({{ $product->id }}, event)">
                                                         Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
                                                         <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
                                                     </button>
@@ -134,11 +151,11 @@
                     </div>
                 @endif
 
-                {{-- 🔹 View All --}}
+                {{-- View All below section (tablet/desktop only; mobile uses header row link) --}}
                 @if ($categoryData['products']->count() > 0)
-                    <div class="text-center mt-5">
+                    <div class="text-center mt-1 d-none d-md-block">
                         <a href="{{ route('allcategorywiseproduct', ['category_id' => $categoryData['products']->first()->category_id]) }}"
-                           class="view-all-btn mt-3" onclick="return redirectWithLocation(this.href)">
+                           class="view-all-btn" onclick="return redirectWithLocation(this.href)">
                             View All <i class="fa fa-angles-down ms-2"></i>
                         </a>
                     </div>
