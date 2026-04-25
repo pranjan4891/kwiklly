@@ -136,6 +136,73 @@
                     </div>
                 </div>
 
+                {{-- Store Time Management --}}
+                <h5 class="text-primary">Store Time Management</h5>
+                @php
+                    $days = [];
+                    for ($i = 0; $i < 7; $i++) {
+                        $days[$i] = jddayofweek($i, 1); // Monday, Tuesday, etc.
+                    }
+                @endphp
+
+                @foreach ($days as $index => $day)
+                    @php
+                        // Find saved data for this day by matching 'day_name'
+                        $dayData = collect($storetime)->firstWhere('day_name', $day) ?? null;
+                    @endphp
+
+                    <div class="form-group border p-3 mb-2">
+                        <label><strong>{{ $day }}</strong></label>
+
+                        {{-- Hidden day name --}}
+                        <input type="hidden" name="day_name_{{ $index + 1 }}" value="{{ $day }}">
+
+                        {{-- Hidden day_id (if exists in DB) --}}
+                        @if (!empty($dayData['day_id']))
+                            <input type="hidden" name="day_id_{{ $index + 1 }}" value="{{ $dayData['day_id'] }}">
+                        @endif
+
+                        {{-- Open/Close Radio --}}
+                        <div class="radio mb-2">
+                            <label class="me-3">
+                                <input type="radio" name="day_oc_{{ $index + 1 }}" value="1"
+                                    {{ old("day_oc_" . ($index + 1), $dayData['status'] ?? '') == 1 ? 'checked' : '' }} required>
+                                Open
+                            </label>
+                            <label>
+                                <input type="radio" name="day_oc_{{ $index + 1 }}" value="0"
+                                    {{ old("day_oc_" . ($index + 1), $dayData['status'] ?? '') == 0 ? 'checked' : '' }} required>
+                                Close
+                            </label>
+                        </div>
+
+                        {{-- Open Time --}}
+                        <label for="open_time_{{ $index + 1 }}">Open Time</label>
+                        <select name="open_time_{{ $index + 1 }}" class="form-control mb-2">
+                            <option value="">Select Open Time Slot</option>
+                            @foreach ($timeSlots as $slot)
+                                <option value="{{ $slot->slot_time }}"
+                                    {{ old("open_time_" . ($index + 1), $dayData['startTime'] ?? '') == $slot->slot_time ? 'selected' : '' }}>
+                                    {{ $slot->slot_time }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        {{-- Closed Time --}}
+                        <label for="closed_time_{{ $index + 1 }}">Closed Time</label>
+                        <select name="closed_time_{{ $index + 1 }}" class="form-control">
+                            <option value="">Select Store Closed Time</option>
+                            @foreach ($timeSlots as $slot)
+                                <option value="{{ $slot->slot_time }}"
+                                    {{ old("closed_time_" . ($index + 1), $dayData['endTime'] ?? '') == $slot->slot_time ? 'selected' : '' }}>
+                                    {{ $slot->slot_time }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endforeach
+
+
                 {{-- Save Button --}}
                 <div class="text-center" style="margin: 10px 0; padding: 10px 0;">
                     <button type="submit" class="btn btn-success px-4">Update Profile</button>

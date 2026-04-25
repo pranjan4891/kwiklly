@@ -464,9 +464,9 @@
             @endphp
             <!-- Share and Stock (dynamic per variant) -->
             <div class="d-flex justify-content-between mt-4 mb-2">
-               <div class="prodetailheading">
-                  <h6 class="mt-1 product-detail-net-qty">{{$product->sub_title}}</h6>
-               </div>
+               <!--<div class="prodetailheading">-->
+               <!--   <h6 class="mt-1 product-detail-net-qty">{{$product->sub_title}}</h6>-->
+               <!--</div>-->
                <div>
                   <p class="product-detail-availability">Availability : {{ $firstVariantForDisplay && $firstVariantForDisplay->stock > 0 ? 'In Stock' : 'Out of Stock' }}</p>
                </div>

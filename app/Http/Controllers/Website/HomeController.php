@@ -1281,7 +1281,34 @@ class HomeController extends Controller
         return $vendorIds;
     }
 
-   
+    // Master location fallback - commented, ab sirf delivery location use ho raha hai
+    // private function getVendorIdsByMasterLocation($lat, $lng)
+    // {
+    //     if (!$lat || !$lng) {
+    //         return collect();
+    //     }
+    //     $insideLocation = MasterLocation::where('is_active', 1)
+    //         ->where('is_deleted', 0)
+    //         ->get()
+    //         ->first(function ($location) use ($lat, $lng) {
+    //             return $this->pointInPolygon($lat, $lng, $location->lat_long);
+    //         });
+    //     if (!$insideLocation) {
+    //         return collect();
+    //     }
+    //     return VendorAdmin::where('status', '1')
+    //         ->where('is_active', '1')
+    //         ->whereNull('deleted_at')
+    //         ->whereNotNull('latitude')
+    //         ->whereNotNull('longitude')
+    //         ->get()
+    //         ->filter(function ($vendor) use ($insideLocation) {
+    //             return $this->pointInPolygon($vendor->latitude, $vendor->longitude, $insideLocation->lat_long);
+    //         })
+    //         ->pluck('id')
+    //         ->values();
+    // }
+
     /**
      * Check if a point lies inside a polygon
      */
@@ -1595,8 +1622,7 @@ class HomeController extends Controller
         return view('web.pages.policy', compact('policy'));
     }
 
-    public function sendEnquiry(Request $request)
-    {
+    public function sendEnquiry(Request $request){
 
         $request->validate([
             'name' => 'required',
