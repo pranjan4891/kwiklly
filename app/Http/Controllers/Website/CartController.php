@@ -18,6 +18,22 @@ use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
+    private function buildVariantMetaText($variant): string
+    {
+        if (!$variant) return '';
+        $a = $variant->attributes ?? null;
+        if (is_string($a)) {
+            $a = json_decode($a, true);
+        }
+        if (!is_array($a) || empty($a)) {
+            return '';
+        }
+        $vals = array_values(array_filter($a, function ($v) {
+            return $v !== null && $v !== '';
+        }));
+        return implode(', ', array_map('strval', $vals));
+    }
+
     public function addToCart(Request $request)
     {
         $request->validate([
@@ -92,6 +108,10 @@ class CartController extends Controller
                 $cartTitle = $variant->product->title;
                 if ($variant->variant_name) {
                     $cartTitle .= ' - ' . $variant->variant_name;
+                    $meta = $this->buildVariantMetaText($variant);
+                    if ($meta) {
+                        $cartTitle .= ' (' . $meta . ')';
+                    }
                 }
                 $cart[$key] = [
                     "product_id" => $request->product_id,
@@ -415,6 +435,10 @@ class CartController extends Controller
                 $itemTitle = $item->variant->product->title;
                 if ($item->variant->variant_name) {
                     $itemTitle .= ' - ' . $item->variant->variant_name;
+                    $meta = $this->buildVariantMetaText($item->variant);
+                    if ($meta) {
+                        $itemTitle .= ' (' . $meta . ')';
+                    }
                 }
                 $groupedCart[$businessName][$key] = [
                     "product_id"     => $item->product_id,
@@ -596,7 +620,7 @@ class CartController extends Controller
 
         // Strictly filter by vendor_id - ensure only this specific vendor's coupons are returned
         $coupons = Coupon::where("created_by_id", "=", $vendorId)
-            ->where("created_by_type", "=", "vendor")
+            ->whereIn("created_by_type", ["vendor", "admin", "branch", "branch_admin"])
             ->where("is_active", "=", 1)
             ->where("is_deleted", "=", 0)
             ->where(function($query) {
@@ -645,7 +669,7 @@ class CartController extends Controller
 
         // Strictly filter by vendor_id - ensure only this specific vendor's coupons are returned
         $coupons = Coupon::where("created_by_id", "=", $vendorId)
-            ->where("created_by_type", "=", "vendor")
+            ->whereIn("created_by_type", ["vendor", "admin", "branch", "branch_admin"])
             ->where("is_active", "=", 1)
             ->where("is_deleted", "=", 0)
             ->where(function($query) {

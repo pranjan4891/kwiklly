@@ -6,7 +6,7 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 }
 .extracartmargin {
-    margin-top: 120px;
+    margin-top: 90px;
 }
 
 .qty-container {
@@ -73,7 +73,7 @@
 .step-box2 {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     flex-wrap: wrap;
 }
 
@@ -107,8 +107,8 @@
     border: 1px solid #ddd;
     border-radius: 8px;
     background-color: white;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
 .delivery-header {
@@ -150,8 +150,8 @@
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 6px;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
 .confirm-btn,
@@ -319,8 +319,7 @@
 .ordersummary-box {
     background: #fff;
     border-radius: 10px;
-    padding: 20px;
-    font-family: Arial, sans-serif;
+    padding: 15px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     border: 1px solid #FFDBD1;
     transition: all 0.3s ease;
@@ -339,7 +338,7 @@
 .ordersummary-row {
     display: flex;
     justify-content: space-between;
-    padding: 10px 0;
+    padding: 8px 0;
     font-size: 14px;
     border-bottom: 1px solid #eee;
 }
@@ -636,7 +635,7 @@
 
 @media (max-width: 768px) {
     .extracartmargin {
-        margin-top: 90px;
+        margin-top: 80px;
     }
     .positionoficon1{
         position: absolute; 
@@ -1605,7 +1604,6 @@ li:has(span:contains("Wallet Discount")),
     color: #333;
     font-weight: 500;
     margin: 0;
-    font-family: Arial, sans-serif;
 }
 
 .delivery-card .company {
@@ -1615,7 +1613,6 @@ li:has(span:contains("Wallet Discount")),
     align-items: center;
     gap: 0;
     letter-spacing: 1px;
-    font-family: Arial, sans-serif;
     white-space: nowrap;
 }
 

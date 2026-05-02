@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="{{ asset('public/assets/website/CSS/checkoutdelivery.css')}}">
         <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
         <style>
@@ -180,37 +181,44 @@
 
             @media (max-width: 768px) {
                 .xyz-modal {
-                    width: min(360px, calc(100vw - 24px)) !important;
-                    max-width: 360px !important;
-                    padding: 10px 12px 12px !important;
-                    margin: 10px !important;
+                    width: min(400px, calc(100vw - 20px)) !important;
+                    max-width: 400px !important;
+                    padding: 12px 14px 14px !important;
+                    margin: 10px auto !important;
                 }
 
                 .xyz-modal-header {
-                    margin-bottom: 6px;
+                    margin-bottom: 8px;
                 }
 
                 .xyz-modal h5,
                 .xyz-modal-header h5 {
-                    font-size: 0.95rem !important;
+                    font-size: 1rem !important;
                 }
 
                 .xyz-close {
-                    font-size: 22px !important;
+                    font-size: 24px !important;
                 }
 
                 .xyz-coupon-row {
-                    padding: 8px 10px !important;
-                    margin-bottom: 8px !important;
-                    max-width: 100%;
+                    padding: 10px 12px !important;
+                    margin-bottom: 10px !important;
+                    max-width: 100% !important;
+                }
+
+                .xyz-coupon-row-inner {
+                    flex-wrap: nowrap !important;
+                    align-items: center !important;
                 }
 
                 .xyz-coupon-discount {
-                    font-size: 0.95rem !important;
+                    font-size: 1.05rem !important;
+                    margin-bottom: 2px !important;
                 }
 
                 .xyz-coupon-min-order {
-                    font-size: 10px !important;
+                    font-size: 11px !important;
+                    margin-bottom: 2px !important;
                 }
 
                 .xyz-coupon-code {
@@ -223,9 +231,9 @@
                 }
 
                 .xyz-coupon-logo {
-                    height: 26px !important;
-                    max-width: 40px !important;
-                    margin-bottom: 2px !important;
+                    height: 24px !important;
+                    max-width: 38px !important;
+                    margin-bottom: 4px !important;
                 }
 
                 .xyz-coupon-applied-line {
@@ -235,23 +243,97 @@
                 .apply-coupon-btn,
                 .xyz-coupon-apply-btn {
                     font-size: 11px !important;
-                    padding: 5px 12px !important;
+                    padding: 5px 14px !important;
+                    margin-top: 4px !important;
                 }
             }
 
             @media (max-width: 480px) {
                 .xyz-modal {
-                    width: min(100%, calc(100vw - 16px)) !important;
+                    width: calc(100vw - 16px) !important;
                     padding: 10px 10px 12px !important;
                 }
 
                 .xyz-coupon-row {
-                    padding: 8px 8px !important;
+                    padding: 8px 10px !important;
                 }
 
                 .xyz-coupon-discount {
-                    font-size: 0.9rem !important;
+                    font-size: 0.95rem !important;
                 }
+                
+                .xyz-coupon-row .col-7 {
+                    width: 65% !important;
+                }
+                .xyz-coupon-row .col-5 {
+                    width: 35% !important;
+                }
+            }
+
+            /* Cart item layout fix */
+            .cart-item {
+                flex-wrap: nowrap !important;
+                gap: 12px;
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+            }
+            .cart-item .totalimg {
+                flex: 1 1 auto;
+                min-width: 0;
+                display: flex;
+                align-items: center;
+            }
+            .cart-item .totalimg .mx-3 {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            .cart-item .totalimg p {
+                white-space: normal;
+                word-wrap: break-word;
+                overflow-wrap: anywhere;
+                line-height: 1.3;
+                font-size: 0.9rem;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            .cart-item .sidecartbutton {
+                flex: 0 0 auto;
+                width: auto !important;
+            }
+            .qty-container {
+                display: flex;
+                align-items: center;
+                background: #fff;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                overflow: hidden;
+                height: 28px;
+            }
+            .qty-btn {
+                background: #E94412 !important;
+                color: #fff !important;
+                border: none !important;
+                width: 28px !important;
+                height: 28px !important;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 0 !important;
+            }
+            .qty-input {
+                width: 32px !important;
+                height: 28px !important;
+                border: none !important;
+                text-align: center !important;
+                font-size: 14px !important;
+                padding: 0 !important;
+                background: #f8f9fa !important;
+                color: #000 !important;
             }
         </style>
 
@@ -286,10 +368,10 @@
                     </div> -->
                 </div>
                 </div>
-                <hr style="border: 1px solid #D8C2BC;" class="my-3">
+                <hr style="border: 1px solid #D8C2BC;" class="my-2">
 
                 <!-- LEFT SIDE: CART ITEMS, DELIVERY OPTIONS, COUPONS, BILL SUMMARY -->
-                <div class="col-12 col-md-7 p-3 main-content-box">
+                <div class="col-12 col-md-7 px-3 py-2 main-content-box">
                     {{-- Global Cook Progress (removed, now per vendor) --}}
                     <div class="cartItemsWrapper" id="cartItemsWrapper">
                         @foreach($groupedCart as $vendorKey => $vendorData)
@@ -313,14 +395,14 @@
                             @endphp
 
                             @if($businessId > 0)
-                                <div class="vendor-section mb-4" id="vendor-{{ Str::slug($vendorKey) }}" data-vendor-id="{{ $businessId }}">
+                                <div class="vendor-section mb-3" id="vendor-{{ Str::slug($vendorKey) }}" data-vendor-id="{{ $businessId }}">
                             @else
-                                <div class="vendor-section mb-4" id="vendor-{{ Str::slug($vendorKey) }}" data-vendor-id="0">
+                                <div class="vendor-section mb-3" id="vendor-{{ Str::slug($vendorKey) }}" data-vendor-id="0">
                             @endif
 
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <div class="gotostore mx-4">
-                                        <h6 class="mb-0 fw-semibold">{{ $vendorKey }}</h6>
+                                    <div class="gotostore mx-3">
+                                        <h6 class="mb-0 fw-semibold"><span class="vendor-sidebar-name">{{ $vendorKey }}</span></h6>
                                         <button class="toggle-cart-items-btn" data-vendor="{{ Str::slug($vendorKey) }}">
                                             Hide Items <i class="fa fa-chevron-up"></i>
                                         </button>
@@ -333,11 +415,11 @@
                                 <div id="cartItems-{{ Str::slug($vendorKey) }}">
                                     {{-- Loop and show items --}}
                                     @foreach($vendorData['items'] as $key => $item)
-                                    <div class="cart-item d-flex align-items-center justify-content-between border-bottom py-2 p-3">
-                                        <div class="d-flex align-items-center totalimg">
+                                    <div class="cart-item d-flex align-items-center justify-content-between border-bottom py-2">
+                                        <div class="totalimg">
                                             <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}" style="width:50px;">
                                             <div class="mx-3">
-                                                <p class="mb-0">{{ $item['title'] }}</p>
+                                                <p class="mb-0 fw-medium">{{ $item['title'] }}</p>
                                                 <small class="text-success">
                                                     ₹{{ $item['price'] }}
                                                     @if($item['original_price'] > $item['price'])
@@ -346,17 +428,19 @@
                                                 </small>
                                             </div>
                                         </div>
-                                        <div class="input-group input-group-sm sidecartbutton" style="width: 90px;">
-                                            <button class="btn btn-danger decrement-btn" data-key="{{ $key }}">-</button>
-                                            <input type="text" class="form-control text-center quantity-input" value="{{ $item['quantity'] }}" disabled>
-                                            <button class="btn btn-danger increment-btn" data-key="{{ $key }}">+</button>
+                                        <div class="sidecartbutton">
+                                            <div class="qty-container">
+                                                <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
+                                                <input type="text" class="qty-input quantity-input" value="{{ $item['quantity'] }}" readonly>
+                                                <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
+                                            </div>
                                         </div>
                                     </div>
                                     @endforeach
                                 </div>
 
                                 {{-- Rest of your vendor section content --}}
-                                <div class="my-3 p-3" id="progress-section-{{ $businessId }}" style="display: none;">
+                                <div class="my-2 p-2" id="progress-section-{{ $businessId }}" style="display: none;">
                                     <div class="xyz-info-box">
                                         <!--- Cook Progress (Conditional) --->
                                         <div id="cook-progress-section-{{ $businessId }}" style="display: none;">
@@ -399,7 +483,7 @@
                                     $vendorHasCoupons = false;
                                     if (isset($vendorData['business_id']) && $vendorData['business_id'] > 0) {
                                         $vendorCouponsCheck = \App\Models\Coupon::where('created_by_id', $vendorData['business_id'])
-                                            ->where('created_by_type', 'vendor')
+                                            ->whereIn('created_by_type', ['vendor', 'admin', 'branch', 'branch_admin'])
                                             ->where('is_active', 1)
                                             ->where('is_deleted', 0)
                                             ->exists();
@@ -462,14 +546,14 @@
                                     <button class="btn btn-outline-success btn-sm">Use ₹5</button>
                                 </div>
 
-                                <div class="d-flex align-items-center p-3">
+                                <div class="d-flex align-items-center p-2">
                                     <h6 class="fw-bold mb-0">Bill Summary</h6>
                                     <button class="toggle-bill-summary-btn btn btn-sm ms-2" data-vendor="{{ Str::slug($vendorKey) }}">
                                         <i class="fa fa-chevron-down"></i>
                                     </button>
                                 </div>
 
-                                <div class="pt-2 mt-2 p-3 d-none" id="billSummary-{{ Str::slug($vendorKey) }}">
+                                <div class="pt-1 mt-1 px-3 py-2 d-none" id="billSummary-{{ Str::slug($vendorKey) }}">
                                     <ul class="list-unstyled small">
                                         <li class="d-flex justify-content-between">
                                             <span>Item charge</span><span>₹380 <s class="text-muted">₹332</s></span>
@@ -494,7 +578,7 @@
                                         </li>
                                     </ul>
                                 </div>
-                                <hr class="vendor-divider my-4" style="border: 1px solid #e0e0e0; margin: 20px 0;">
+                                <hr class="vendor-divider my-2" style="border: 1px solid #e0e0e0; margin: 10px 0;">
                             </div>
                             @endif
                             @endforeach
@@ -1420,7 +1504,7 @@
                             $qtyInput.val(item.quantity);
                         } else {
                             // Fallback: find by parent container
-                            const $container = $(`.increment-btn[data-key="${key}"], .decrement-btn[data-key="${key}"]`).closest('.input-group');
+                            const $container = $(`.increment-btn[data-key="${key}"], .decrement-btn[data-key="${key}"]`).closest('.qty-container');
                             const $fallbackInput = $container.find('.quantity-input');
                             if ($fallbackInput.length) {
                                 $fallbackInput.val(item.quantity);
@@ -1661,10 +1745,10 @@
                         const vendorId = items[firstKey]?.business_id;
 
                         html += `
-                            <div class="vendor-section my-4 rounded p-3" data-vendor-id="${vendorId}">
+                            <div class="vendor-section mb-3 rounded py-2 px-3" data-vendor-id="${vendorId}">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="mb-0 fw-semibold">${businessName}</h6>
+                                        <h6 class="mb-0 fw-semibold"><span class="vendor-sidebar-name">${businessName}</span></h6>
                                         <button class="toggle-cart-btn btn btn-sm text-primary" data-vendor="${vendorSlug}">
                                             Hide Items <i class="fa fa-chevron-down"></i>
                                         </button>
@@ -1686,18 +1770,20 @@
                             totalOriginal += item.original_price * item.quantity;
                             html += `
                                 <div class="cart-item d-flex align-items-center justify-content-between border-bottom py-2">
-                                    <div class="d-flex align-items-center totalimg">
+                                    <div class="totalimg">
                                         <img src="${item.image}" alt="${item.title}" width="50">
                                         <div class="mx-3">
-                                            <p class="mb-0">${item.title}</p>
+                                            <p class="mb-0 fw-medium">${item.title}</p>
                                             <small class="text-success">₹${item.price}</small>
                                             ${item.price < item.original_price ? `<s class="text-muted">₹${item.original_price}</s>` : ''}
                                         </div>
                                     </div>
-                                    <div class="input-group input-group-sm sidecartbutton" style="width: 90px;">
-                                        <button class="btn btn-danger decrement-btn" data-key="${key}">-</button>
-                                        <input type="text" class="form-control text-center quantity-input" value="${item.quantity}" readonly>
-                                        <button class="btn btn-danger increment-btn" data-key="${key}">+</button>
+                                    <div class="sidecartbutton">
+                                        <div class="qty-container">
+                                            <button class="qty-btn minus decrement-btn" data-key="${key}">−</button>
+                                            <input type="text" class="qty-input quantity-input" value="${item.quantity}" readonly>
+                                            <button class="qty-btn plus increment-btn" data-key="${key}">+</button>
+                                        </div>
                                     </div>
                                 </div>
                             `;
@@ -1806,14 +1892,14 @@
 
                         // Bill summary
                         html += `
-                            <div class="d-flex align-items-center p-3 mb-2">
+                            <div class="d-flex align-items-center p-2 mb-1">
                                <h6 class="fw-bold mb-0">Bill Summary</h6> <strong class="ms-2">₹${(subtotal - couponDiscount).toFixed(2)}</strong>
                                 <button class="toggle-bill-btn btn btn-sm btn-link" data-vendor="${vendorSlug}">
                                    <i class="fa fa-chevron-down"></i>
                                 </button>
 
                             </div>
-                            <div id="billSummary-${vendorSlug}" class="p-3 bg-light rounded">
+                            <div id="billSummary-${vendorSlug}" class="px-3 py-2 bg-light rounded">
                                 <ul class="list-unstyled small">
                                     ${(() => {
                                         const savedAmount = totalOriginal - subtotal;
@@ -1837,7 +1923,7 @@
                                             </div></li>
                                   </ul>
                                                      </div>
-                                <hr class="vendor-divider my-4" style="border: 1px solid #e0e0e0; margin: 20px 0;">
+                                <hr class="vendor-divider my-2" style="border: 1px solid #e0e0e0; margin: 10px 0;">
                         </div>
                         `;
 

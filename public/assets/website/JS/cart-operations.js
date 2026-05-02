@@ -266,7 +266,7 @@
                         <div class="cart-business-group mb-3 d-flex justify-content-between align-items-center">
                             <h6 class="mb-1">
                                 <a href="${exploreStoreUrl}"
-                                class="small text-primary my-2 d-block"
+                                class="vendor-sidebar-name d-inline-block"
                                 onclick="return redirectWithLocation(this.href)">
                                     ${businessName}
                                 </a>

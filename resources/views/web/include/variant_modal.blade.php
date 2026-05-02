@@ -122,6 +122,29 @@
   gap: 8px;
   justify-content: flex-start;
   align-items: stretch;
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+/* Custom scrollbar */
+#productModal .unit-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+#productModal .unit-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+#productModal .unit-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+#productModal .unit-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 /* Card row: stack on mobile, row on larger phones / tablet */
@@ -395,6 +418,29 @@
 
   #productModal .unit-list {
     gap: 6px;
+    max-height: 420px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+  }
+
+  /* Custom scrollbar for mobile */
+  #productModal .unit-list::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  #productModal .unit-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  #productModal .unit-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+
+  #productModal .unit-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
   }
 
   /* Row card: text left, Add / qty pinned top-right (no tall stack under prices) */
@@ -490,6 +536,10 @@
 
   #productModal .modal-dialog {
     max-width: min(520px, calc(100vw - 48px));
+  }
+
+  #productModal .unit-list {
+    max-height: 450px;
   }
 
   #productModal .unit-item.variant-option-card {

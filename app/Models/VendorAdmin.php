@@ -153,4 +153,10 @@ class VendorAdmin extends Authenticatable implements MustVerifyEmail
         $this->notify(new VendorEmailVerificationNotification);
     }
 
+    public function coupons()
+    {
+        return $this->hasMany(Coupon::class, 'created_by_id', 'id')
+            ->where('is_active', 1)
+            ->where('is_deleted', 0);
+    }
 }

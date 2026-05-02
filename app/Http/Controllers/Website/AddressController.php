@@ -59,18 +59,21 @@ class AddressController extends Controller
             'type', 'area', 'flat', 'landmark', 'pincode', 'latitude', 'longitude', 'name', 'phone', 'alt_phone'
         ]);
 
-        if ($request->has('is_selected')) {
-            $makeSelected = filter_var($request->input('is_selected'), FILTER_VALIDATE_BOOLEAN);
-            DB::transaction(function () use ($userId, $address, $payload, $makeSelected) {
+        DB::transaction(function () use ($request, $userId, $address, $payload) {
+            if ($request->has('is_selected')) {
+                $makeSelected = filter_var($request->input('is_selected'), FILTER_VALIDATE_BOOLEAN);
+
                 if ($makeSelected) {
-                    CustomerAddress::where('user_id', $userId)->update(['is_selected' => false]);
+                    CustomerAddress::where('user_id', $userId)
+                        ->where('id', '!=', $address->id)
+                        ->update(['is_selected' => false]);
                 }
+
                 $payload['is_selected'] = $makeSelected;
-                $address->update($payload);
-            });
-        } else {
+            }
+
             $address->update($payload);
-        }
+        });
 
         return response()->json(['success' => true, 'message' => 'Address updated']);
     }
@@ -121,7 +124,9 @@ class AddressController extends Controller
         $address = CustomerAddress::where('user_id', $userId)->findOrFail($id);
 
         DB::transaction(function () use ($userId, $address) {
-            CustomerAddress::where('user_id', $userId)->update(['is_selected' => false]);
+            CustomerAddress::where('user_id', $userId)
+                ->where('id', '!=', $address->id)
+                ->update(['is_selected' => false]);
             $address->is_selected = true;
             $address->save();
         });

@@ -159,7 +159,7 @@
                            @foreach ($vendorData['items'] as $item)
                            <li>{{ $item['product_title'] }}
                               @if($item['variant'])
-                              ({{ $item['variant'] }})
+                              ({{ $item['variant'] }}@if(!empty($item['variant_meta'])) ({{ $item['variant_meta'] }})@endif)
                               @endif
                               - {{ $item['quantity'] }} x ₹{{ number_format($item['price'], 2) }}
                            </li>

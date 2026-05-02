@@ -69,17 +69,32 @@
         width: 100%;
     }
 
+    section.department-hero-wrap .department-page-banner .vendor-header-actions {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        margin-top: 15px;
+        gap: 10px;
+    }
+
     section.department-hero-wrap .department-page-banner .online-statusde {
-        margin-top: 8px !important;
-        margin-bottom: 8px !important;
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        margin: 0 !important;
         font-size: 11px !important;
         padding: 6px 12px !important;
+        width: auto !important;
     }
 
     section.department-hero-wrap .department-page-banner .coupon-boxde {
-        margin-top: 10px !important;
+        position: relative !important;
+        margin: 0 !important;
         padding: 10px 12px !important;
         border-radius: 10px;
+        width: 100% !important;
+        max-width: 320px !important;
     }
 
     section.department-hero-wrap .department-page-banner .coupon-headerde h4 {
@@ -96,6 +111,134 @@
     section.department-hero-wrap .department-page-banner .coupon-rightde p {
         font-size: 10px !important;
         line-height: 1.25 !important;
+    }
+}
+
+section.department-hero-wrap .department-page-banner .vendor-header-actions {
+    position: absolute;
+    top: auto;
+    bottom: 36px;
+    right: 6%;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 14px;
+}
+
+section.department-hero-wrap .department-page-banner .department-status-coupon-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+section.department-hero-wrap .department-page-banner .department-status-coupon-row .border12 {
+    min-height: 38px;
+    background: #fff !important;
+    border: 0 !important;
+    border-radius: 50px !important;
+    padding: 8px 18px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #E94412 !important;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+section.department-hero-wrap .department-page-banner .online-statusde {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    width: auto !important;
+    min-width: max-content !important;
+    min-height: 38px;
+    max-width: none !important;
+    padding: 8px 40px 8px 14px !important;
+    border-radius: 50px !important;
+    display: inline-flex !important;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    z-index: 3 !important;
+}
+
+section.department-hero-wrap .department-page-banner .online-statusde .status-text {
+    white-space: nowrap;
+}
+
+section.department-hero-wrap .department-page-banner .department-progress-box {
+    width: min(505px, calc(100vw - 40px));
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+section.department-hero-wrap .department-page-banner .department-progress-box img {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex: 0 0 auto;
+}
+
+section.department-hero-wrap .department-page-banner .department-progress-box .coupontext {
+    color: #000;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+section.department-hero-wrap .department-page-banner .department-progress-box .xyz-progress {
+    height: 8px;
+    background: #cfcfcf;
+}
+
+section.department-hero-wrap .department-page-banner .department-progress-box .xyz-right-text {
+    color: #000;
+    font-size: 15px;
+    text-align: right;
+    margin-top: 14px;
+}
+
+@media (max-width: 767.98px) {
+    section.department-hero-wrap .department-page-banner .vendor-header-actions {
+        position: relative;
+        top: auto;
+        bottom: auto;
+        right: auto;
+        align-items: center;
+    }
+
+    section.department-hero-wrap .department-page-banner .department-status-coupon-row {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    section.department-hero-wrap .department-page-banner .department-progress-box {
+        width: 100%;
+        max-width: 320px;
+        padding: 12px;
+    }
+
+    section.department-hero-wrap .department-page-banner .department-progress-box img {
+        width: 44px;
+        height: 44px;
+    }
+
+    section.department-hero-wrap .department-page-banner .department-progress-box .coupontext {
+        font-size: 12px !important;
+    }
+
+    section.department-hero-wrap .department-page-banner .department-progress-box .xyz-right-text {
+        font-size: 10px;
+        text-align: left;
     }
 }
 </style>
@@ -188,6 +331,7 @@
                 // Swap header and products
                 vendorHeader.innerHTML = data.header;
                 productsContainer.innerHTML = data.html;
+                updateDepartmentProgress(branchId);
 
                 // Reapply the current subcategory filter to new DOM
                 if (activeSubcategory) {
@@ -198,6 +342,55 @@
                 productsContainer.innerHTML = '<div class="col-12"><div class="alert alert-danger">Error loading products</div></div>';
             });
     }
+
+    function updateDepartmentProgress(vendorId) {
+        if (!vendorId) return;
+
+        fetch(`{{ url('/vendor-progress') }}/${encodeURIComponent(vendorId)}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+            .then(response => response.ok ? response.json() : null)
+            .then(data => {
+                if (!data) return;
+
+                const cookAmount = document.getElementById('department-cook-amount-needed');
+                const cookProgress = document.getElementById('department-cook-progress');
+                const deliveryAmount = document.getElementById('department-delivery-amount-needed');
+                const deliveryProgress = document.getElementById('department-delivery-progress');
+
+                if (cookAmount) {
+                    cookAmount.textContent = Math.round(parseFloat(data.cook_amount_needed || 0));
+                }
+
+                if (cookProgress) {
+                    const progress = Math.min(Math.max(parseFloat(data.cook_progress || 0), 0), 100);
+                    cookProgress.style.width = progress + '%';
+                }
+
+                if (deliveryAmount) {
+                    deliveryAmount.textContent = Math.round(parseFloat(data.delivery_amount_needed || 0));
+                }
+
+                if (deliveryProgress) {
+                    const progress = Math.min(Math.max(parseFloat(data.delivery_progress || 0), 0), 100);
+                    deliveryProgress.style.width = progress + '%';
+                }
+            })
+            .catch(() => {});
+    }
+
+    window.updateDepartmentProgress = updateDepartmentProgress;
+    window.updateProgress = function() {
+        const progressBox = document.querySelector('.department-progress-box[data-vendor-id]');
+        const branchSelect = document.getElementById('brnch');
+        const vendorId = progressBox ? progressBox.getAttribute('data-vendor-id') : (branchSelect ? branchSelect.value : null);
+        updateDepartmentProgress(vendorId);
+    };
 
     // Filter by subcategory (client-side show/hide)
     function filterBySubcategory(subcategoryId) {
@@ -218,24 +411,24 @@
             setTimeout(function() {
                 const productsSection = document.getElementById('products-section');
                 const mobileSidebar = document.querySelector('.mobile-sidebar');
-                
+
                 if (productsSection) {
                     // Calculate scroll position: after sticky menu
                     const headerHeight = 90; // Header height
                     const sidebarHeight = mobileSidebar ? mobileSidebar.offsetHeight : 70;
                     const stickyMenuHeight = headerHeight + sidebarHeight;
-                    
+
                     // Get the position of products section relative to document
                     const productsRect = productsSection.getBoundingClientRect();
                     const productsTop = productsRect.top + window.pageYOffset;
-                    
+
                     // Calculate where sticky menu will be (below header)
                     const stickyMenuTop = headerHeight;
-                    
+
                     // Scroll to show products section just below sticky menu with proper spacing
                     // We want products section to start after sticky menu + some padding
                     const scrollPosition = productsTop - stickyMenuHeight - 15; // 15px extra spacing for better visibility
-                    
+
                     // Smooth scroll to products section
                     window.scrollTo({
                         top: Math.max(0, scrollPosition), // Ensure not negative
@@ -251,18 +444,18 @@
         function initStickySidebar() {
             const mobileSidebar = document.querySelector('.mobile-sidebar');
             const productsContainer = document.querySelector('.fixedheight');
-            
+
             if (!mobileSidebar) return;
-            
+
             let sidebarOffsetTop = 0;
             let isSticky = false;
-            
+
             function calculateOffset() {
                 // Get the sidebar's position relative to the document
                 const rect = mobileSidebar.getBoundingClientRect();
                 sidebarOffsetTop = rect.top + window.pageYOffset;
             }
-            
+
             function updateSidebarPosition() {
                 // Only for mobile
                 if (window.innerWidth >= 768) {
@@ -275,15 +468,15 @@
                     }
                     return;
                 }
-                
+
                 // Calculate offset on first run
                 if (sidebarOffsetTop === 0) {
                     calculateOffset();
                 }
-                
+
                 const scrollY = window.pageYOffset || document.documentElement.scrollTop;
                 const headerHeight = 90; // Header height in pixels
-                
+
                 // Make sticky when scrolled past the sidebar's original position
                 // Sidebar will stick below header at 90px from top
                 if (scrollY >= sidebarOffsetTop) {
@@ -306,7 +499,7 @@
                     }
                 }
             }
-            
+
             // Wait for page to be fully loaded
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', function() {
@@ -321,10 +514,10 @@
                     updateSidebarPosition();
                 }, 200);
             }
-            
+
             // Update on scroll
             window.addEventListener('scroll', updateSidebarPosition, { passive: true });
-            
+
             // Recalculate on resize
             let resizeTimer;
             window.addEventListener('resize', function() {
@@ -336,7 +529,7 @@
                 }, 150);
             });
         }
-        
+
         // Initialize
         initStickySidebar();
     })();
@@ -351,33 +544,33 @@
 
             // Check if we came from a subcategory click (check sessionStorage)
             const cameFromSubcategory = sessionStorage.getItem('subcategory_clicked') === 'true';
-            
+
             if (cameFromSubcategory) {
                 // Clear the flag
                 sessionStorage.removeItem('subcategory_clicked');
-                
+
                 // Wait for page to fully load and render
                 setTimeout(function() {
                     const productsSection = document.getElementById('products-section');
                     const mobileSidebar = document.querySelector('.mobile-sidebar');
-                    
+
                     if (productsSection) {
                         // Calculate scroll position: after sticky menu
                         const headerHeight = 90; // Header height
                         const sidebarHeight = mobileSidebar ? mobileSidebar.offsetHeight : 70;
                         const stickyMenuHeight = headerHeight + sidebarHeight;
-                        
+
                         // Get the position of products section relative to document
                         const productsRect = productsSection.getBoundingClientRect();
                         const productsTop = productsRect.top + window.pageYOffset;
-                        
+
                         // Calculate where sticky menu will be (below header)
                         const stickyMenuTop = headerHeight;
-                        
+
                         // Scroll to show products section just below sticky menu with proper spacing
                         // We want products section to start after sticky menu + some padding
                         const scrollPosition = productsTop - stickyMenuHeight - 15; // 15px extra spacing for better visibility
-                        
+
                         // Smooth scroll to products section
                         window.scrollTo({
                             top: Math.max(0, scrollPosition), // Ensure not negative
@@ -400,6 +593,11 @@
 
     // Mark subcategory click before navigation (for mobile sidebar)
     document.addEventListener('DOMContentLoaded', function() {
+        const progressBox = document.querySelector('.department-progress-box[data-vendor-id]');
+        if (progressBox) {
+            updateDepartmentProgress(progressBox.getAttribute('data-vendor-id'));
+        }
+
         // Mobile sidebar items (they use onclick, so we need to wrap it)
         const mobileSidebarItems = document.querySelectorAll('.mobile-sidebar .sidebar-itemde');
         mobileSidebarItems.forEach(function(item) {

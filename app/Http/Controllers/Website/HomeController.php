@@ -84,11 +84,10 @@ class HomeController extends Controller
                         return $store;
                     })->values(); // Reset keys to ensure proper collection
 
-                    // Fetch category-wise products - sirf delivery location wale vendors ke products
+                    // Fetch category-wise products - sirf delivery location wale vendors ke products (including out of stock)
                     $categoryIdsWithDeliveryProducts = Product::whereIn('vendor_id', $vendorIds)
                         ->where('is_active', 1)
                         ->where('is_deleted', 0)
-                        ->inStock()
                         ->distinct()
                         ->pluck('category_id')
                         ->unique()
@@ -104,7 +103,6 @@ class HomeController extends Controller
                                 ->where('is_deleted', 0)
                                 ->where('is_active', 1)
                                 ->whereIn('vendor_id', $vendorIds)
-                                ->inStock()
                                 ->limit(16)
                                 ->get();
                             return $category;
@@ -183,11 +181,10 @@ class HomeController extends Controller
             return $store;
         })->values(); // Reset keys to ensure proper collection
 
-        // Category-wise products - sirf delivery location wale vendors ke (AJAX response)
+        // Category-wise products - sirf delivery location wale vendors ke (AJAX response, including out of stock)
         $categoryIdsWithDeliveryProducts = Product::whereIn('vendor_id', $vendorIds)
             ->where('is_active', 1)
             ->where('is_deleted', 0)
-            ->inStock()
             ->distinct()
             ->pluck('category_id')
             ->unique()
@@ -203,7 +200,6 @@ class HomeController extends Controller
                     ->where('is_deleted', 0)
                     ->where('is_active', 1)
                     ->whereIn('vendor_id', $vendorIds)
-                    ->inStock()
                     ->limit(16)
                     ->get();
                 return $category;
@@ -217,7 +213,7 @@ class HomeController extends Controller
 
         // Get location-based categories for homepage slider
         $categories = $this->getAvailableCategories($lat, $lng, 9);
-        
+
         // Get footer categories HTML
         $footerCategoriesHtml = $this->getFooterCategoriesHtml($lat, $lng);
 
@@ -285,6 +281,7 @@ class HomeController extends Controller
                     ->where('status', '1')
                     ->where('is_active', '1')
                     ->whereNull('deleted_at')
+                    ->with('coupons')
                     ->get();
             }
         }
@@ -384,6 +381,7 @@ class HomeController extends Controller
                 ->where('status', '1')
                 ->where('is_active', '1')
                 ->whereNull('deleted_at')
+                ->with('coupons')
                 ->get();
         }
 
@@ -392,12 +390,11 @@ class HomeController extends Controller
             return response()->json(['success' => false, 'message' => 'Vendor not found in your area']);
         }
 
-        // ✅ Products (only in-stock)
+        // ✅ Products (including out of stock)
         $products = Product::with(['variants.images', 'featureImage'])
             ->where('vendor_id', $selectedVendor->id)
             ->where('is_deleted', '0')
             ->where('is_active', '1')
-            ->inStock()
             ->get();
 
         // ✅ Store time
@@ -536,14 +533,13 @@ class HomeController extends Controller
         if ($cat_id == 0) {
             // All vendor products - find a fallback category for URL generation
             $category = null;
-            
-            // Use direct Product query - use integer comparison
+
+            // Use direct Product query - use integer comparison (including out of stock)
             $products = Product::where('vendor_id', $vendor_id)
                 ->where('is_deleted', 0)
                 ->where('is_active', 1)
                 ->whereNotNull('sub_category_id')
                 ->with(['variants.images', 'featureImage'])
-                ->inStock()
                 ->get();
 
             // Debug: Log products found
@@ -562,14 +558,14 @@ class HomeController extends Controller
                 ->unique()
                 ->values()
                 ->toArray();
-            
+
             Log::info('Subcategory IDs extracted from products', [
                 'vendor_id' => $vendor_id,
                 'subcategory_ids' => $subcategoryIds,
                 'count' => count($subcategoryIds),
                 'products_count' => $products->count()
             ]);
-            
+
             if (empty($subcategoryIds)) {
                 Log::warning('No subcategory IDs found from products', [
                     'vendor_id' => $vendor_id,
@@ -587,7 +583,7 @@ class HomeController extends Controller
                     'is_deleted' => $allSubcategoriesDebug->pluck('is_deleted')->toArray(),
                     'category_ids' => $allSubcategoriesDebug->pluck('category_id')->toArray()
                 ]);
-                
+
                 // Query subcategories - handle multiple data types for is_active and is_deleted
                 // When cat_id == 0, we want ALL subcategories that have products, regardless of category
                 $subcategories = Subcategory::whereIn('id', $subcategoryIds)
@@ -603,18 +599,18 @@ class HomeController extends Controller
                     })
                     ->with('category')
                     ->get();
-                
+
                 // Debug: Check which subcategories were found
                 $foundIds = $subcategories->pluck('id')->toArray();
                 $missingIds = array_diff($subcategoryIds, $foundIds);
-                
+
                 if (!empty($missingIds)) {
                     Log::warning('Some subcategories were filtered out (all categories)', [
                         'missing_ids' => $missingIds,
                         'found_ids' => $foundIds,
                         'all_ids' => $subcategoryIds
                     ]);
-                    
+
                     // Check the status of missing subcategories
                     foreach ($missingIds as $missingId) {
                         $missingSub = Subcategory::where('id', $missingId)->first();
@@ -629,7 +625,7 @@ class HomeController extends Controller
                         }
                     }
                 }
-                
+
                 // If still empty, try without active check (for debugging)
                 if ($subcategories->isEmpty()) {
                     Log::warning('No subcategories found even with IDs', [
@@ -645,7 +641,7 @@ class HomeController extends Controller
                         'is_deleted' => $allSubcategories->pluck('is_deleted')->toArray()
                     ]);
                 }
-                
+
                 Log::info('Found subcategories', [
                     'count' => $subcategories->count(),
                     'ids' => $subcategories->pluck('id')->toArray(),
@@ -656,15 +652,14 @@ class HomeController extends Controller
         } else {
             // Products for one category
             $category = Category::findOrFail($cat_id);
-            
-            // Use direct Product query - use integer comparison
+
+            // Use direct Product query - use integer comparison (including out of stock)
             $products = Product::where('vendor_id', $vendor_id)
                 ->where('category_id', $cat_id)
                 ->where('is_deleted', 0)
                 ->where('is_active', 1)
                 ->whereNotNull('sub_category_id')
                 ->with(['variants.images', 'featureImage'])
-                ->inStock()
                 ->get();
 
             // Debug: Log products found
@@ -677,14 +672,13 @@ class HomeController extends Controller
             ]);
 
             // ✅ IMPORTANT: Get ALL subcategories from ALL categories that have products for this vendor
-            // This ensures sidebar shows all subcategories, not just from current category
+            // This ensures sidebar shows all subcategories, not just from current category (including out of stock)
             $allVendorProducts = Product::where('vendor_id', $vendor_id)
                 ->where('is_deleted', 0)
                 ->where('is_active', 1)
                 ->whereNotNull('sub_category_id')
-                ->inStock()
                 ->get();
-            
+
             // Get all subcategory IDs from all vendor products (across all categories)
             $allSubcategoryIds = $allVendorProducts->pluck('sub_category_id')
                 ->filter(function($id) {
@@ -693,14 +687,14 @@ class HomeController extends Controller
                 ->unique()
                 ->values()
                 ->toArray();
-            
+
             Log::info('All subcategory IDs from all vendor products', [
                 'vendor_id' => $vendor_id,
                 'subcategory_ids' => $allSubcategoryIds,
                 'count' => count($allSubcategoryIds),
                 'total_products' => $allVendorProducts->count()
             ]);
-            
+
             if (empty($allSubcategoryIds)) {
                 Log::warning('No subcategory IDs found from all vendor products', [
                     'vendor_id' => $vendor_id,
@@ -710,7 +704,7 @@ class HomeController extends Controller
             } else {
                 // First, check all subcategories without filters to see what exists
                 $allSubcategories = Subcategory::whereIn('id', $allSubcategoryIds)->get();
-                
+
                 Log::info('All subcategories found (without filters - all categories)', [
                     'vendor_id' => $vendor_id,
                     'category_id' => $cat_id,
@@ -721,7 +715,7 @@ class HomeController extends Controller
                     'is_active' => $allSubcategories->pluck('is_active')->toArray(),
                     'is_deleted' => $allSubcategories->pluck('is_deleted')->toArray()
                 ]);
-                
+
                 // Query subcategories from ALL categories that have products for this vendor
                 // Don't filter by category_id - show all subcategories in sidebar
                 $subcategories = Subcategory::whereIn('id', $allSubcategoryIds)
@@ -739,11 +733,11 @@ class HomeController extends Controller
                     })
                     ->with('category')
                     ->get();
-                
+
                 // Check which subcategories were filtered out
                 $foundIds = $subcategories->pluck('id')->toArray();
                 $missingIds = array_diff($allSubcategoryIds, $foundIds);
-                
+
                 if (!empty($missingIds)) {
                     Log::warning('Some subcategories were filtered out (all categories)', [
                         'vendor_id' => $vendor_id,
@@ -752,7 +746,7 @@ class HomeController extends Controller
                         'found_ids' => $foundIds,
                         'all_ids' => $allSubcategoryIds
                     ]);
-                    
+
                     // Check the status of missing subcategories
                     foreach ($missingIds as $missingId) {
                         $missingSub = Subcategory::where('id', $missingId)->first();
@@ -769,7 +763,7 @@ class HomeController extends Controller
                         }
                     }
                 }
-                
+
                 Log::info('Found subcategories (all categories for sidebar)', [
                     'vendor_id' => $vendor_id,
                     'current_category_id' => $cat_id,
@@ -791,7 +785,7 @@ class HomeController extends Controller
 
         // Initialize cart total to 0 for non-logged in users
         $cartTotal = 0;
-        
+
         // If user is logged in, get cart total
         if (auth()->check()) {
             $user_id = auth()->id();
@@ -842,13 +836,12 @@ class HomeController extends Controller
         $category    = Category::findOrFail($category_id);
         $subcategory = SubCategory::findOrFail($subcategory_id);
 
-        // ✅ Get ALL subcategories that have active products from this vendor (across all categories)
+        // ✅ Get ALL subcategories that have active products from this vendor (across all categories, including out of stock)
         // This ensures sidebar menu shows all subcategories even when viewing a specific one
         $allSubcategoryIdsWithProducts = Product::where('vendor_id', $vendor_id)
             ->where('is_deleted', 0)
             ->where('is_active', 1)
             ->whereNotNull('sub_category_id')
-            ->inStock()
             ->pluck('sub_category_id')
             ->unique()
             ->filter()
@@ -877,21 +870,20 @@ class HomeController extends Controller
             })
             ->with('category')
             ->get();
-        
+
         Log::info('Subcategories found (subcategoryProducts method)', [
             'count' => $subcategories->count(),
             'ids' => $subcategories->pluck('id')->toArray(),
             'names' => $subcategories->pluck('sub_cat_name')->toArray()
         ]);
 
-        // ✅ Products filter - use direct Product query for specific subcategory (only in-stock)
+        // ✅ Products filter - use direct Product query for specific subcategory (including out of stock)
         $products = Product::where('vendor_id', $vendor_id)
             ->where('category_id', $category_id)
             ->where('sub_category_id', $subcategory_id)
             ->where('is_deleted', 0)
             ->where('is_active', 1)
             ->with(['variants.images', 'featureImage'])
-            ->inStock()
             ->get();
 
         //vendor wise coupons
@@ -905,7 +897,7 @@ class HomeController extends Controller
 
         // Initialize cart total to 0 for non-logged in users
         $cartTotal = 0;
-        
+
         // If user is logged in, get cart total
         if (auth()->check()) {
             $user_id = auth()->id();
@@ -961,7 +953,6 @@ class HomeController extends Controller
             ->whereIn('vendor_id', $vendorIds)
             ->where('is_deleted', '0')
             ->where('is_active', '1')
-            ->inStock()
             ->get();
 
         Log::info("Products found:", ['count' => $products->count()]);
@@ -1010,13 +1001,12 @@ class HomeController extends Controller
             ])->with('error', 'No products available in your area.');
         }
 
-        // ✅ Get all products for this category to filter subcategories (only in-stock)
+        // ✅ Get all products for this category to filter subcategories (including out of stock)
         $allCategoryProducts = Product::with(['variants.images', 'featureImage', 'vendor'])
             ->where('category_id', $category_id)
             ->whereIn('vendor_id', $vendorIds)
             ->where('is_deleted', '0')
             ->where('is_active', '1')
-            ->inStock()
             ->get();
 
         // ✅ Filter subcategories to only show those that have products
@@ -1068,7 +1058,6 @@ class HomeController extends Controller
             ->where('is_deleted', 0)
             ->where('is_active', 1)
             ->with(['variants.images', 'featureImage', 'vendor'])
-            ->inStock()
             ->get();
 
         $html = view('web.partials.explorestore_products_grid', compact('products'))->render();
@@ -1120,7 +1109,6 @@ class HomeController extends Controller
             ->whereIn('vendor_id', $vendorIds)
             ->where('is_deleted', '0')
             ->where('is_active', '1')
-            ->inStock()
             ->get();
 
         $products = $allCategoryProducts->filter(function ($product) use ($subcategory_id) {
@@ -1144,7 +1132,7 @@ class HomeController extends Controller
 
         // Initialize cart total to 0 for non-logged in users
         $cartTotal = 0;
-        
+
         // If user is logged in, get cart total
         if (auth()->check()) {
             $user_id = auth()->id();
@@ -1186,7 +1174,7 @@ class HomeController extends Controller
             'vendor',
             'featureImage',
             'variants' => function($query) {
-                $query->where('stock','>', 0)->with('images');
+                $query->with('images');
             },
             'category',
             'subcategory'
@@ -1341,8 +1329,7 @@ class HomeController extends Controller
         return Product::with(['variants.images', 'featureImage', 'vendor'])
             ->whereIn('vendor_id', $vendorIds)
             ->where('is_deleted', 0)
-            ->where('is_active', 1)
-            ->inStock();
+            ->where('is_active', 1);
     }
 
     /**
@@ -1541,7 +1528,7 @@ class HomeController extends Controller
 
         // Generate HTML
         $html = '<div class="row w-100">';
-        
+
         // Visible categories
         foreach($visibleCategories as $category) {
             $html .= '<div class="col-md-4 col-6 footer-links">';

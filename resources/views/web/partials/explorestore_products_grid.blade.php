@@ -8,6 +8,8 @@
    $hasMultipleVariants = $product->variants->count() > 1;
    $firstVariant = $defaultVariant;
    $variantInStock = $firstVariant && $firstVariant->stock > 0;
+   $productIsActive = $product->is_active == 1 || $product->is_active == true;
+   $canAdd = $productIsActive && $variantInStock;
    $key = $product->id . '_' . ($firstVariant->id ?? 0);
    if (auth()->check()) {
    $cartItem = \App\Models\CartItem::where([
@@ -44,7 +46,13 @@
                class="product-image" alt="{{ $product->title }}">
             </div>
             @endif
+            @if ($product->is_physical)
+            <a href="{{ route('productdetails', $product->slug) }}" onclick="return redirectWithLocation(this.href)">
             <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
+            </a>
+            @else
+            <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
+            @endif
             @if (!empty($firstAttr))
             <div class="product-info cardpadding">{{ $firstAttr }}</div>
             @else
@@ -68,38 +76,34 @@
                   @php
                   $isOpen = \App\Helpers\StoreHelper::isStoreOpen($product->vendor->store_time);
                   @endphp
-                  @if ($isOpen)
-                  @if ($hasMultipleVariants)
-                  <button type="button" class="add-btn d-flex flex-column align-items-center position-relative"
-                     onclick="openPopup({{ $product->id }}, event)">
-                     <div class="d-flex align-items-center">
-                        Add
-                        <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
-                     </div>
-                     <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
-                  </button>
-                  @else
-                  @if (!$defaultVariant)
-                  <button class="add-btn" disabled>Unavailable</button>
-                  @elseif(!$variantInStock)
-                  <span class="add-btn btn disabled text-muted">Out of Stock</span>
-                  @else
-                  @if (!$inCart)
-                  <button type="button" class="add-btn"
-                     data-product-id="{{ $product->id }}"
-                     data-variant-id="{{ $firstVariant->id }}">
-                  Add
-                  <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
-                  </button>
-                  @else
-                  <div class="qty-container">
-                     <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
-                     <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
-                     <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
-                  </div>
-                  @endif
-                  @endif
-                  @endif
+                   @if ($isOpen)
+                   @if (!$canAdd)
+                   <span class="add-btn btn disabled text-muted">Out of Stock</span>
+                   @elseif ($hasMultipleVariants)
+                   <button type="button" class="add-btn d-flex flex-column align-items-center position-relative"
+                      onclick="openPopup({{ $product->id }}, event)">
+                      <div class="d-flex align-items-center">
+                         Add
+                         <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                      </div>
+                      <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
+                   </button>
+                   @else
+                   @if (!$inCart)
+                   <button type="button" class="add-btn"
+                      data-product-id="{{ $product->id }}"
+                      data-variant-id="{{ $firstVariant->id }}">
+                   Add
+                   <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                   </button>
+                   @else
+                   <div class="qty-container">
+                      <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
+                      <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
+                      <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
+                   </div>
+                   @endif
+                   @endif
                   @else
                   <button class="add-btn disabled" disabled>
                   Add <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">

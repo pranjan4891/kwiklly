@@ -491,9 +491,24 @@ class CustomerController extends Controller
                     $itemTotal = $item->price * $item->quantity;
                     $vendorTotal += $itemTotal;
 
+                    $variantMeta = '';
+                    if ($item->variant) {
+                        $a = $item->variant->attributes ?? null;
+                        if (is_string($a)) {
+                            $a = json_decode($a, true);
+                        }
+                        if (is_array($a) && !empty($a)) {
+                            $vals = array_values(array_filter($a, function ($v) {
+                                return $v !== null && $v !== '';
+                            }));
+                            $variantMeta = implode(', ', array_map('strval', $vals));
+                        }
+                    }
+
                     $vendorItems[] = [
                         'product_title' => $item->product->title ?? 'Unknown Product',
                         'variant' => $item->variant->variant_name ?? '',
+                        'variant_meta' => $variantMeta,
                         'quantity' => $item->quantity,
                         'price' => $item->price,
                         'item_total' => $itemTotal
@@ -535,7 +550,10 @@ class CustomerController extends Controller
         }
 
         // Get user addresses
-        $addresses = CustomerAddress::where('user_id', $user->id)->get();
+        $addresses = CustomerAddress::where('user_id', $user->id)
+            ->orderByDesc('is_selected')
+            ->latest()
+            ->get();
 
         // Get user coupons (assuming you have a coupon usage model)
         $coupons = Coupon::whereHas('usages', function($query) use ($user) {
@@ -639,8 +657,19 @@ class CustomerController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:15',
             'alt_phone' => 'nullable|string|max:15',
+            'is_selected' => 'nullable|boolean',
         ]);
-        $address->update($validated);
+
+        DB::transaction(function () use ($address, $validated) {
+            if (!empty($validated['is_selected'])) {
+                CustomerAddress::where('user_id', auth()->id())
+                    ->where('id', '!=', $address->id)
+                    ->update(['is_selected' => false]);
+            }
+
+            $address->update($validated);
+        });
+
         return response()->json(['success' => true, 'message' => 'Address updated successfully!']);
     }
 

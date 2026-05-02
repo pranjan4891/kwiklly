@@ -8,6 +8,8 @@
             @php
                 $defaultVariant = $product->variants->firstWhere('stock', '>', 0) ?? $product->variants->first();
                 $variantInStock = $defaultVariant && $defaultVariant->stock > 0;
+                $productIsActive = $product->is_active == 1 || $product->is_active == true;
+                $canAdd = $productIsActive && $variantInStock;
             @endphp
             @if ($defaultVariant)
                <div class="item">
@@ -26,7 +28,14 @@
                         </div>
                      @endif
 
-                     <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
+                     @if ($product->is_physical)
+                        <a href="{{ route('productdetails', $product->slug) }}" onclick="return redirectWithLocation(this.href)">
+                           <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
+                        </a>
+                     @else
+                        <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
+                     @endif
+
                      @php $attributes = json_decode($defaultVariant->attributes, true); @endphp
                      @if (!empty($attributes))
                         <div class="product-info cardpadding">{{ collect($attributes)->first() }}</div>
@@ -77,7 +86,9 @@
 
                             @if ($isOpen)
                                 {{-- ✅ Store is open --}}
-                                @if ($hasMultipleVariants)
+                                @if (!$canAdd)
+                                    <span class="add-btn btn disabled text-muted">Out of Stock</span>
+                                @elseif ($hasMultipleVariants)
                                     <button type="button" class="add-btn d-flex flex-column align-items-center position-relative"
                                             onclick="openPopup({{ $product->id }}, event)">
                                         <div class="d-flex align-items-center">
@@ -87,25 +98,19 @@
                                         <div class="cart-options text-black">{{ $product->variants->count() }} Options</div>
                                     </button>
                                 @else
-                                    @if (!$defaultVariant)
-                                        <button class="add-btn" disabled>Unavailable</button>
-                                    @elseif(!$variantInStock)
-                                        <span class="add-btn btn disabled text-muted">Out of Stock</span>
+                                    @if (!$inCart)
+                                        <button type="button" class="add-btn"
+                                                data-product-id="{{ $product->id }}"
+                                                data-variant-id="{{ $firstVariant->id }}">
+                                            Add
+                                            <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
+                                        </button>
                                     @else
-                                        @if (!$inCart)
-                                            <button type="button" class="add-btn"
-                                                    data-product-id="{{ $product->id }}"
-                                                    data-variant-id="{{ $firstVariant->id }}">
-                                                Add
-                                                <img src="{{ asset('public/assets/website/images/cart.svg') }}" class="ms-2">
-                                            </button>
-                                        @else
-                                            <div class="qty-container">
-                                                <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
-                                                <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
-                                                <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
-                                            </div>
-                                        @endif
+                                        <div class="qty-container">
+                                            <button class="qty-btn minus decrement-btn" data-key="{{ $key }}">−</button>
+                                            <input type="text" class="qty-input quantity-input" value="{{ $quantity }}" readonly>
+                                            <button class="qty-btn plus increment-btn" data-key="{{ $key }}">+</button>
+                                        </div>
                                     @endif
                                 @endif
                             @else

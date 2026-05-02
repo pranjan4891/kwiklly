@@ -68,12 +68,16 @@ class BranchController extends Controller
         }
 
         $title = 'Department | Profile';
+        $timeSlots = TimeSlot::orderBy('id')->get();
+        $storetime = $this->storeTimeKeyedByDayName($branch);
 
         return view('branch.profile', compact(
             'branch',
             'title',
             'states',
-            'cities'
+            'cities',
+            'timeSlots',
+            'storetime'
         ));
     }
 
@@ -194,6 +198,22 @@ class BranchController extends Controller
         if ($request->hasFile('business_logo')) {
             $imagePath = $request->file('business_logo')->store('uploads/business_logos', 'public');
             $branch->business_logo = $imagePath;
+        }
+
+        if ($request->has('day_name_1')) {
+            $storeSchedule = [];
+            for ($i = 1; $i <= 7; $i++) {
+                $storeSchedule[] = [
+                    'day_id'     => $request->input("day_id_$i") ?? null,
+                    'day_name'   => $request->input("day_name_$i"),
+                    'status'     => $request->input("day_oc_$i"),
+                    'startTime'  => $request->input("open_time_$i"),
+                    'endTime'    => $request->input("closed_time_$i"),
+                ];
+            }
+
+            $branch->store_time = json_encode($storeSchedule);
+            $branch->store_time_status = 1;
         }
 
         $branch->save();

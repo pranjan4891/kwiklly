@@ -11,6 +11,15 @@
         return;
     }
 
+    function escapeHtml(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     // Keep global cart data
     let currentCart = {};
 
@@ -72,6 +81,7 @@
                         ? JSON.parse(variant.attributes || '{}')
                         : (variant.attributes || {});
                     const volume = attr.Volume || attr['Memory Size'] || attr.Color || attr.RAM || '';
+                    const colorName = (attr.Color || attr.Colour || '').toString().trim();
                     const actual = variant.variant_actual_price;
                     const selling = variant.variant_selling_price;
                     const stock = parseInt(variant.stock, 10) || 0;
@@ -108,6 +118,10 @@
 
                     const variantName = (variant.variant_name || '').trim();
                     const displayTitle = variantName || volume || 'Variant';
+                    const showColor =
+                        colorName &&
+                        !String(displayTitle).toLowerCase().includes(colorName.toLowerCase());
+                    const displayTitleHtml = `${escapeHtml(displayTitle)}${showColor ? ` <span class="small text-primary fw-semibold">(${escapeHtml(colorName)})</span>` : ''}`;
                     const showMeta =
                         volume &&
                         (variantName || String(displayTitle) !== String(volume));
@@ -119,11 +133,12 @@
                             <div class="variant-option-main">
                                 <img src="${rowImage}" class="variant-option-thumb" alt="${data.product_name}">
                                 <div class="variant-option-details">
-                                    <div class="variant-option-title">${displayTitle}</div>
-                                    ${showMeta ? `<div class="variant-option-meta text-muted">${volume}</div>` : ''}
+                                    <div class="variant-option-title">${displayTitleHtml}</div>
+
                                     <div class="variant-option-prices">
-                                        <span class="original-price text-decoration-line-through">₹ ${actual}</span>
                                         <span class="price fw-bold">₹ ${selling}</span>
+                                        <span class="original-price text-decoration-line-through">₹ ${actual}</span>
+
                                     </div>
                                 </div>
                             </div>

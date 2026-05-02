@@ -21,7 +21,7 @@ class CouponController extends Controller
             return redirect()->route('branch.dashboard')->with('error', 'You do not have permission to view this page.');
         }
 
-        $coupons = Coupon::where('is_deleted', 0)->where('is_active', 1)->latest()->get();
+        $coupons = Coupon::where('is_deleted', 0)->where('created_by_id', $branch->id)->where('is_active', 1)->latest()->get();
         return view('branch.coupon.index', compact('coupons', 'title', 'branch'));
     }
 

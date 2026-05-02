@@ -5,7 +5,6 @@
    Global Font Feel
    =================================*/
    .product-details-section {
-   font-family: 'Inter', 'Poppins', sans-serif;
    color: #1c1c1c;
    }
    /* ===============================
@@ -96,8 +95,53 @@
    border-radius: 4px;
    display: block;
    }
-   .color-option-card { margin-right: 16px; margin-bottom: 12px; text-align: center; }
+   /* Out of Stock label for product details page */
+   .product-detail-out-of-stock {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #ffcccc;
+      color: #cc0000;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 16px 0px 16px 0px;
+      z-index: 10;
+   }
+   .main-img-det { position: relative; }
+   .color-option-card { margin-right: 16px; margin-bottom: 12px; text-align: center; position: relative; }
    .color-option-card .color-stock-below { font-size: 12px; color: #333; margin-top: 4px; }
+   /* Color name tooltip on hover */
+   .color-option-card .color-name-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+      z-index: 10;
+      margin-bottom: 5px;
+   }
+   .color-option-card .color-name-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: #333;
+   }
+   .color-option-card:hover .color-name-tooltip {
+      opacity: 1;
+      visibility: visible;
+   }
    .color-option-card .color-stock-below .color-name-below { display: block; font-weight: 500; }
    .color-option-card .color-stock-below .stock-below { color: #666; }
    .variant-base-list .variant-base-item .variant-item-name { font-weight: 500; }
@@ -318,7 +362,7 @@
    /* Extra Small Devices */
    @media (max-width: 480px) {
    .prodetailheading h4 {
-   font-size: 25px;
+   font-size: 18px;
    }
    .detailheading {
    font-size: 14px;
@@ -421,14 +465,20 @@
          $titleCase = function($s) { return ucwords(strtolower($s), " \t\r\n\f\v-"); };
          @endphp
          <p class="text-black breadcrumb-product">
-            <a href="{{ route('home') }}" class="text-decoration-none" onclick="return redirectWithLocation(this.href)" style="color: #ff6a00;" >Home</a> > 
-            <a href="{{ $product->category_id ? route('allcategorywiseproduct', $product->category_id) : '#' }}" class="text-decoration-none" style="color: #ff6a00;" onclick="return redirectWithLocation(this.href)" >{{ $titleCase($breadCat) }}</a> > 
-            <a href="{{ ($product->category_id && $product->sub_category_id) ? route('categorywiseproduct', ['category_id' => $product->category_id, 'subcategory_id' => $product->sub_category_id]) : '#' }}" class="text-decoration-none" style="color: #ff6a00;" onclick="return redirectWithLocation(this.href)" >{{ $titleCase($breadSub) }}</a> > 
+            <a href="{{ route('home') }}" class="text-decoration-none" onclick="return redirectWithLocation(this.href)" style="color: #ff6a00;" >Home</a> >
+            <a href="{{ $product->category_id ? route('allcategorywiseproduct', $product->category_id) : '#' }}" class="text-decoration-none" style="color: #ff6a00;" onclick="return redirectWithLocation(this.href)" >{{ $titleCase($breadCat) }}</a> >
+            <a href="{{ ($product->category_id && $product->sub_category_id) ? route('categorywiseproduct', ['category_id' => $product->category_id, 'subcategory_id' => $product->sub_category_id]) : '#' }}" class="text-decoration-none" style="color: #ff6a00;" onclick="return redirectWithLocation(this.href)" >{{ $titleCase($breadSub) }}</a> >
             {{ $titleCase($breadTitle) }}
          </p>
+         @php
+         $firstVariantForDisplay = $product->variants->firstWhere('stock', '>', 0) ?? $product->variants->first();
+         @endphp
          <!-- Product Image and Thumbnails -->
          <div class="col-md-5 py-3">
             <div class="main-img-det">
+               @if($firstVariantForDisplay && $firstVariantForDisplay->stock <= 0)
+               <span class="product-detail-out-of-stock">Out of Stock</span>
+               @endif
                <img src="{{ $productImages && $productImages->feature_image ? asset('public/' . $productImages->feature_image) : asset('public/assets/website/images/default.png') }}" class="img-fluid main-product-det" alt="{{ $product->title }}">
             </div>
             <!-- Thumbnail slider with arrows -->
@@ -455,21 +505,20 @@
                <div class="detailicon d-none"><img src="{{ asset('public/assets/website/images/share.png')}}" alt=""></div>
             </div>
             <div class="prodetailheading">
-               <p>by <span class="text-danger">{{ $product->vendor->business_name ?? 'Store' }}</span></p>
+               <p>Sold by <span class="text-danger">{{ $product->vendor->business_name ?? 'Store' }}</span></p>
             </div>
             @php
-            $firstVariantForDisplay = $product->variants->firstWhere('stock', '>', 0) ?? $product->variants->first();
             $attrsFirst = $firstVariantForDisplay ? (is_array($firstVariantForDisplay->attributes ?? null) ? $firstVariantForDisplay->attributes : json_decode($firstVariantForDisplay->attributes ?? '{}', true)) : [];
             $netQtyFirst = !empty($attrsFirst) ? implode(', ', $attrsFirst) : ($firstVariantForDisplay->variant_name ?? '1 unit');
             @endphp
             <!-- Share and Stock (dynamic per variant) -->
             <div class="d-flex justify-content-between mt-4 mb-2">
-               <!--<div class="prodetailheading">-->
-               <!--   <h6 class="mt-1 product-detail-net-qty">{{$product->sub_title}}</h6>-->
-               <!--</div>-->
-               <div>
-                  <p class="product-detail-availability">Availability : {{ $firstVariantForDisplay && $firstVariantForDisplay->stock > 0 ? 'In Stock' : 'Out of Stock' }}</p>
+               <div class="prodetailheading">
+                  <h6 class="mt-1 product-detail-net-qty">{{$product->sub_title}}</h6>
                </div>
+               {{-- <div>
+                  <p class="product-detail-availability">Availability : {{ $firstVariantForDisplay && $firstVariantForDisplay->stock > 0 ? 'In Stock' : 'Out of Stock' }}</p>
+               </div> --}}
             </div>
             @php
             $selectedVariant = $product->variants->first();
@@ -486,7 +535,7 @@
                   <span class="rupee-symbol2">₹</span> <span class="product-detail-actual-price">{{ number_format($actualPrice, 0) }}</span>
                   </span>
                   <span class="product-detail-discount-wrap" @if($discountPercent <= 0) style="display:none;" @endif><span class="badge bg-successs ms-2 product-detail-discount-badge">{{ $discountPercent }}% Off</span></span>
-                  <p>(incl. of all tax)</p>
+                  {{-- <p>(incl. of all tax)</p> --}}
                </div>
             </div>
             @php
@@ -545,7 +594,7 @@
             @endphp
             @if($singleAttrValues)
             <div class="single-variant-text">
-               <span class="variant-item-name text-dark">{{ $singleAttrValues }}</span>
+               {{-- <span class="variant-item-name text-dark">{{ $singleAttrValues }}</span> --}}
             </div>
             @endif
             @else
@@ -605,6 +654,7 @@
                   data-actual="{{ $v->variant_actual_price ?? 0 }}"
                   data-stock="{{ (int) $v->stock }}"
                   data-net-qty="{{ e(is_array($vAttrs) && !empty($vAttrs) ? implode(', ', $vAttrs) : $v->variant_name) }}">
+                  <span class="color-name-tooltip">{{ $colorName }}</span>
                   <span class="color-option-det color-option-variant {{ $isFirstOfBase ? 'active' : '' }}" title="{{ $colorName }}">
                   @if($imgUrl)
                   <img src="{{ $imgUrl }}" alt="{{ $colorName }}" class="color-option-img">
@@ -613,7 +663,7 @@
                   @endif
                   </span>
                   <div class="color-stock-below">
-                     <span class="color-name-below">{{ $colorName }}</span>
+                     {{-- <span class="color-name-below">{{ $colorName }}</span> --}}
                      <!-- <span class="stock-below">Stock: {{ (int) $v->stock }}</span> -->
 
                   </div>
@@ -809,94 +859,64 @@
                         ? (function_exists('mb_substr') ? mb_substr($infoPlainNorm, 0, $infoPreviewChars, 'UTF-8') : substr($infoPlainNorm, 0, $infoPreviewChars))
                         : '';
                 @endphp
-                <h5 class="detailheading">Product Information</h5>
-                <div class="product-detail-expandable-wrap{{ $infoLong ? ' product-detail-char-expandable' : '' }}">
-                    <div class="desc-det product-detail-expandable-content {{ $infoLong ? 'product-detail-collapsed' : '' }}">
-                        <div class="product-detail-expandable-body">
-                            @if($infoLong)
-                                <div class="product-detail-text-preview">{{ $infoPreviewPlain }}…</div>
-                                <div class="product-detail-text-full">{!! $infoHtml !!}<span class="show-less-inline" style="display:none"> <button type="button" class="show-more-less-btn" data-state="less">- Show less</button></span></div>
-                            @else
-                                {!! $infoHtml !!}
-                            @endif
-                        </div>
-                        @if($infoLong)<span class="show-more-inline"><span class="show-more-ellipsis">... </span><button type="button" class="show-more-less-btn" data-state="more">+ Show more</button></span>@endif
-                    </div>
-                </div>
-            @endif
-            @php
-                $descPreviewChars = 100;
-                $descText = $product->description ?? '';
-                $descHtml = \App\Helpers\StoreHelper::safeHtml($descText);
-                $descPlain = strip_tags(html_entity_decode($descHtml, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-                $descPlainNorm = trim(preg_replace('/\s+/u', ' ', $descPlain));
-                $hasDesc = $descPlainNorm !== '';
-                $descLen = $hasDesc
-                    ? (function_exists('mb_strlen') ? mb_strlen($descPlainNorm, 'UTF-8') : strlen($descPlainNorm))
-                    : 0;
-                $descLong = $hasDesc && $descLen > $descPreviewChars;
-                $descPreviewPlain = $descLong
-                    ? (function_exists('mb_substr') ? mb_substr($descPlainNorm, 0, $descPreviewChars, 'UTF-8') : substr($descPlainNorm, 0, $descPreviewChars))
-                    : '';
-            @endphp
-            @if($hasDesc)
-                <h5 class="detailheading newspace">Products Description</h5>
-                <div class="product-detail-expandable-wrap{{ $descLong ? ' product-detail-char-expandable' : '' }}">
-                    <div class="desc-det product-detail-expandable-content {{ $descLong ? 'product-detail-collapsed' : '' }}">
-                        <div class="product-detail-expandable-body">
-                            @if($descLong)
-                                <div class="product-detail-text-preview">{{ $descPreviewPlain }}…</div>
-                                <div class="product-detail-text-full">{!! $descHtml !!}<span class="show-less-inline" style="display:none"> <button type="button" class="show-more-less-btn" data-state="less">- Show less</button></span></div>
-                            @else
-                                {!! $descHtml !!}
-                            @endif
-                        </div>
-                        @if($descLong)<span class="show-more-inline"><span class="show-more-ellipsis">... </span><button type="button" class="show-more-less-btn" data-state="more">+ Show more</button></span>@endif
-                    </div>
-                </div>
-            @endif
-            @php
-                $disclaimerText = $product->disclaimer && trim($product->disclaimer) !== '' ? $product->disclaimer : '';
-            @endphp
-            @if($disclaimerText)
-                @php
-                    $disclaimerPreviewChars = 100;
-                    $disclaimerHtml = \App\Helpers\StoreHelper::safeHtml($disclaimerText);
-                    $disclaimerPlain = strip_tags(html_entity_decode($disclaimerHtml, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-                    $disclaimerPlainNorm = trim(preg_replace('/\s+/u', ' ', $disclaimerPlain));
-                    $disclaimerLen = $disclaimerPlainNorm !== ''
-                        ? (function_exists('mb_strlen') ? mb_strlen($disclaimerPlainNorm, 'UTF-8') : strlen($disclaimerPlainNorm))
-                        : 0;
-                    $disclaimerLong = $disclaimerPlainNorm !== '' && $disclaimerLen > $disclaimerPreviewChars;
-                    $disclaimerPreviewPlain = $disclaimerLong
-                        ? (function_exists('mb_substr') ? mb_substr($disclaimerPlainNorm, 0, $disclaimerPreviewChars, 'UTF-8') : substr($disclaimerPlainNorm, 0, $disclaimerPreviewChars))
-                        : '';
-                @endphp
-                <h5 class="detailheading">Disclaimer</h5>
-                <div class="product-detail-expandable-wrap{{ $disclaimerLong ? ' product-detail-char-expandable' : '' }}">
-                    <div class="desc-det product-detail-expandable-content {{ $disclaimerLong ? 'product-detail-collapsed' : '' }}">
-                        <div class="product-detail-expandable-body">
-                            @if($disclaimerLong)
-                                <div class="product-detail-text-preview">{{ $disclaimerPreviewPlain }}…</div>
-                                <div class="product-detail-text-full">{!! $disclaimerHtml !!}<span class="show-less-inline" style="display:none"> <button type="button" class="show-more-less-btn" data-state="less">- Show less</button></span></div>
-                            @else
-                                {!! $disclaimerHtml !!}
-                            @endif
-                        </div>
-                        @if($disclaimerLong)<span class="show-more-inline"><span class="show-more-ellipsis">... </span><button type="button" class="show-more-less-btn" data-state="more">+ Show more</button></span>@endif
-                    </div>
-                </div>
-            @endif
-         </div>
-      </div>
-   </div>
+         <h5 class="detailheading">Product Information</h5>
+<div class="product-detail-expandable-wrap">
+    <div class="desc-det">
+        <div class="product-detail-expandable-body">
+            {!! $infoHtml !!}
+        </div>
+    </div>
+</div>
+@endif
+
+@php
+    $descText = $product->description ?? '';
+    $descHtml = \App\Helpers\StoreHelper::safeHtml($descText);
+    $descPlain = strip_tags(html_entity_decode($descHtml, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+    $descPlainNorm = trim(preg_replace('/\s+/u', ' ', $descPlain));
+    $hasDesc = $descPlainNorm !== '';
+@endphp
+
+@if($hasDesc)
+    <h5 class="detailheading newspace">Products Description</h5>
+    <div class="product-detail-expandable-wrap">
+        <div class="desc-det">
+            <div class="product-detail-expandable-body">
+                {!! $descHtml !!}
+            </div>
+        </div>
+    </div>
+@endif
+
+@php
+    $disclaimerText = $product->disclaimer && trim($product->disclaimer) !== '' ? $product->disclaimer : '';
+@endphp
+
+@if($disclaimerText)
+    @php
+        $disclaimerHtml = \App\Helpers\StoreHelper::safeHtml($disclaimerText);
+    @endphp
+
+    <h5 class="detailheading">Disclaimer</h5>
+    <div class="product-detail-expandable-wrap">
+        <div class="desc-det">
+            <div class="product-detail-expandable-body">
+                {!! $disclaimerHtml !!}
+            </div>
+        </div>
+    </div>
+@endif
+
+</div>
+</div>
+</div>
 </section>
 <!-- first section end  -->
 <!-- Add-to-cart bar outside section so position:fixed works on scroll (Chrome/Safari) -->
 <div class="fixed-bottom-mobile footerpricemobile">
    <div class="d-flex align-items-center justify-content-between w-100 price-container-mobile">
       <div class="product-detail-price-wrap-mobile">
-         <span class="pricedetail"> 
+         <span class="pricedetail">
          <span class="rupee-symbol">₹</span> <span class="product-detail-selling-price-mobile">{{ number_format($sellingPrice, 0) }}</span>
          </span>
          <span class="original-price ms-1 product-detail-actual-wrap-mobile" @if($actualPrice <= $sellingPrice) style="display:none;" @endif>
@@ -989,6 +1009,9 @@
             @if (($defaultVariant->variant_save_price_in_percent ?? 0) > 0)
             <span class="discount-label">{{ (int) round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
             @endif
+            @if(!$variantInStock)
+            <span class="discount-label" style="background: #ffcccc; color: #cc0000;">Out of Stock</span>
+            @endif
             @if($similarProduct->is_physical)
             <a href="{{ route('productdetails', $similarProduct->slug) }}" onclick="return redirectWithLocation(this.href)">
             <img src="{{ $defaultVariant->displayImageUrlForProduct($similarProduct) }}" class="product-image" alt="{{ $similarProduct->title }}">
@@ -998,7 +1021,13 @@
                <img src="{{ $defaultVariant->displayImageUrlForProduct($similarProduct) }}" class="product-image" alt="{{ $similarProduct->title }}">
             </div>
             @endif
-            <div class="product-title cardpadding" title="{{ $similarProduct->title }}">{{ $similarProduct->title }}</div>
+            <div class="product-title cardpadding" title="{{ $similarProduct->title }}">
+               @if ($similarProduct->is_physical)
+               <a href="{{ route('productdetails', $similarProduct->slug) }}" onclick="return redirectWithLocation(this.href)">{{ $similarProduct->title }}</a>
+               @else
+               {{ $similarProduct->title }}
+               @endif
+            </div>
             @if (!empty($firstAttr))
             <div class="product-info cardpadding">{{ $firstAttr }}</div>
             @else
@@ -1105,6 +1134,9 @@
             @if (($defaultVariant->variant_save_price_in_percent ?? 0) > 0)
             <span class="discount-label">{{ (int) round($defaultVariant->variant_save_price_in_percent) }}% Off</span>
             @endif
+            @if(!$variantInStock)
+            <span class="discount-label" style="background: #ffcccc; color: #cc0000;">Out of Stock</span>
+            @endif
             @if($vendorProduct->is_physical)
             <a href="{{ route('productdetails', $vendorProduct->slug) }}" onclick="return redirectWithLocation(this.href)">
             <img src="{{ $defaultVariant->displayImageUrlForProduct($vendorProduct) }}" class="product-image" alt="{{ $vendorProduct->title }}">
@@ -1114,7 +1146,15 @@
                <img src="{{ $defaultVariant->displayImageUrlForProduct($vendorProduct) }}" class="product-image" alt="{{ $vendorProduct->title }}">
             </div>
             @endif
-            <div class="product-title cardpadding" title="{{ $vendorProduct->title }}">{{ $vendorProduct->title }}</div>
+            <div class="product-title cardpadding" title="{{ $vendorProduct->title }}">
+               @if($vendorProduct->is_physical)
+               <a href="{{ route('productdetails', $vendorProduct->slug) }}" onclick="return redirectWithLocation(this.href)">
+                  {{ $vendorProduct->title }}
+               </a>
+               @else
+               {{ $vendorProduct->title }}
+               @endif
+            </div>
             @if (!empty($firstAttrVendor))
             <div class="product-info cardpadding">{{ $firstAttrVendor }}</div>
             @else
@@ -1195,7 +1235,7 @@
      var thumbContainer = document.querySelector('.thumb-det');
      var arrowLeft = document.querySelector('.thumb-container-det .arrow-left-det');
      var arrowRight = document.querySelector('.thumb-container-det .arrow-right-det');
-   
+
      if (mainImg && thumbContainer) {
        thumbContainer.addEventListener('click', function (e) {
          var thumb = e.target.closest('.thumb-det img');
@@ -1223,7 +1263,7 @@
          });
        }
      }
-   
+
      document.querySelectorAll('.show-more-less-btn').forEach(function (btn) {
        btn.addEventListener('click', function () {
          var wrap = this.closest('.product-detail-expandable-wrap');
