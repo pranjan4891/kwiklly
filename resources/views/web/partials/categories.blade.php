@@ -47,7 +47,11 @@
                                     @endif
 
                                     {{-- 🔹 Product Title --}}
-                                    <div class="product-title cardpadding" title="{{ $product->title }}">{{ $product->title }}</div>
+                                    <div class="product-title cardpadding" title="{{ $product->title }}">
+                                        <a href="{{ route('productdetails', $product->slug) }}" onclick="return redirectWithLocation(this.href)">
+                                            {{ $product->title }}
+                                        </a>
+                                    </div>
 
                                     {{-- 🔹 Variant Attribute (like volume/size) --}}
                                     @php
@@ -163,7 +167,7 @@
             </div>
             @endif {{-- ✅ end if products exist --}}
         @endforeach
-   
+
     @endif
 
 
