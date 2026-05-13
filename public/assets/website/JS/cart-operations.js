@@ -2,8 +2,8 @@
  * Cart Operations Handler
  * Handles cart add, increment, decrement operations
  */
- 
- 
+
+
 
 (function() {
     'use strict';
@@ -252,30 +252,25 @@
         let total = 0;
 
         if (cartGroups && Object.keys(cartGroups).length > 0) {
-           // e.preventDefault();
             $.each(cartGroups, function (businessName, items) {
-                // Pick vendor_id from the first item of the group
                 let firstItemKey = Object.keys(items)[0];
                 let vendorId = items[firstItemKey].business_id || '#';
 
-                // Build explore store URL
                 let exploreStoreUrl = (window.EXPLORE_STORE_URL || '/explore-store/:vendor_id/0').replace(':vendor_id', vendorId);
 
-                // Start business group
                 html += `
-                        <div class="cart-business-group mb-3 d-flex justify-content-between align-items-center">
-                            <h6 class="mb-1">
-                                <a href="${exploreStoreUrl}"
-                                class="vendor-sidebar-name d-inline-block"
-                                onclick="return redirectWithLocation(this.href)">
-                                    ${businessName}
-                                </a>
-                            </h6>
-                            <h6 class="mb-1"><a class="small text-danger my-2 d-block" onclick="if(typeof loadSideCartCoupons==='function')loadSideCartCoupons(${vendorId})">Coupons</a></h6>
-                           </div>
-                        `;
+                    <div class="cart-business-group mb-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-1">
+                            <a href="${exploreStoreUrl}"
+                            class="vendor-sidebar-name d-inline-block"
+                            onclick="return redirectWithLocation(this.href)">
+                                ${businessName}
+                            </a>
+                        </h6>
+                        <h6 class="mb-1"><a class="small text-danger my-2 d-block" onclick="if(typeof loadSideCartCoupons==='function')loadSideCartCoupons(${vendorId})">Coupons</a></h6>
+                    </div>
+                `;
 
-                // Loop through each item under this business
                 $.each(items, function (key, item) {
                     let price = parseFloat(item.price);
                     let quantity = parseInt(item.quantity);
@@ -283,27 +278,26 @@
                     let subtotal = price * quantity;
                     total += subtotal;
 
-                    // Format price to remove .00
                     let formatPrice = function(amount) {
                         let num = parseFloat(amount);
-                        // If whole number, return without decimals, else return with decimals but remove .00
                         let formatted = num % 1 === 0 ? num.toString() : num.toFixed(2);
-                        // Remove .00 if present
                         return formatted.replace(/\.00$/, '');
                     };
 
                     let formattedPrice = formatPrice(price);
                     let formattedOriginalPrice = formatPrice(originalPrice);
 
-                    // Escape HTML to prevent XSS and prepare for title attribute
                     let escapedTitle = $('<div>').text(item.title).html();
+                    let truncatedTitle = escapedTitle.length > 18 ? escapedTitle.substring(0, 18) + '...' : escapedTitle;
+                    let escapedVariantInfo = item.variant_info ? $('<div>').text(item.variant_info).html() : '';
 
                     html += `
                         <div class="cart-item d-flex align-items-center justify-content-between border-bottom py-2">
                             <div class="d-flex align-items-center totalimg">
-                                <img src="${item.image}" alt="${escapedTitle}" style="width:50px;">
-                                <div class="mx-3">
-                                    <p class="mb-0" title="${escapedTitle}">${escapedTitle}</p>
+                                <img src="${item.image}" alt="${escapedTitle}" style="width:50px;flex-shrink:0;">
+                                <div class="mx-3" style="min-width:0;width:18ch;">
+                                    <p class="mb-0 text-truncate" style="margin:0;padding:0;line-height:1.2;max-width:18ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapedTitle}">${truncatedTitle}</p>
+                                    ${escapedVariantInfo ? `<small class="text-muted d-block text-truncate" style="max-width:100%;line-height:1.1;margin-top:-1px;" title="${escapedVariantInfo}">${escapedVariantInfo}</small>` : ''}
                                     <small class="text-success">
                                         ₹${formattedPrice} ${price < originalPrice ? `<s class="text-muted">₹${formattedOriginalPrice}</s>` : ''}
                                     </small>

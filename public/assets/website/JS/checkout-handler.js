@@ -1,7 +1,7 @@
 /**
  * Checkout Handler
  * Handles proceed to checkout functionality
- */
+*/
 
 (function() {
     'use strict';
@@ -44,7 +44,7 @@
                                         Swal.fire({
                                             icon: 'info',
                                             title: 'Save delivery address',
-                                            text: 'Pehle apni location se delivery address save karein, phir checkout karein.',
+                                            text: 'Please save your delivery address before proceeding to checkout.',
                                             confirmButtonColor: '#E94412'
                                         }).then(function () {
                                             window.location.href = home + (home.indexOf('?') >= 0 ? '&' : '?') + q;

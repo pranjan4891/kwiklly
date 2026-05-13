@@ -106,17 +106,20 @@ class CartController extends Controller
                 $cart[$key]["quantity"] += $request->quantity;
             } else {
                 $cartTitle = $variant->product->title;
+                $variantInfo = '';
+                $variantInfo = '';
                 if ($variant->variant_name) {
-                    $cartTitle .= ' - ' . $variant->variant_name;
+                    $variantInfo = $variant->variant_name;
                     $meta = $this->buildVariantMetaText($variant);
                     if ($meta) {
-                        $cartTitle .= ' (' . $meta . ')';
+                        $variantInfo .= ' (' . $meta . ')';
                     }
                 }
                 $cart[$key] = [
                     "product_id" => $request->product_id,
                     "variant_id" => $request->variant_id,
                     "title" => $cartTitle,
+                    "variant_info" => $variantInfo,
                     "business_name" => $variant->product->vendor->business_name,
                     "image" => $variant->product->feature_image_id
                         ? url(
@@ -433,17 +436,19 @@ class CartController extends Controller
                 $key = $item->product_id . "_" . $item->variant_id;
 
                 $itemTitle = $item->variant->product->title;
+                $variantInfo = '';
                 if ($item->variant->variant_name) {
-                    $itemTitle .= ' - ' . $item->variant->variant_name;
+                    $variantInfo = $item->variant->variant_name;
                     $meta = $this->buildVariantMetaText($item->variant);
                     if ($meta) {
-                        $itemTitle .= ' (' . $meta . ')';
+                        $variantInfo .= ' (' . $meta . ')';
                     }
                 }
                 $groupedCart[$businessName][$key] = [
                     "product_id"     => $item->product_id,
                     "variant_id"     => $item->variant_id,
                     "title"          => $itemTitle,
+                    "variant_info"   => $variantInfo,
                     "business_id"    => $businessId,
                     "business_name"  => $businessName,
                     "image"          => $item->variant->product->feature_image_id && $item->variant->product->featureImage

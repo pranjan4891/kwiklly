@@ -16,15 +16,15 @@
    </head>
    <body class="{{ $bodyClass ?? '' }}">
       <!-- Desktop sidebar cart start  -->
-      <div class="cart-sidebar position-fixed top-0 end-0 bg-white shadow" style="width: 25%; height: 100vh; z-index: 1050; display: flex; flex-direction: column; transition: all 0.3s;" id="cartSidebar">
+      <div class="cart-sidebar position-fixed top-0 end-0 bg-white shadow" style="width: 27%; height: 100vh; z-index: 1050; display: flex; flex-direction: column; transition: all 0.3s;" id="cartSidebar">
          <div class="d-flex justify-content-between align-items-center p-3" style="box-shadow: 0 2px 2px rgb(0 0 0 / 25%);background-color: white;z-index: 999; flex-shrink: 0;">
             <h5 class="fw-bold"> <i class="fa-solid fa-arrow-left me-3" onclick="document.getElementById('cartSidebar').classList.remove('show')"></i>My Carts</h5>
             <button class="btn-close" onclick="document.getElementById('cartSidebar').classList.remove('show')"></button>
 
          </div>
          <div class="cart-scrollable-content" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
-            <div class=" p-3 rounded my-3 p-3">
-               <div class="cartItemsWrapper" id="cartItemsWrapper" style="padding-bottom: 100px;">
+            <div class="rounded my-1 px-3 py-1">
+               <div class="cartItemsWrapper" id="cartItemsWrapper">
                   <!-- items will be injected dynamically -->
                </div>
             </div>
@@ -34,12 +34,12 @@
          </div>
       </div>
       <!--Desktop sidebar cart end -->
-     
+
       <!-- mobile side cart html start  -->
-      
+
       <!-- Cart Overlay -->
       <div class="cart-overlay" id="cartOverlay2" onclick="closeMobileCart();" style="display: none;"></div>
-      
+
       <div class="cart-sidebar position-fixed top-0 end-0 bg-white shadow" style="width: 100%; height: 100vh; z-index: 1051; display: flex; flex-direction: column;" id="cartSidebar2">
          <div class="cart-header-mobile d-flex justify-content-between align-items-center p-3" style="box-shadow: 0 2px 2px rgb(0 0 0 / 25%);background-color: white;z-index: 1000; flex-shrink: 0; width: 100%; min-height: 60px;">
             <h5 class="fw-bold mb-0" style="font-size: 18px; color: #000;">My Cart</h5>
@@ -206,7 +206,7 @@
          <img src="{{ asset('public/assets/website/images/departmenticon.png')}}" alt="" style="height:25px; margin-bottom:6px;"><br>Department
          </a>
          <a href="{{ route('stores', ['slug' => 'all'])}}" class="nav-item nav-link" onclick="return redirectWithLocation(this.href)">
-         <img src="{{ asset('public/assets/website/images/storeicon.png')}}" alt="" style="height:25px; margin-bottom:6px;"><br>Store  
+         <img src="{{ asset('public/assets/website/images/storeicon.png')}}" alt="" style="height:25px; margin-bottom:6px;"><br>Store
          </a>
          @if(auth()->check())
          <a href="{{ route('customer.dashboard') }}" class="nav-item nav-link" onclick="return redirectWithLocation(this.href)">

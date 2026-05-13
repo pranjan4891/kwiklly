@@ -157,12 +157,15 @@
                         <!-- Show items for this vendor -->
                         <ul class="mt-2 mb-1 ps-3 small text-muted">
                            @foreach ($vendorData['items'] as $item)
-                           <li>{{ $item['product_title'] }}
-                              @if($item['variant'])
-                              ({{ $item['variant'] }}@if(!empty($item['variant_meta'])) ({{ $item['variant_meta'] }})@endif)
-                              @endif
-                              - {{ $item['quantity'] }} x ₹{{ number_format($item['price'], 2) }}
-                           </li>
+                            <li>
+                                <span class="d-block text-truncate" title="{{ $item['product_title'] }}">{{ $item['product_title'] }}</span>
+                                @if($item['variant'])
+                                <small class="text-muted d-block text-truncate" style="max-width:200px;" title="{{ $item['variant'] }}@if(!empty($item['variant_meta'])) ({{ $item['variant_meta'] }})@endif">
+                                    {{ $item['variant'] }}@if(!empty($item['variant_meta'])) ({{ $item['variant_meta'] }})@endif
+                                </small>
+                                @endif
+                                <span>- {{ $item['quantity'] }} x ₹{{ number_format($item['price'], 2) }}</span>
+                            </li>
                            @endforeach
                         </ul>
                         <div class="profile-action-links mt-2">

@@ -1,3 +1,39 @@
+/* ===== Cart Sidebar — qty box hamesha right side ===== */
+#cartItemsWrapper .cart-item,
+#cartItemsWrapperMobile .cart-item {
+    display: flex !important;
+    align-items: center !important;
+}
+#cartItemsWrapper .cart-item .totalimg,
+#cartItemsWrapperMobile .cart-item .totalimg {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+#cartItemsWrapper .cart-item .totalimg img,
+#cartItemsWrapperMobile .cart-item .totalimg img {
+    flex-shrink: 0 !important;
+}
+#cartItemsWrapper .cart-item .totalimg .mx-3,
+#cartItemsWrapperMobile .cart-item .totalimg .mx-3 {
+    flex: 1 !important;
+    min-width: 0 !important;
+    margin-left: 6px !important;
+    margin-right: 6px !important;
+}
+#cartItemsWrapper .cart-item .sidecartbutton,
+#cartItemsWrapperMobile .cart-item .sidecartbutton {
+    flex: none !important;
+    width: auto !important;
+}
+#cartItemsWrapper .cart-item .sidecartbutton .input-group,
+#cartItemsWrapperMobile .cart-item .sidecartbutton .input-group {
+    flex-wrap: nowrap !important;
+    width: auto !important;
+}
+
+
 :root {
     /* Same edge rhythm on mobile and desktop (scales smoothly between viewports) */
     --kw-page-gutter: clamp(12px, 2.75vw + 4px, 26px);
@@ -2662,7 +2698,7 @@ select.time-boxde:focus {
         position: relative;
         cursor: pointer;
         line-height: 1.4;
-        min-height: 30px; /* Ensure consistent height for both short and long names */
+        min-height: 23px; /* Ensure consistent height for both short and long names */
     }
 
   /* Tooltip for cart item product name */
@@ -2916,7 +2952,7 @@ select.time-boxde:focus {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        border-radius: 0 !important;
+        border-radius: 2px !important;
     }
     .sidecartbutton .btn-danger:hover {
         color: #fff;
@@ -3974,7 +4010,7 @@ select.time-boxde:focus {
       .call-icon {
         align-self: flex-end;
       }
-      
+
       /* Vendor Registration - Extra Small Screens */
       .registrationspace {
         margin-top: 70px;
@@ -4236,7 +4272,7 @@ select.time-boxde:focus {
         color: #666;
         margin-top: 5px;
     }
-    
+
     @media (max-width: 768px) {
       .breadcrumb-product {
         display: none;
@@ -4467,7 +4503,7 @@ select.time-boxde:focus {
         width: 100% !important;
         position: relative;
     }
-    
+
     .navbar {
         background-color: #f2fbe9;
         padding: calc(10px + env(safe-area-inset-top, 0px)) 0px 10px;
@@ -4488,7 +4524,7 @@ select.time-boxde:focus {
         overflow-x: hidden !important;
         overflow-y: visible !important;
     }
-    
+
     .navbar .container-fluid {
         width: 100% !important;
         max-width: 100% !important;
@@ -4500,7 +4536,7 @@ select.time-boxde:focus {
         /* Ensure suggestions stay within navbar */
         z-index: 1050;
     }
-    
+
     .mobile-top {
         width: 100% !important;
         max-width: 100% !important;
@@ -4533,12 +4569,12 @@ select.time-boxde:focus {
         max-width: 50% !important;
         overflow: hidden !important;
     }
-    
+
     .navbar-brand img {
         max-width: 100% !important;
         height: auto !important;
     }
-    
+
     .cart-btn {
         white-space: nowrap !important;
         flex-shrink: 0 !important;
@@ -4806,7 +4842,7 @@ select.time-boxde:focus {
         overflow: visible !important;
         z-index: 1001;
     }
-    
+
     .search-container.d-md-none {
         margin-top: 10px;
         width: 100%;
@@ -5045,11 +5081,11 @@ body.suggestions-open {
         overflow: visible;
         padding: 0 6px 0 0;
     }
-    
+
     .owl-carousel .owl-stage {
         display: flex;
     }
-    
+
     /* Ensure each item takes exactly 50% width minus margin; gutter only between cards */
     .owl-carousel .owl-item {
         width: calc((100% - 10px) / 2) !important;
@@ -5057,22 +5093,22 @@ body.suggestions-open {
         max-width: calc((100% - 10px) / 2) !important;
         padding: 0 6px 0 0;
     }
-    
+
     /* Single item carousel - maintain proper width like multiple items */
     .owl-carousel.single-item-carousel {
         position: relative;
     }
-    
+
     .owl-carousel.single-item-carousel .owl-stage-outer {
         overflow: visible !important;
         position: relative;
     }
-    
+
     /* Hide empty items in single item carousel */
     .owl-carousel.single-item-carousel .owl-item:not(:first-child) {
         display: none !important;
     }
-    
+
     /* Mobile: Single item should be 50% width (2 items per row) */
     .owl-carousel.single-item-carousel .owl-item {
         width: 50% !important;
@@ -5081,7 +5117,7 @@ body.suggestions-open {
         flex: 0 0 50% !important;
         box-sizing: border-box;
     }
-    
+
     /* Desktop: Single item should be 25% width (4 items per row) */
     @media (min-width: 768px) {
         .owl-carousel.single-item-carousel .owl-item {
@@ -5091,31 +5127,31 @@ body.suggestions-open {
             flex: 0 0 25% !important;
         }
     }
-    
+
     /* Left align the single item */
     .owl-carousel.single-item-carousel .owl-stage {
         display: flex !important;
         justify-content: flex-start !important;
         transform: translateX(0) !important;
     }
-    
+
     /* Ensure product card in single item maintains proper width and design */
     .owl-carousel.single-item-carousel .product-card {
         max-width: 200px !important;
         width: 185px !important;
         margin: 0 !important;
     }
-    
+
     /* Hide navigation arrows for single item carousel */
     .owl-carousel.single-item-carousel .owl-nav {
         display: none !important;
     }
-    
+
     /* Show navigation on mobile */
     .owl-carousel .owl-nav {
         display: block !important;
     }
-    
+
     .owl-carousel .owl-nav button {
         position: absolute;
         top: 50%;
@@ -5135,22 +5171,22 @@ body.suggestions-open {
         padding: 0;
         margin: 0;
     }
-    
+
     .owl-carousel .owl-nav button.owl-prev {
         left: -10px;
         display: none !important;
     }
-    
+
     .owl-carousel .owl-nav button.owl-next {
         right: -10px;
         display: none !important;
     }
-    
+
     .owl-carousel .owl-nav button:hover {
         background: #4CAF50 !important;
         color: white !important;
     }
-    
+
     .owl-carousel .owl-nav button:disabled {
         opacity: 0.3;
         cursor: not-allowed;
@@ -5559,7 +5595,7 @@ body.suggestions-open {
         margin: 5px auto 8px;
         padding: 5px;
     }
-    
+
     /* Mobile Product Title */
     .product-card .product-title {
         font-size: 14px;
@@ -5580,7 +5616,7 @@ body.suggestions-open {
         word-wrap: break-word;
         padding: 0;
     }
-    
+
     /* Mobile Product Info */
     .product-card .product-info {
         font-size: 13px;
@@ -5591,7 +5627,7 @@ body.suggestions-open {
         padding: 0;
         min-height: 18px;
     }
-    
+
     /* Mobile Price Container */
     .product-card .price-container {
         display: flex !important;
@@ -5604,18 +5640,18 @@ body.suggestions-open {
         padding-bottom: 38px;
         width: 100%;
     }
-    
+
     /* Prevent scroll on button clicks in mobile */
     button, .btn, .add-btn, .qty-btn, .increment-btn, .decrement-btn {
         -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
     }
-    
+
     /* Prevent unwanted scroll on anchor clicks */
     a[href="#"]:not([data-bs-toggle]):not([data-toggle]):not([data-bs-target]):not([data-target]) {
         -webkit-tap-highlight-color: transparent;
     }
-    
+
     .product-card .price-wrapper {
         display: flex !important;
         flex-direction: column !important;
@@ -5626,7 +5662,7 @@ body.suggestions-open {
         min-width: 0;
         min-height: 40px;
     }
-    
+
     .product-card .price {
         color: #4CAF50 !important;
         font-size: 16px !important;
@@ -5635,16 +5671,16 @@ body.suggestions-open {
         margin: 0 !important;
         display: block !important;
     }
-    
+
     .product-card .original-price {
         text-decoration: line-through !important;
         color: #53433F !important;
         font-size: 13px !important;
         line-height: 16px !important;
         font-weight: 400 !important;
-        
+
     }
-    
+
     /* Mobile Add Button - Ensure visibility */
     .product-card .add-btn {
         background: #E94412 !important;
@@ -5667,11 +5703,11 @@ body.suggestions-open {
         cursor: pointer !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
     }
-    
+
     .product-card .add-btn:hover {
         background: #d63a0f !important;
     }
-    
+
     .product-card .add-btn img {
         width: 14px !important;
         height: 14px !important;
@@ -5679,7 +5715,7 @@ body.suggestions-open {
         display: inline-block !important;
         filter: brightness(0) invert(1);
     }
-    
+
     .product-card .add-btn.disabled,
     .product-card .add-btn:disabled {
         background: #cccccc !important;
@@ -5694,7 +5730,7 @@ body.suggestions-open {
         cursor: wait !important;
         opacity: 1 !important;
     }
-    
+
     /* Ensure qty-box is visible */
     .product-card .qty-box {
         display: flex !important;
@@ -5705,7 +5741,7 @@ body.suggestions-open {
         opacity: 1 !important;
         min-width: 80px;
     }
-    
+
     /* Mobile Discount Label */
     .product-card .discount-label {
         position: absolute;
@@ -5719,7 +5755,7 @@ body.suggestions-open {
         border-radius: 16px 0px 16px 0px;
         z-index: 10;
     }
-    
+
     /* Mobile Store Info */
     .product-card .store-info {
         position: absolute;
@@ -5738,7 +5774,7 @@ body.suggestions-open {
         align-items: center;
         min-height: 32px;
     }
-    
+
     .product-card .store-info a {
         color: #000;
         text-decoration: none;
@@ -5747,7 +5783,7 @@ body.suggestions-open {
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    
+
     /* Mobile Quantity Container */
     .product-card .qty-container {
         display: flex !important;
@@ -5759,7 +5795,7 @@ body.suggestions-open {
         margin: 0 !important;
         padding: 0 !important;
     }
-    
+
     .product-card .qty-btn {
         background: #E94412 !important;
         color: white !important;
@@ -5778,7 +5814,7 @@ body.suggestions-open {
         flex-shrink: 0 !important;
         line-height: 1 !important;
     }
-    
+
     .product-card .qty-input {
         width: 27px !important;
         height: 27px !important;
@@ -5793,7 +5829,7 @@ body.suggestions-open {
         font-weight: 600 !important;
         flex-shrink: 0 !important;
     }
-    
+
     /* Mobile Card Padding */
     .product-card .cardpadding {
         padding-left: 6px;
@@ -7466,14 +7502,14 @@ body.suggestions-open {
     .cardpadding{
         padding: 0px 8px 0px 8px;
     }
-    
+
     /* Mobile Product Grid Spacing */
     .row .col-6 {
         padding-left: 6px;
         padding-right: 6px;
         margin-bottom: 12px;
     }
-    
+
     /* Ensure product cards have consistent height on mobile */
     .col-6 .product-card {
         margin-bottom: 0;

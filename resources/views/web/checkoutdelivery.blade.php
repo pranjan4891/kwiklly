@@ -261,7 +261,7 @@
                 .xyz-coupon-discount {
                     font-size: 0.95rem !important;
                 }
-                
+
                 .xyz-coupon-row .col-7 {
                     width: 65% !important;
                 }
@@ -417,9 +417,12 @@
                                     @foreach($vendorData['items'] as $key => $item)
                                     <div class="cart-item d-flex align-items-center justify-content-between border-bottom py-2">
                                         <div class="totalimg">
-                                            <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}" style="width:50px;">
-                                            <div class="mx-3">
-                                                <p class="mb-0 fw-medium">{{ $item['title'] }}</p>
+                                            <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}" style="width:50px;flex-shrink:0;">
+                                            <div class="mx-3" style="min-width:0;">
+                                                <p class="mb-0 fw-medium text-truncate" style="margin:0;padding:0;line-height:1.2;max-width:18ch;" title="{{ $item['title'] }}">{{ $item['title'] }}</p>
+                                                @if(!empty($item['variant_info']))
+                                                <small class="text-muted d-block text-truncate" style="max-width:100%;line-height:1.1;margin-top:-1px;" title="{{ $item['variant_info'] }}">{{ $item['variant_info'] }}</small>
+                                                @endif
                                                 <small class="text-success">
                                                     ₹{{ $item['price'] }}
                                                     @if($item['original_price'] > $item['price'])
@@ -1535,7 +1538,7 @@
                     const $vendorSection = $(`.vendor-section[data-vendor-id="${vendorId}"]`);
                     // Find the bill summary header div (could be p-3 or p-3 mb-2)
                     const $billHeader = $vendorSection.find('.d-flex.align-items-center').has('h6:contains("Bill Summary")');
-                    
+
                     if ($billHeader.length) {
                         // Check if strong tag exists, if not create it
                         let $strongTag = $billHeader.find('strong.ms-2');
@@ -1647,11 +1650,11 @@
                                     // Update grand total with delivery charge
                                     const finalTotal = latestCartTotal + deliveryCharge;
                                     $(`#totalCharge-${currentVendorId}`).text(`₹${finalTotal.toFixed(2)}`);
-                                    
+
                                     // Update bill summary header with final total (including delivery charge)
                                     const $vendorSectionForDelivery = $(`.vendor-section[data-vendor-id="${currentVendorId}"]`);
                                     const $billHeaderForDelivery = $vendorSectionForDelivery.find('.d-flex.align-items-center').has('h6:contains("Bill Summary")');
-                                    
+
                                     if ($billHeaderForDelivery.length) {
                                         let $strongTagForDelivery = $billHeaderForDelivery.find('strong.ms-2');
                                         if ($strongTagForDelivery.length === 0) {
@@ -1771,9 +1774,10 @@
                             html += `
                                 <div class="cart-item d-flex align-items-center justify-content-between border-bottom py-2">
                                     <div class="totalimg">
-                                        <img src="${item.image}" alt="${item.title}" width="50">
-                                        <div class="mx-3">
-                                            <p class="mb-0 fw-medium">${item.title}</p>
+                                        <img src="${item.image}" alt="${item.title}" width="50" style="flex-shrink:0;">
+                                        <div class="mx-3" style="min-width:0;">
+                                            <p class="mb-0 fw-medium text-truncate" style="margin:0;padding:0;line-height:1.2;max-width:18ch;" title="${item.title}">${item.title}</p>
+                                            ${item.variant_info ? `<small class="text-muted d-block text-truncate" style="max-width:100%;line-height:1.1;margin-top:-1px;" title="${item.variant_info}">${item.variant_info}</small>` : ''}
                                             <small class="text-success">₹${item.price}</small>
                                             ${item.price < item.original_price ? `<s class="text-muted">₹${item.original_price}</s>` : ''}
                                         </div>
@@ -2879,7 +2883,7 @@
                                     Swal.fire({
                                         icon: 'info',
                                         title: 'Save address for this location',
-                                        text: 'Aapki searched location ke liye koi saved address nahi mila. Pehle address save karein.',
+                                        text: 'We couldn\'t find a saved address for your current location. Please select an address to proceed.',
                                         confirmButtonColor: '#E94412'
                                     }).then(function() {
                                         window.location.href = "{{ route('delivery.address') }}";

@@ -1,4 +1,4 @@
-   @include('web.include.variant_modal')
+@include('web.include.variant_modal')
    @include('web.include.vendor-coupon-modal')
    @include('web.partials.location_error_modal')
 
@@ -146,6 +146,14 @@
                             : collect();
                     @endphp
 
+                    @php
+    function formatCategoryName($name) {
+        $name = strtolower($name);
+        $name = preg_replace('/\s*&\s*/', ' & ', $name);
+        return ucwords($name);
+    }
+@endphp
+
                     <div class="row mt-4 footer-links hidecat">
                         <h5>Category</h5>
 
@@ -156,7 +164,7 @@
                                     <ul>
                                         <li>
                                             <a href="{{ route('allcategorywiseproduct', $category->id) }}" onclick="return redirectWithLocation(this.href)">
-                                                {{ $category->name }}
+                                                {{ formatCategoryName($category->name) }}
                                             </a>
                                         </li>
                                     </ul>
@@ -172,7 +180,7 @@
                                                 <option>Show More</option>
                                                 @foreach($moreCategories as $category)
                                                     <option value="{{ route('allcategorywiseproduct', $category->id) }}">
-                                                        <a onclick="return redirectWithLocation(this.href)">{{ $category->name }}</a>
+                                                        <a onclick="return redirectWithLocation(this.href)">{{ formatCategoryName($category->name) }}</a>
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -188,7 +196,7 @@
                                         <option>Show More</option>
                                         @foreach($moreCategories as $category)
                                             <option value="{{ route('allcategorywiseproduct', $category->id) }}">
-                                                <a onclick="return redirectWithLocation(this.href)">{{ $category->name }}</a>
+                                                <a onclick="return redirectWithLocation(this.href)">{{ formatCategoryName($category->name) }}</a>
                                             </option>
                                         @endforeach
                                     </select>
@@ -268,7 +276,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <!-- Set global configuration variables -->
     <script>
         // Laravel routes and configuration
@@ -333,19 +341,19 @@
         window.ajaxCategorywiseProductsUrl = @json(route('ajax.categorywise.products'));
     </script>
     <script src="{{ versioned_asset('public/assets/website/JS/category-subcategory-ajax.js') }}"></script>
-    
+
     <!-- Cart and product scripts -->
     <script src="{{ versioned_asset('public/assets/website/JS/qty-section-loading.js') }}"></script>
     <script src="{{ versioned_asset('public/assets/website/JS/cart-operations.js') }}"></script>
     <script src="{{ versioned_asset('public/assets/website/JS/product-variant-modal.js') }}"></script>
     <script src="{{ versioned_asset('public/assets/website/JS/checkout-handler.js') }}"></script>
-    
+
     <!-- Other scripts -->
     <script src="{{ versioned_asset('public/assets/website/JS/contact-popup.js') }}"></script>
     <script src="{{ versioned_asset('public/assets/website/JS/footer-categories.js') }}"></script>
     <script src="{{ versioned_asset('public/assets/website/JS/hash-cleanup.js') }}"></script>
     <script src="{{ versioned_asset('public/assets/website/JS/custom.js') }}"></script>
-    
+
     <!-- Google Maps API (for location autocomplete) - MUST load after location-autocomplete.js -->
     <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places&callback=initAutocomplete" async defer></script>
     <!--------------- CUSTOM JAVASCRIPT END ----------------->
