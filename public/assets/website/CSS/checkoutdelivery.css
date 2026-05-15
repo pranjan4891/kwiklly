@@ -634,6 +634,90 @@
 }
 
 @media (max-width: 768px) {
+    .xyz-modal {
+        width: min(400px, calc(100vw - 20px)) !important;
+        max-width: 400px !important;
+        padding: 10px 12px 12px !important;
+        margin: 10px auto !important;
+    }
+
+    .xyz-modal-header {
+        margin-bottom: 6px;
+    }
+
+    .xyz-modal h5,
+    .xyz-modal-header h5 {
+        font-size: 0.95rem !important;
+    }
+
+    .xyz-close {
+        font-size: 22px !important;
+    }
+
+    .xyz-coupon-row {
+        padding: 8px 10px !important;
+        margin-bottom: 8px !important;
+        max-width: 100% !important;
+    }
+
+    .xyz-coupon-row-inner {
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+    }
+
+    .xyz-coupon-discount {
+        font-size: 1rem !important;
+        margin-bottom: 2px !important;
+    }
+
+    .xyz-coupon-min-order {
+        font-size: 10.5px !important;
+        margin-bottom: 2px !important;
+    }
+
+    .xyz-coupon-code {
+        font-size: 9.5px !important;
+    }
+
+    .xyz-coupon-expiry,
+    .xyz-coupon-expiry-date {
+        font-size: 8.5px !important;
+    }
+
+    .xyz-coupon-logo {
+        height: 22px !important;
+        max-width: 36px !important;
+        margin-bottom: 4px !important;
+    }
+
+    .xyz-coupon-applied-line {
+        font-size: 8.5px !important;
+    }
+
+    .apply-coupon-btn,
+    .xyz-coupon-apply-btn {
+        font-size: 10.5px !important;
+        padding: 4px 12px !important;
+        margin-top: 4px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .xyz-modal {
+        width: calc(100vw - 16px) !important;
+        padding: 10px 10px 12px !important;
+    }
+
+    .xyz-coupon-row {
+        padding: 8px 10px !important;
+    }
+
+    .xyz-coupon-discount {
+        font-size: 0.9rem !important;
+    }
+}
+
+@media (max-width: 768px) {
     .extracartmargin {
         margin-top: 80px;
     }
@@ -2027,22 +2111,22 @@ li:has(span:contains("Wallet Discount")),
 /* Mobile-specific styles for checkout address page */
 @media (max-width: 768px) {
     .pata-location-title {
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 600;
-        margin-bottom: 10px;
+        margin-bottom: 6px;
     }
 
     .pata-location-desc {
-        font-size: 14px;
+        font-size: 13px;
         color: #666;
-        margin-bottom: 15px;
-        line-height: 1.5;
+        margin-bottom: 12px;
+        line-height: 1.4;
     }
 
     .pata-tag-buttons {
         flex-direction: row;
         gap: 10px;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
     }
 
     .pata-tag-buttons button {
@@ -2061,11 +2145,11 @@ li:has(span:contains("Wallet Discount")),
     }
 
     .pata-input {
-        margin-bottom: 15px;
+        margin-bottom: 10px;
     }
 
     .pata-input .form-control {
-        padding: 12px 15px;
+        padding: 6px 12px;
         font-size: 14px;
         border-radius: 8px;
         border: 1px solid #ddd;
@@ -2077,7 +2161,7 @@ li:has(span:contains("Wallet Discount")),
     }
 
     .pata-save-btn {
-        padding: 12px 20px;
+        padding: 10px 20px;
         font-size: 15px;
         font-weight: 700;
         background-color: #E94412;
@@ -2095,14 +2179,14 @@ li:has(span:contains("Wallet Discount")),
     }
     
     .proceed-btn2 {
-        padding: 12px 20px;
+        padding: 10px 20px;
         font-size: 15px;
         border-radius: 40px;
     }
 
     .location-detect-btn {
-        margin-bottom: 15px;
-        padding: 12px 15px;
+        margin-bottom: 12px;
+        padding: 8px 12px;
         font-size: 14px;
     }
 
@@ -2474,7 +2558,7 @@ li:has(span:contains("Wallet Discount")),
     }
     
     .main-content-box {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 }
 
@@ -2490,3 +2574,89 @@ li:has(span:contains("Wallet Discount")),
     }
 }
 
+/* Premium SweetAlert2 Styling & Mobile Overrides */
+.swal2-popup.premium-mobile-swal,
+.swal2-popup {
+    border-radius: 20px !important;
+    padding: 1.5rem !important;
+    font-family: 'Outfit', sans-serif !important;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15) !important;
+}
+
+.swal2-title {
+    font-size: 1.4rem !important;
+    font-weight: 700 !important;
+    color: #1a1a1a !important;
+    letter-spacing: -0.5px !important;
+}
+
+.swal2-html-container {
+    font-size: 1rem !important;
+    color: #444 !important;
+    line-height: 1.5 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.swal2-confirm.swal2-styled {
+    background: #E94412 !important;
+    background: linear-gradient(135deg, #E94412, #ff5722) !important;
+    border-radius: 12px !important;
+    padding: 12px 24px !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    box-shadow: 0 4px 12px rgba(233, 68, 18, 0.25) !important;
+    transition: all 0.2s ease !important;
+}
+
+.swal2-cancel.swal2-styled {
+    border-radius: 12px !important;
+    padding: 12px 24px !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    background-color: #f5f5f5 !important;
+    color: #666 !important;
+    transition: all 0.2s ease !important;
+}
+
+.swal2-confirm.swal2-styled:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(233, 68, 18, 0.3) !important;
+}
+
+@media (max-width: 576px) {
+    .swal2-popup.premium-mobile-swal,
+    .swal2-popup {
+        width: 88% !important;
+        padding: 1.25rem !important;
+        border-radius: 18px !important;
+    }
+    
+    .swal2-icon {
+        font-size: 0.65em !important;
+        margin: 0.8em auto 0.2em !important;
+    }
+
+
+    .swal2-title {
+        font-size: 1.1rem !important;
+        margin-bottom: 0.2rem !important;
+    }
+
+    .swal2-html-container {
+        font-size: 0.82rem !important;
+        margin: 0.2rem 0 0 !important;
+    }
+
+    .swal2-actions {
+        margin-top: 1rem !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    }
+
+    /* Force hide Deny button regardless of other styles */
+    .swal2-deny, .swal2-styled.swal2-deny {
+        display: none !important;
+    }
+}

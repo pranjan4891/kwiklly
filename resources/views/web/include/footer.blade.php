@@ -148,11 +148,21 @@
 
                     @php
     function formatCategoryName($name) {
-        $name = strtolower($name);
-        $name = preg_replace('/\s*&\s*/', ' & ', $name);
-        return ucwords($name);
+        if (empty($name)) return '';
+        // Convert to lowercase first to handle ALL CAPS from backend
+        $name = mb_strtolower($name, 'UTF-8');
+        // Convert to Title Case (First Letter Of Each Word)
+        $name = mb_convert_case($name, MB_CASE_TITLE, 'UTF-8');
+        // Ensure "&" has proper spacing if needed
+        return str_replace('&', '&', $name);
     }
 @endphp
+
+<style>
+    .footer-links ul li a {
+        text-transform: none !important; /* Prevent global CSS from forcing UPPERCASE */
+    }
+</style>
 
                     <div class="row mt-4 footer-links hidecat">
                         <h5>Category</h5>

@@ -412,13 +412,21 @@
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.16) !important;
   }
 
+  #productModal .modal-header {
+    padding: 8px 12px;
+  }
+
+  #productModal .modal-title {
+    font-size: 15px !important;
+  }
+
   #productModal .modal-body {
     padding: 10px 12px 12px;
   }
 
   #productModal .unit-list {
     gap: 6px;
-    max-height: 420px;
+    max-height: 400px;
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 4px;
@@ -459,29 +467,37 @@
   }
 
   #productModal .variant-option-thumb {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
   }
 
   #productModal .variant-option-title {
-    font-size: 13px;
-    line-height: 1.3;
+    font-size: 12.5px !important;
+    line-height: 1.25;
   }
 
   #productModal .variant-option-meta {
     margin-top: 0;
-    font-size: 12px;
-    line-height: 1.25;
+    font-size: 11px !important;
+    line-height: 1.2;
   }
 
   #productModal .variant-option-prices {
     margin-top: 2px;
-    gap: 6px;
+    gap: 4px;
+  }
+
+  #productModal .variant-option-prices .original-price {
+    font-size: 11px !important;
+  }
+
+  #productModal .variant-option-prices .price {
+    font-size: 13.5px !important;
   }
 
   #productModal .variant-option-qty {
     width: auto !important;
-    max-width: 118px !important;
+    max-width: 100px !important;
     min-width: 0 !important;
     flex: 0 0 auto !important;
     align-self: flex-start !important;
@@ -493,14 +509,14 @@
     justify-content: flex-end !important;
     align-items: center !important;
     width: auto !important;
-    max-width: 118px !important;
+    max-width: 100px !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
   }
 
   #productModal .qty-box.variant-option-qty .variant-actions-row {
     width: auto !important;
-    max-width: 118px !important;
+    max-width: 100px !important;
     min-width: 0 !important;
   }
 
@@ -515,9 +531,28 @@
     box-sizing: border-box;
   }
 
-  #productModal .variant-actions-row--add .add-btn {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+  #productModal .variant-option-qty .add-btn {
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+    min-width: 60px;
+    height: 28px;
+  }
+
+  #productModal .variant-add-cart-icon {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  #productModal .variant-option-qty .qty-btn {
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 16px !important;
+  }
+
+  #productModal .variant-option-qty .qty-input {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 13px !important;
   }
 
   #productModal .variant-actions-row--qty-only,

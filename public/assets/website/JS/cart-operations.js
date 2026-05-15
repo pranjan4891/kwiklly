@@ -289,7 +289,11 @@
 
                     let escapedTitle = $('<div>').text(item.title).html();
                     let truncatedTitle = escapedTitle.length > 18 ? escapedTitle.substring(0, 18) + '...' : escapedTitle;
-                    let escapedVariantInfo = item.variant_info ? $('<div>').text(item.variant_info).html() : '';
+                    let cleanVariantInfo = function(info) {
+                        if (!info) return '';
+                        return info.split(',').map(s => s.split(':').pop().trim()).join(', ');
+                    };
+                    let escapedVariantInfo = item.variant_info ? cleanVariantInfo(item.variant_info) : '';
 
                     html += `
                         <div class="cart-item d-flex align-items-center justify-content-between border-bottom py-2">
@@ -297,7 +301,7 @@
                                 <img src="${item.image}" alt="${escapedTitle}" style="width:50px;flex-shrink:0;">
                                 <div class="mx-3" style="min-width:0;width:18ch;">
                                     <p class="mb-0 text-truncate" style="margin:0;padding:0;line-height:1.2;max-width:18ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapedTitle}">${truncatedTitle}</p>
-                                    ${escapedVariantInfo ? `<small class="text-muted d-block text-truncate" style="max-width:100%;line-height:1.1;margin-top:-1px;" title="${escapedVariantInfo}">${escapedVariantInfo}</small>` : ''}
+                                    ${escapedVariantInfo ? `<small class="text-muted d-block text-truncate" style="max-width:100%;line-height:1.1;margin-top:-1px;" title="${item.variant_info}">${escapedVariantInfo}</small>` : ''}
                                     <small class="text-success">
                                         ₹${formattedPrice} ${price < originalPrice ? `<s class="text-muted">₹${formattedOriginalPrice}</s>` : ''}
                                     </small>

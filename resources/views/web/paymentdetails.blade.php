@@ -224,7 +224,10 @@
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Yes, Confirm Order',
                 cancelButtonText: 'Cancel',
-                reverseButtons: true
+                reverseButtons: true,
+                customClass: {
+                    popup: 'premium-mobile-swal'
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     // User confirmed, process the order
@@ -306,20 +309,17 @@
                         title: 'Order Confirmed!',
                         text: 'Your order has been placed successfully.',
                         icon: 'success',
-                        showDenyButton: true,
+                        showDenyButton: false,
                         showCancelButton: false,
                         confirmButtonColor: '#E94412',
-                        denyButtonColor: '#6c757d',
                         confirmButtonText: 'Go to Dashboard',
-                        denyButtonText: 'Go to Home',
-                        reverseButtons: true
+                        customClass: {
+                            popup: 'premium-mobile-swal'
+                        }
                     }).then((result) => {
                         if (result.isConfirmed) {
                             // Redirect to dashboard
                             window.location.href = '{{ route("customer.dashboard") }}';
-                        } else if (result.isDenied) {
-                            // Redirect to home
-                            window.location.href = '{{ route("home") }}';
                         }
                     });
                 } else {
@@ -328,7 +328,11 @@
                         title: 'Error!',
                         text: data.message || 'Something went wrong. Please try again.',
                         icon: 'error',
-                        confirmButtonText: 'OK'
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#E94412',
+                        customClass: {
+                            popup: 'premium-mobile-swal'
+                        }
                     });
                     btn.innerHTML = originalText;
                     btn.disabled = false;
@@ -340,7 +344,11 @@
                     title: 'Error!',
                     text: 'An error occurred. Please try again.',
                     icon: 'error',
-                    confirmButtonText: 'OK'
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#E94412',
+                    customClass: {
+                        popup: 'premium-mobile-swal'
+                    }
                 });
                 btn.innerHTML = originalText;
                 btn.disabled = false;

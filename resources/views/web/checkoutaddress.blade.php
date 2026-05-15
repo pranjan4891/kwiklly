@@ -56,10 +56,10 @@
                </div>
             </div>
             @endif
-            <div class="row g-3">
+             <div class="row g-2 g-md-3">
             
-               <div class="col-12 col-md-6 main-content-box address-box ">
-                  <div class="p-3 ">
+               <div class="col-12 col-md-6 main-content-box address-box">
+                  <div class="p-2 p-md-3 ">
                      <button type="button" id="toggleAddressFormBtn" class="btn btn-outline-primary w-100 mb-3 d-md-none">+ Add Address</button>
                      <div id="addressFormWrapper" class="d-none d-md-block">
                      <!-- Location address text -->
@@ -91,15 +91,15 @@
                            <i class="fas fa-location-arrow"></i> Use my current location
                         </div>
 
-                        <button type="submit" class="pata-save-btn mt-3 w-100">Save Address</button>
+                        <button type="submit" class="pata-save-btn mt-2 w-100">Save Address</button>
                      </form>
                      </div>
                   </div>
                </div>
                <!-- RIGHT: Address List -->
-                <div class="col-12 col-md-6 main-content-box address-box mb-3">
-                  <div class="address-section pataoverflow">
-                     <div class="section-title text-center pt-3">
+                <div class="col-12 col-md-6 main-content-box address-box mb-2 mb-md-3">
+                  <div class="address-section pataoverflow p-2 p-md-3">
+                     <div class="section-title text-center pt-2">
                         <h4>Your saved address for current location</h4>
                      </div>
                      <!-- Dynamic Address List Here -->
@@ -107,7 +107,7 @@
                   </div>
 
                   <!-- Proceed button -->
-                  <div class="text-center p-3 mt-3">
+                  <div class="text-center p-2 mt-2">
                      <button id="proceedToPayBtn" class="btn proceed-btn2" disabled>Proceed to Pay ₹{{ number_format($order->final_amount, 2) }}</button>
                </div>
             </div>
@@ -168,6 +168,15 @@
          let orderId = {{ $order->id ?? 0 }};
 
          document.addEventListener("DOMContentLoaded", function () {
+           // Force hide deny button for all SweetAlert2 popups
+           const originalSwalFire = Swal.fire;
+           Swal.fire = function(args) {
+               if (typeof args === 'object' && args !== null) {
+                   args.showDenyButton = false;
+               }
+               return originalSwalFire.apply(this, arguments);
+           };
+
            const homeBtn = document.getElementById("pataHomeBtn");
            const workBtn = document.getElementById("pataWorkBtn");
            const addressType = document.getElementById("addressType");
@@ -239,22 +248,62 @@
              })
              .then(res => res.json())
              .then(data => {
-               if (data.errors) {
-                 let errors = Object.values(data.errors).flat().join('\n');
-                 alert(`Validation errors:\n${errors}`);
-               } else if (data.success) {
-                 alert(data.message);
-                 resetForm();
-                 loadSavedAddresses();
-               } else {
-                 alert('Something went wrong: ' + (data.message || 'Unknown error'));
-               }
-             })
-             .catch(err => {
-               console.error('Submission error:', err);
-               alert('Network error!');
-             });
-           });
+                if (data.errors) {
+                  let errors = Object.values(data.errors).flat().join('\n');
+                   Swal.fire({
+                     icon: 'error',
+                     title: 'Validation Error',
+                     text: errors,
+                     confirmButtonColor: '#E94412',
+                     showCancelButton: false,
+                     showDenyButton: false,
+                     confirmButtonText: 'OK',
+                     customClass: { popup: 'premium-mobile-swal' }
+                   });
+                } else if (data.success) {
+                  if (data.address && data.address.id) {
+                    localStorage.setItem("selectedSavedAddressId", String(data.address.id));
+                  }
+                   Swal.fire({
+                     icon: 'success',
+                     title: 'Success',
+                     text: data.message,
+                     confirmButtonColor: '#E94412',
+                     showCancelButton: false,
+                     showDenyButton: false,
+                     confirmButtonText: 'OK',
+                     customClass: { popup: 'premium-mobile-swal' }
+                   }).then(() => {
+                    if (window.loadSavedAddresses) window.loadSavedAddresses();
+                    location.reload();
+                  });
+                } else {
+                   Swal.fire({
+                     icon: 'error',
+                     title: 'Error',
+                     text: data.message || 'Unknown error',
+                     confirmButtonColor: '#E94412',
+                     showCancelButton: false,
+                     showDenyButton: false,
+                     confirmButtonText: 'OK',
+                     customClass: { popup: 'premium-mobile-swal' }
+                   });
+                }
+              })
+              .catch(err => {
+                console.error('Submission error:', err);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Network Error',
+                  text: 'Unable to connect to the server. Please try again.',
+                  confirmButtonColor: '#E94412',
+                  showCancelButton: false,
+                  showDenyButton: false,
+                  confirmButtonText: 'OK',
+                  customClass: { popup: 'premium-mobile-swal' }
+                });
+              });
+            });
 
            // Reset form after save/update
            function resetForm() {
@@ -341,18 +390,14 @@
                   }) || null;
                 }
                 const serverSelected = list.find(addr => !!addr.is_selected);
-                if (coordMatch) {
-                  selectAddress(Number(coordMatch.id));
-                } else if (serverSelected) {
+                const preferredAddressId = localStorage.getItem("selectedSavedAddressId");
+                
+                if (serverSelected) {
                   selectAddress(Number(serverSelected.id));
-                } else {
-                  const preferredAddressId = localStorage.getItem("selectedSavedAddressId");
-                  if (preferredAddressId) {
-                    const preferredExists = list.some(addr => String(addr.id) === String(preferredAddressId));
-                    if (preferredExists) {
-                      selectAddress(Number(preferredAddressId));
-                    }
-                  }
+                } else if (preferredAddressId && list.some(addr => String(addr.id) === String(preferredAddressId))) {
+                  selectAddress(Number(preferredAddressId));
+                } else if (coordMatch) {
+                  selectAddress(Number(coordMatch.id));
                 }
                });
            }
@@ -527,11 +572,18 @@
                      if (!checkData.deliverable) {
                        if (geoOpGen === checkoutGeoGen) {
                          useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
-                         Swal.fire({
-                           icon: 'error',
-                           title: 'Delivery not available',
-                           text: checkData.message || 'Sorry we could not deliver on this address.'
-                         });
+                          Swal.fire({
+                            icon: 'error',
+                            title: 'Delivery not available',
+                            text: checkData.message || 'Sorry we could not deliver on this address.',
+                            confirmButtonColor: '#E94412',
+                            showCancelButton: false,
+                            showDenyButton: false,
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                popup: 'premium-mobile-swal'
+                            }
+                          });
                        }
                        return;
                      }
@@ -539,11 +591,18 @@
                      console.error('Delivery check error:', err);
                      if (geoOpGen === checkoutGeoGen) {
                        useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
-                       Swal.fire({
-                         icon: 'error',
-                         title: 'Error',
-                         text: 'Unable to verify delivery for this address. Please try again.'
-                       });
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'Error',
+                          text: 'Unable to verify delivery for this address. Please try again.',
+                          confirmButtonColor: '#E94412',
+                          showCancelButton: false,
+                          showDenyButton: false,
+                          confirmButtonText: 'OK',
+                          customClass: {
+                              popup: 'premium-mobile-swal'
+                          }
+                        });
                      }
                      return;
                    }
@@ -559,12 +618,30 @@
                    if (geoOpGen !== checkoutGeoGen) return;
                    console.warn("Geolocation error:", error);
                    useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
-                   alert('Unable to detect your location. Please try again or enter manually.');
+                   Swal.fire({
+                        icon: 'error',
+                        title: 'Location Error',
+                        text: 'Unable to detect your location. Please try again or enter manually.',
+                        confirmButtonColor: '#E94412',
+                        showCancelButton: false,
+                        showDenyButton: false,
+                        confirmButtonText: 'OK',
+                        customClass: { popup: 'premium-mobile-swal' }
+                    });
                  }
                );
              } else {
                useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
-               alert('Geolocation is not supported by this browser.');
+               Swal.fire({
+                    icon: 'error',
+                    title: 'Not Supported',
+                    text: 'Geolocation is not supported by this browser.',
+                    confirmButtonColor: '#E94412',
+                    showCancelButton: false,
+                    showDenyButton: false,
+                    confirmButtonText: 'OK',
+                    customClass: { popup: 'premium-mobile-swal' }
+                });
              }
            }
 
@@ -610,7 +687,16 @@
                }
                console.error("Reverse geocoding error:", error);
                useCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Use my current location';
-               alert('Unable to get address from your location. Please try again or enter manually.');
+               Swal.fire({
+                    icon: 'error',
+                    title: 'Location Error',
+                    text: 'Unable to get address from your location. Please try again or enter manually.',
+                    confirmButtonColor: '#E94412',
+                    showCancelButton: false,
+                    showDenyButton: false,
+                    confirmButtonText: 'OK',
+                    customClass: { popup: 'premium-mobile-swal' }
+                });
              }
            }
 
@@ -651,7 +737,21 @@
 
          // Delete address
          function deleteAddress(id) {
-           if (!confirm("Are you sure to delete this address?")) return;
+                       Swal.fire({
+                title: 'Delete Address?',
+                text: 'Are you sure you want to delete this address?',
+                icon: 'warning',
+                showCancelButton: true,
+                showDenyButton: false,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Delete',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: { popup: 'premium-mobile-swal' }
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
 
            fetch(`{{ url('address/delete') }}/${id}`, {
              method: 'DELETE',
@@ -661,17 +761,38 @@
            })
            .then(res => res.json())
            .then(data => {
-             alert(data.message);
+                           Swal.fire({
+                icon: 'success',
+                title: 'Deleted',
+                text: data.message,
+                confirmButtonColor: '#E94412',
+                showCancelButton: false,
+                showDenyButton: false,
+                confirmButtonText: 'OK',
+                customClass: { popup: 'premium-mobile-swal' }
+              });
+
              if (selectedAddressId === id) {
                selectedAddressId = null;
+                localStorage.removeItem("selectedSavedAddressId");
                document.getElementById('proceedToPayBtn').disabled = true;
              }
              loadSavedAddresses();
            })
-           .catch(err => {
-             alert('Delete failed');
-           });
-         }
+            .catch(err => {
+              Swal.fire({
+                 icon: 'error',
+                 title: 'Error',
+                 text: 'Delete failed',
+                 confirmButtonColor: '#E94412',
+                 showCancelButton: false,
+                 showDenyButton: false,
+                 confirmButtonText: 'OK',
+                 customClass: { popup: 'premium-mobile-swal' }
+               });
+            });
+          });
+        }
 
          // Edit address
          function editAddress(id) {
@@ -680,7 +801,19 @@
              .then(data => {
                const address = data.address;
 
-               if (!address) return alert("Address not found");
+               if (!address) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Not Found',
+                        text: 'Address not found',
+                        confirmButtonColor: '#E94412',
+                        showCancelButton: false,
+                        showDenyButton: false,
+                        confirmButtonText: 'OK',
+                        customClass: { popup: 'premium-mobile-swal' }
+                    });
+                    return;
+                }
 
                if (window.unlockAreaAndPincode) window.unlockAreaAndPincode();
 
@@ -707,7 +840,16 @@
                if (window.lockAreaAndPincode) window.lockAreaAndPincode();
              })
              .catch(err => {
-               alert('Failed to load address');
+               Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to load address',
+                    confirmButtonColor: '#E94412',
+                    showCancelButton: false,
+                    showDenyButton: false,
+                    confirmButtonText: 'OK',
+                    customClass: { popup: 'premium-mobile-swal' }
+                });
                console.error(err);
              });
          }
@@ -739,7 +881,16 @@
          // Proceed to payment
          document.getElementById('proceedToPayBtn').addEventListener('click', function() {
            if (!selectedAddressId) {
-             alert('Please select an address');
+              Swal.fire({
+                  icon: 'warning',
+                  title: 'Address Required',
+                  text: 'Please select an address',
+                  confirmButtonColor: '#E94412',
+                  showCancelButton: false,
+                  showDenyButton: false,
+                  confirmButtonText: 'OK',
+                  customClass: { popup: 'premium-mobile-swal' }
+              });
              return;
            }
 
@@ -757,22 +908,35 @@
              } catch (e) {}
            }
            if (!hasLocation) {
-             alert('Please set your current location first (click "Use my current location" or enter and save an address in your current area).');
+              Swal.fire({
+                  icon: 'warning',
+                  title: 'Location Required',
+                  text: 'Please set your current location first (click "Use my current location" or enter and save an address in your current area).',
+                  confirmButtonColor: '#E94412',
+                  showCancelButton: false,
+                  showDenyButton: false,
+                  confirmButtonText: 'OK',
+                  customClass: { popup: 'premium-mobile-swal' }
+              });
              return;
            }
 
            // Show confirmation dialog
-           Swal.fire({
-               title: 'Proceed to Payment?',
-               text: 'Are you sure you want to proceed to the payment page?',
-               icon: 'question',
-               showCancelButton: true,
-               confirmButtonColor: '#E94412',
-               cancelButtonColor: '#6c757d',
-               confirmButtonText: 'Yes, Proceed',
-               cancelButtonText: 'Cancel',
-               reverseButtons: true
-           }).then((result) => {
+            Swal.fire({
+                title: 'Proceed to Payment?',
+                text: 'Are you sure you want to proceed to the payment page?',
+                icon: 'question',
+                showCancelButton: true,
+                showDenyButton: false,
+                confirmButtonColor: '#E94412',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Proceed',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'premium-mobile-swal'
+                }
+            }).then((result) => {
                if (result.isConfirmed) {
                    // User confirmed, submit the form
            document.getElementById('proceedToPaymentForm').submit();

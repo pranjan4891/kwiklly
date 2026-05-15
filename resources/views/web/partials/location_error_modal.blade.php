@@ -68,9 +68,9 @@
        ICON
     =============================== */
     .locerr-icon-wrap {
-      width: 88px;
-      height: 88px;
-      margin: 0 auto 18px;
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 15px;
       background: linear-gradient(135deg, #ff6a00, #ff3d00);
       border-radius: 50%;
       display: flex;
@@ -79,7 +79,7 @@
     }
 
     .locerr-icon-wrap i {
-      font-size: 34px;
+      font-size: 28px;
       color: #fff;
     }
 
@@ -87,22 +87,22 @@
        TEXT
     =============================== */
     .locerr-title {
-      font-size: clamp(18px, 4vw, 22px);
+      font-size: clamp(17px, 4vw, 20px);
       font-weight: 700;
       color: #222;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
     .locerr-desc {
-      font-size: 15px;
+      font-size: 14px;
       color: #555;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
 
     .locerr-subdesc {
-      font-size: 14px;
+      font-size: 13px;
       color: #777;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     /* ===============================
@@ -112,7 +112,8 @@
       background: linear-gradient(135deg, #ff6a00, #ff3d00);
       color: #fff;
       font-weight: 600;
-      padding: 12px;
+      padding: 10px;
+      font-size: 14px;
       border-radius: 28px;
       border: none;
       width: 100%;
@@ -130,6 +131,20 @@
       .locerr-btn {
         width: auto;
         padding: 12px 32px;
+        font-size: 15px;
+      }
+      .locerr-icon-wrap {
+        width: 88px;
+        height: 88px;
+      }
+      .locerr-icon-wrap i {
+        font-size: 34px;
+      }
+      .locerr-title {
+        font-size: clamp(18px, 4vw, 22px);
+      }
+      .locerr-desc {
+        font-size: 15px;
       }
     }
 
@@ -137,9 +152,9 @@
        FOOTER TEXT
     =============================== */
     .locerr-footer {
-      font-size: 13px;
+      font-size: 12px;
       color: #999;
-      margin-top: 16px;
+      margin-top: 14px;
     }
 
     /* ===============================
@@ -147,16 +162,20 @@
     =============================== */
     @media (max-width: 360px) {
       .locerr-icon-wrap {
-        width: 72px;
-        height: 72px;
+        width: 64px;
+        height: 64px;
       }
 
       .locerr-icon-wrap i {
-        font-size: 28px;
+        font-size: 24px;
       }
 
       .locerr-body {
-        padding: 22px 18px 26px;
+        padding: 20px 16px 24px;
+      }
+      
+      .locerr-title {
+        font-size: 16px;
       }
     }
   </style>

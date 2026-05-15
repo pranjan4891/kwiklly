@@ -183,26 +183,26 @@
                 .xyz-modal {
                     width: min(400px, calc(100vw - 20px)) !important;
                     max-width: 400px !important;
-                    padding: 12px 14px 14px !important;
+                    padding: 10px 12px 12px !important;
                     margin: 10px auto !important;
                 }
 
                 .xyz-modal-header {
-                    margin-bottom: 8px;
+                    margin-bottom: 6px;
                 }
 
                 .xyz-modal h5,
                 .xyz-modal-header h5 {
-                    font-size: 1rem !important;
+                    font-size: 0.95rem !important;
                 }
 
                 .xyz-close {
-                    font-size: 24px !important;
+                    font-size: 22px !important;
                 }
 
                 .xyz-coupon-row {
-                    padding: 10px 12px !important;
-                    margin-bottom: 10px !important;
+                    padding: 8px 10px !important;
+                    margin-bottom: 8px !important;
                     max-width: 100% !important;
                 }
 
@@ -212,38 +212,38 @@
                 }
 
                 .xyz-coupon-discount {
-                    font-size: 1.05rem !important;
+                    font-size: 1rem !important;
                     margin-bottom: 2px !important;
                 }
 
                 .xyz-coupon-min-order {
-                    font-size: 11px !important;
+                    font-size: 10.5px !important;
                     margin-bottom: 2px !important;
                 }
 
                 .xyz-coupon-code {
-                    font-size: 10px !important;
+                    font-size: 9.5px !important;
                 }
 
                 .xyz-coupon-expiry,
                 .xyz-coupon-expiry-date {
-                    font-size: 9px !important;
+                    font-size: 8.5px !important;
                 }
 
                 .xyz-coupon-logo {
-                    height: 24px !important;
-                    max-width: 38px !important;
+                    height: 22px !important;
+                    max-width: 36px !important;
                     margin-bottom: 4px !important;
                 }
 
                 .xyz-coupon-applied-line {
-                    font-size: 9px !important;
+                    font-size: 8.5px !important;
                 }
 
                 .apply-coupon-btn,
                 .xyz-coupon-apply-btn {
-                    font-size: 11px !important;
-                    padding: 5px 14px !important;
+                    font-size: 10.5px !important;
+                    padding: 4px 12px !important;
                     margin-top: 4px !important;
                 }
             }
@@ -259,7 +259,7 @@
                 }
 
                 .xyz-coupon-discount {
-                    font-size: 0.95rem !important;
+                    font-size: 0.9rem !important;
                 }
 
                 .xyz-coupon-row .col-7 {
@@ -269,6 +269,7 @@
                     width: 35% !important;
                 }
             }
+
 
             /* Cart item layout fix */
             .cart-item {
@@ -421,7 +422,13 @@
                                             <div class="mx-3" style="min-width:0;">
                                                 <p class="mb-0 fw-medium text-truncate" style="margin:0;padding:0;line-height:1.2;max-width:18ch;" title="{{ $item['title'] }}">{{ $item['title'] }}</p>
                                                 @if(!empty($item['variant_info']))
-                                                <small class="text-muted d-block text-truncate" style="max-width:100%;line-height:1.1;margin-top:-1px;" title="{{ $item['variant_info'] }}">{{ $item['variant_info'] }}</small>
+                                                @php
+                                                    $cleanedVariant = implode(', ', array_map(function($s) {
+                                                        $parts = explode(':', $s);
+                                                        return trim(end($parts));
+                                                    }, explode(',', $item['variant_info'])));
+                                                @endphp
+                                                <small class="text-muted d-block text-truncate" style="max-width:100%;line-height:1.1;margin-top:-1px;" title="{{ $item['variant_info'] }}">{{ $cleanedVariant }}</small>
                                                 @endif
                                                 <small class="text-success">
                                                     ₹{{ $item['price'] }}
@@ -658,6 +665,38 @@
         <!--------------- CUSTOM JAVASCRIPT END ----------------->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            // Global SweetAlert2 Standardization Override
+            (function() {
+                const originalSwalFire = Swal.fire;
+                Swal.fire = function(args) {
+                    if (typeof args === 'object' && args !== null) {
+                        // Apply premium mobile styling by default
+                        if (!args.customClass) args.customClass = {};
+                        if (!args.customClass.popup) args.customClass.popup = 'premium-mobile-swal';
+                        
+                        // Force hide the 'No' (deny) button project-wide on this page
+                        args.showDenyButton = false;
+                        
+                        // For success/error/info popups, usually we only want 'OK'
+                        if (args.icon === 'success' || args.icon === 'error' || args.icon === 'info') {
+                            // If it's a simple notification (no custom confirm text or 'OK'), hide cancel
+                            if (!args.confirmButtonText || args.confirmButtonText === 'OK') {
+                                if (args.showCancelButton === undefined) {
+                                    args.showCancelButton = false;
+                                }
+                            }
+                        }
+                        
+                        // Ensure confirm button has the brand color
+                        if (!args.confirmButtonColor) {
+                            args.confirmButtonColor = '#E94412';
+                        }
+                    }
+                    return originalSwalFire.apply(this, arguments);
+                };
+            })();
+        </script>
         <!-- TOGGLE CART ITEMS -->
         <script type="text/javascript">
 
@@ -1777,7 +1816,10 @@
                                         <img src="${item.image}" alt="${item.title}" width="50" style="flex-shrink:0;">
                                         <div class="mx-3" style="min-width:0;">
                                             <p class="mb-0 fw-medium text-truncate" style="margin:0;padding:0;line-height:1.2;max-width:18ch;" title="${item.title}">${item.title}</p>
-                                            ${item.variant_info ? `<small class="text-muted d-block text-truncate" style="max-width:100%;line-height:1.1;margin-top:-1px;" title="${item.variant_info}">${item.variant_info}</small>` : ''}
+                                            ${item.variant_info ? (function(){
+                                                let cleaned = item.variant_info.split(',').map(s => s.split(':').pop().trim()).join(', ');
+                                                return `<small class="text-muted d-block text-truncate" style="max-width:100%;line-height:1.1;margin-top:-1px;" title="${item.variant_info}">${cleaned}</small>`;
+                                            })() : ''}
                                             <small class="text-success">₹${item.price}</small>
                                             ${item.price < item.original_price ? `<s class="text-muted">₹${item.original_price}</s>` : ''}
                                         </div>

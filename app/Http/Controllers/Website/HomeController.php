@@ -1535,7 +1535,7 @@ class HomeController extends Controller
             $html .= '<ul>';
             $html .= '<li>';
             $html .= '<a href="' . route('allcategorywiseproduct', $category->id) . '" onclick="return redirectWithLocation(this.href)">';
-            $html .= htmlspecialchars($category->name);
+            $html .= htmlspecialchars($this->formatCategoryName($category->name));
             $html .= '</a>';
             $html .= '</li>';
             $html .= '</ul>';
@@ -1551,7 +1551,7 @@ class HomeController extends Controller
             $html .= '<option>Show More</option>';
             foreach($moreCategories as $category) {
                 $html .= '<option value="' . route('allcategorywiseproduct', $category->id) . '">';
-                $html .= htmlspecialchars($category->name);
+                $html .= htmlspecialchars($this->formatCategoryName($category->name));
                 $html .= '</option>';
             }
             $html .= '</select>';
@@ -1567,7 +1567,7 @@ class HomeController extends Controller
             $html .= '<option>Show More</option>';
             foreach($moreCategories as $category) {
                 $html .= '<option value="' . route('allcategorywiseproduct', $category->id) . '">';
-                $html .= htmlspecialchars($category->name);
+                $html .= htmlspecialchars($this->formatCategoryName($category->name));
                 $html .= '</option>';
             }
             $html .= '</select>';
@@ -1577,6 +1577,15 @@ class HomeController extends Controller
         $html .= '</div>';
 
         return $html;
+    }
+
+    private function formatCategoryName($name)
+    {
+        if (empty($name)) return '';
+        // Convert to lowercase first to handle ALL CAPS from backend
+        $name = mb_strtolower($name, 'UTF-8');
+        // Convert to Title Case (First Letter Of Each Word)
+        return mb_convert_case($name, MB_CASE_TITLE, 'UTF-8');
     }
 
     private function getInsideVendors($lat, $lng)
